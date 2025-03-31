@@ -7,9 +7,15 @@ export function SubscribeButton({ label }: { label: string }) {
   const form = useFormContext();
   return (
     <div className={classes.buttonWrapper}>
-      <form.Subscribe selector={(state) => state.isSubmitting}>
-        {(isSubmitting) => (
-          <Button className={classes.button} disabled={isSubmitting}>
+      <form.Subscribe
+        selector={(state) => [state.isSubmitting, state.canSubmit]}
+      >
+        {([isSubmitting, canSubmit]) => (
+          <Button
+            className={classes.button}
+            disabled={isSubmitting || !canSubmit}
+            type="submit"
+          >
             {label}
           </Button>
         )}
