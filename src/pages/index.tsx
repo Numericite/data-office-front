@@ -66,9 +66,9 @@ export default function Home() {
               className={classes.formWrapper}
             >
               <div className={cx(classes.formWrapper, classes.section)}>
-                <h1 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
+                <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
                   Section 1 - Informations générales
-                </h1>
+                </h2>
                 <div
                   className={cx(
                     fr.cx("fr-accordions-group"),
@@ -186,12 +186,12 @@ const useStyles = tss.withName(Home.name).create(() => ({
   formWrapper: {
     display: "flex",
     flexDirection: "column",
-    gap: fr.spacing("4w"),
+    gap: fr.spacing("3w"),
   },
   section: {
     padding: fr.spacing("3w"),
     border: "1px solid #ccc",
-    borderRadius: fr.spacing("2v"),
+    borderRadius: fr.spacing("3v"),
   },
   arccordionsWrapper: {
     "& > section > .fr-collapse": {
