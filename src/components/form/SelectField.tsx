@@ -1,25 +1,29 @@
 import { useFieldContext } from "~/utils/form-schema";
-import { Input } from "@codegouvfr/react-dsfr/Input";
+import { Select } from "@codegouvfr/react-dsfr/SelectNext";
 
-type TextAreaFieldProps = {
+type SelectFieldProps = {
   label: string;
+  options: Array<{
+    label: string;
+    value: string;
+  }>;
 };
 
-export function TextAreaField({ label }: TextAreaFieldProps) {
+export function SelectField({ label, options }: SelectFieldProps) {
   const field = useFieldContext<string>();
   return (
-    <Input
+    <Select
       label={label}
-      nativeTextAreaProps={{
+      nativeSelectProps={{
         name: field.name,
         value: field.state.value,
         onChange: (e) => field.setValue(e.target.value),
       }}
+      options={options}
       state={field.state.meta.errors.length > 0 ? "error" : "default"}
       stateRelatedMessage={
         field.state.meta.errors.map((error) => error.message).join(",") ?? ""
       }
-      textArea
     />
   );
 }

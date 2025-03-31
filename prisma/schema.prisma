@@ -1,20 +1,63 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
 
-    @@index([name])
+model Request {
+  id            Int             @id @default(autoincrement())
+  status        RequestStatus   @default(pending)
+  formData      Json
+  referenceData ReferenceData[] @relation("RequestReferenceData")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([status])
+}
+
+model ReferenceData {
+  id           Int           @id @default(autoincrement())
+  name         String
+  owner        String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  personalData PersonalData?
+  request      Request[]     @relation("RequestReferenceData")
+
+  @@index([name])
+}
+
+enum LegalWorkProcessing {
+  general_legal_framework  @map("Cadre légal général")
+  specific_legal_framework @map("Cadre légal spécifique")
+  deliberation             @map("Délibération")
+  none                     @map("Aucun - demande décret DNUM")
+  sufficient_decree        @map("Décret suffisant")
+  insufficient_decree      @map("Décret insuffisant - révision nécessaire")
+}
+
+model PersonalData {
+  id                      Int                 @id @default(autoincrement())
+  recipient               String
+  retentionPeriodInMonths Int
+  processingType          String
+  dataController          String
+  authRequired            Boolean             @default(true)
+  securityMeasures        String
+  legalWorkProcessing     LegalWorkProcessing
+  referenceData           ReferenceData       @relation(fields: [referenceDataId], references: [id], onDelete: Cascade)
+  referenceDataId         Int                 @unique
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  @@index([referenceDataId])
 }

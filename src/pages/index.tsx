@@ -35,6 +35,14 @@ export default function Home() {
     },
   });
 
+  const targetAudienceOptions =
+    baseFormSchema.shape.dataProduct.shape.targetAudience.options.map(
+      (option) => ({
+        label: option,
+        value: option,
+      })
+    ) ?? [];
+
   return (
     <>
       <Head>
@@ -57,87 +65,113 @@ export default function Home() {
               }}
               className={classes.formWrapper}
             >
-              <div
-                className={cx(
-                  fr.cx("fr-accordions-group"),
-                  classes.arccordionsWrapper
-                )}
-              >
-                <Accordion
-                  label="Informations sur le demandeur"
-                  defaultExpanded
-                  className={classes.accordionContent}
+              <div className={cx(classes.formWrapper, classes.section)}>
+                <h1 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
+                  Section 1 - Informations générales
+                </h1>
+                <div
+                  className={cx(
+                    fr.cx("fr-accordions-group"),
+                    classes.arccordionsWrapper
+                  )}
                 >
-                  <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                    <div className={fr.cx("fr-col-6")}>
+                  <Accordion
+                    label="Informations sur le demandeur"
+                    defaultExpanded
+                    className={classes.accordionContent}
+                  >
+                    <div
+                      className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}
+                    >
+                      <div className={fr.cx("fr-col-6")}>
+                        <form.AppField
+                          name="applicantInfo.firstName"
+                          children={(field) => (
+                            <field.TextField label="Prénom" />
+                          )}
+                        />
+                      </div>
+                      <div className={fr.cx("fr-col-6")}>
+                        <form.AppField
+                          name="applicantInfo.lastName"
+                          children={(field) => <field.TextField label="Nom" />}
+                        />
+                      </div>
+                    </div>
+                    <div
+                      className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}
+                    >
+                      <div className={fr.cx("fr-col-6")}>
+                        <form.AppField
+                          name="applicantInfo.emailPro"
+                          children={(field) => (
+                            <field.TextField
+                              label="Email profesionnel"
+                              kind="email"
+                            />
+                          )}
+                        />
+                      </div>
+                      <div className={fr.cx("fr-col-6")}>
+                        <form.AppField
+                          name="applicantInfo.phone"
+                          children={(field) => (
+                            <field.TextField
+                              label="Numéro de téléphone pro"
+                              kind="tel"
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className={fr.cx("fr-mt-3v")}>
                       <form.AppField
-                        name="applicantInfo.firstName"
-                        children={(field) => <field.TextField label="Prénom" />}
+                        name="applicantInfo.role"
+                        children={(field) => <field.TextField label="Rôle" />}
                       />
                     </div>
-                    <div className={fr.cx("fr-col-6")}>
-                      <form.AppField
-                        name="applicantInfo.lastName"
-                        children={(field) => <field.TextField label="Nom" />}
-                      />
-                    </div>
-                  </div>
-                  <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                    <div className={fr.cx("fr-col-6")}>
-                      <form.AppField
-                        name="applicantInfo.emailPro"
-                        children={(field) => (
-                          <field.TextField
-                            label="Email profesionnel"
-                            kind="email"
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className={fr.cx("fr-col-6")}>
-                      <form.AppField
-                        name="applicantInfo.phone"
-                        children={(field) => (
-                          <field.TextField
-                            label="Numéro de téléphone pro"
-                            kind="tel"
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
-                  <div className={fr.cx("fr-mt-3v")}>
+                  </Accordion>
+                </div>
+                <div
+                  className={cx(
+                    fr.cx("fr-accordions-group"),
+                    classes.arccordionsWrapper
+                  )}
+                >
+                  <Accordion
+                    label="Le produit data"
+                    defaultExpanded
+                    className={classes.accordionContent}
+                  >
                     <form.AppField
-                      name="applicantInfo.role"
-                      children={(field) => <field.TextField label="Rôle" />}
+                      name="dataProduct.name"
+                      children={(field) => (
+                        <field.TextField label="Nom du projet" />
+                      )}
                     />
-                  </div>
-                </Accordion>
-              </div>
-              <div
-                className={cx(
-                  fr.cx("fr-accordions-group"),
-                  classes.arccordionsWrapper
-                )}
-              >
-                <Accordion
-                  label="Le produit data"
-                  defaultExpanded
-                  className={classes.accordionContent}
-                >
-                  <form.AppField
-                    name="dataProduct.name"
-                    children={(field) => (
-                      <field.TextField label="Nom du projet" />
-                    )}
-                  />
-                  <form.AppField
-                    name="dataProduct.description"
-                    children={(field) => (
-                      <field.TextAreaField label="Description exhaustive du projet" />
-                    )}
-                  />
-                </Accordion>
+                    <form.AppField
+                      name="dataProduct.description"
+                      children={(field) => (
+                        <field.TextAreaField label="Description exhaustive du projet" />
+                      )}
+                    />
+                    <form.AppField
+                      name="dataProduct.purpose"
+                      children={(field) => (
+                        <field.TextField label="Objectif du projet" />
+                      )}
+                    />
+                    <form.AppField
+                      name="dataProduct.targetAudience"
+                      children={(field) => (
+                        <field.SelectField
+                          label="Public cible"
+                          options={targetAudienceOptions}
+                        />
+                      )}
+                    />
+                  </Accordion>
+                </div>
               </div>
               <form.SubscribeButton label="Soumettre" />
             </form>
@@ -153,6 +187,11 @@ const useStyles = tss.withName(Home.name).create(() => ({
     display: "flex",
     flexDirection: "column",
     gap: fr.spacing("4w"),
+  },
+  section: {
+    padding: fr.spacing("3w"),
+    border: "1px solid #ccc",
+    borderRadius: fr.spacing("2v"),
   },
   arccordionsWrapper: {
     "& > section > .fr-collapse": {
