@@ -5,7 +5,7 @@ import {
   NextScript,
   type DocumentProps,
 } from "next/document";
-import { dsfrDocumentApi } from "./_app";
+import { augmentDocumentWithEmotionCache, dsfrDocumentApi } from "./_app";
 
 const { getColorSchemeHtmlAttributes, augmentDocumentForDsfr } =
   dsfrDocumentApi;
@@ -23,3 +23,5 @@ export default function Document(props: DocumentProps) {
 }
 
 augmentDocumentForDsfr(Document);
+
+augmentDocumentWithEmotionCache(Document);

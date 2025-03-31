@@ -7,6 +7,7 @@ import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
+import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -14,6 +15,9 @@ declare module "@codegouvfr/react-dsfr/next-pagesdir" {
     Link: typeof Link;
   }
 }
+
+const { augmentDocumentWithEmotionCache, withAppEmotionCache } =
+  createEmotionSsrAdvancedApproach({ key: "css" });
 
 const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
   defaultColorScheme: "system",
@@ -32,7 +36,7 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
   ],
 });
 
-export { dsfrDocumentApi };
+export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -69,15 +73,7 @@ function App({ Component, pageProps }: AppProps) {
         ]}
         serviceTitle="Data Office - Data Contracts Formulaires"
       />
-      <div
-        className={fr.cx("fr-container")}
-        style={{
-          flex: 1,
-          ...fr.spacing("padding", {
-            topBottom: "10v",
-          }),
-        }}
-      >
+      <div className={fr.cx("fr-container")} style={{ flex: 1 }}>
         <Component {...pageProps} />
       </div>
       <Footer accessibility="non compliant" />
@@ -85,4 +81,4 @@ function App({ Component, pageProps }: AppProps) {
   );
 }
 
-export default withDsfr(api.withTRPC(App));
+export default withDsfr(api.withTRPC(withAppEmotionCache(App)));
