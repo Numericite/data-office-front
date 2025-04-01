@@ -3,11 +3,10 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 
 type TextFieldProps = {
   kind?: "tel" | "email";
-  textArea?: boolean;
   label: string;
 };
 
-export function TextField({ kind, label, textArea }: TextFieldProps) {
+export function TextField({ kind, label }: TextFieldProps) {
   const field = useFieldContext<string>();
   return (
     <Input

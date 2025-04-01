@@ -7,9 +7,19 @@ import {
   type BaseFormSchema,
 } from "~/utils/form-schema";
 import { tss } from "tss-react";
+import Button from "@codegouvfr/react-dsfr/Button";
 
 export default function Home() {
   const { classes, cx } = useStyles();
+
+  const defaultDataAccess = {
+    name: "",
+    owner: "",
+    processingDone: "",
+    peopleAccess: "",
+    storageLocation: "",
+    dataFormat: "",
+  } as BaseFormSchema["dataAccesses"][number];
 
   const form = useBaseDataContractForm({
     defaultValues: {
@@ -26,6 +36,7 @@ export default function Home() {
         purpose: "",
         targetAudience: "internes",
       },
+      dataAccesses: [defaultDataAccess],
     } as BaseFormSchema,
     validators: {
       onSubmit: baseFormSchema,
@@ -173,6 +184,91 @@ export default function Home() {
                   </Accordion>
                 </div>
               </div>
+              <div className={cx(classes.formWrapper, classes.section)}>
+                <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
+                  Section 2 - Liste des données
+                </h2>
+                <form.AppField name="dataAccesses" mode="array">
+                  {(field) => (
+                    <div className={cx(classes.arccordionsWrapper)}>
+                      <div className={classes.formWrapper}>
+                        {field.state.value.map((_, index) => (
+                          <form.Subscribe
+                            selector={(state) =>
+                              state.values?.dataAccesses[index]?.name ||
+                              `Données ${index + 1}`
+                            }
+                            children={(currentName) => (
+                              <Accordion
+                                key={index}
+                                label={currentName}
+                                defaultExpanded
+                                className={classes.accordionContent}
+                              >
+                                <div
+                                  className={fr.cx(
+                                    "fr-grid-row",
+                                    "fr-grid-row--gutters"
+                                  )}
+                                >
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].name`}
+                                      children={(field) => (
+                                        <field.TextField label="Nom" />
+                                      )}
+                                    />
+                                  </div>
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].storageLocation`}
+                                      children={(field) => (
+                                        <field.TextField label="Propriétaire" />
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                                <div
+                                  className={fr.cx(
+                                    "fr-grid-row",
+                                    "fr-grid-row--gutters"
+                                  )}
+                                >
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].dataFormat`}
+                                      children={(field) => (
+                                        <field.TextField label="Traitement qui sera opéré sur les données" />
+                                      )}
+                                    />
+                                  </div>
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].processingDone`}
+                                      children={(field) => (
+                                        <field.TextField label="Accès aux personnes" />
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                              </Accordion>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <div className={fr.cx("fr-mt-6v")}>
+                        <Button
+                          priority="primary"
+                          type="button"
+                          onClick={() => field.pushValue(defaultDataAccess)}
+                        >
+                          Ajouter un accès
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </form.AppField>
+              </div>
               <form.SubscribeButton label="Soumettre" />
             </form>
           </form.AppForm>
@@ -194,7 +290,7 @@ const useStyles = tss.withName(Home.name).create(() => ({
     borderRadius: fr.spacing("3v"),
   },
   arccordionsWrapper: {
-    "& > section > .fr-collapse": {
+    "& .fr-collapse": {
       margin: 0,
       paddingLeft: fr.spacing("5v"),
       paddingRight: fr.spacing("5v"),
