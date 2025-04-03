@@ -50,10 +50,6 @@ export default function Visualizer() {
     },
     onSubmit: async (values) => {
       console.log("Form submitted:", values.value);
-      const newRequest = await createRequest({
-        data: values.value,
-      });
-      console.log("New request created:", newRequest);
     },
   });
 

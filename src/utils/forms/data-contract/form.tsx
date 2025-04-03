@@ -266,7 +266,7 @@ export const BaseDataContractForm = withDataContractForm({
             )}
           </form.AppField>
         </div>
-        {disabled && <form.SubscribeButton label="Soumettre" />}
+        {!disabled && <form.SubscribeButton label="Soumettre" />}
       </Fragment>
     );
   },
