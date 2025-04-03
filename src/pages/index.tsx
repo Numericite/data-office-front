@@ -7,7 +7,8 @@ import {
   type BaseFormSchema,
 } from "~/utils/form-schema";
 import { tss } from "tss-react";
-import Button from "@codegouvfr/react-dsfr/Button";
+import { Button } from "@codegouvfr/react-dsfr/Button";
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 
 export default function Home() {
   const { classes, cx } = useStyles();
@@ -251,20 +252,48 @@ export default function Home() {
                                     />
                                   </div>
                                 </div>
+                                {field.state.value.length > 1 && (
+                                  <div
+                                    className={cx(
+                                      fr.cx(
+                                        "fr-mt-4v",
+                                        "fr-col-2",
+                                        "fr-col-offset-10"
+                                      ),
+                                      "d-flex"
+                                    )}
+                                  >
+                                    <Button
+                                      priority="tertiary"
+                                      iconId="fr-icon-delete-line"
+                                      type="button"
+                                      onClick={() => field.removeValue(index)}
+                                      className={fr.cx("fr-ml-auto")}
+                                    >
+                                      Supprimer
+                                    </Button>
+                                  </div>
+                                )}
                               </Accordion>
                             )}
                           />
                         ))}
                       </div>
-                      <div className={fr.cx("fr-mt-6v")}>
-                        <Button
-                          priority="primary"
-                          type="button"
-                          onClick={() => field.pushValue(defaultDataAccess)}
-                        >
-                          Ajouter un accès
-                        </Button>
-                      </div>
+                      <ButtonsGroup
+                        className={fr.cx("fr-mt-6v")}
+                        inlineLayoutWhen="always"
+                        alignment="right"
+                        buttons={[
+                          {
+                            children: "Ajouter un accès de données",
+                            priority: "primary",
+                            iconId: "fr-icon-add-line",
+                            type: "button",
+                            className: classes.addButton,
+                            onClick: () => field.pushValue(defaultDataAccess),
+                          },
+                        ]}
+                      />
                     </div>
                   )}
                 </form.AppField>
@@ -299,5 +328,8 @@ const useStyles = tss.withName(Home.name).create(() => ({
   accordionContent: {
     borderRight: "1px solid #ccc",
     borderLeft: "1px solid #ccc",
+  },
+  addButton: {
+    justifyContent: "right",
   },
 }));

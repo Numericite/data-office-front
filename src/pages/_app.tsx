@@ -9,6 +9,8 @@ import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 
+import "~/styles/globals.css";
+
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
   interface RegisterLink {
