@@ -72,6 +72,13 @@ function App({ Component, pageProps }: AppProps) {
             },
             isActive: router.asPath === "/",
           },
+          {
+            text: "Visualiser un formulaire",
+            linkProps: {
+              href: "/visualizer",
+            },
+            isActive: router.asPath === "/visualizer",
+          },
         ]}
         serviceTitle="Data Office - Data Contracts Formulaires"
       />

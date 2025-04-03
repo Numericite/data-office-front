@@ -1,18 +1,13 @@
-import {
-  createFormHook,
-  createFormHookContexts,
-} from "node_modules/@tanstack/react-form/dist/cjs/createFormHook.cjs";
+import { createFormHook } from "@tanstack/react-form";
 import { z } from "zod";
 import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
 import { TextField } from "~/components/form/TextField";
 import { SelectField } from "~/components/form/SelectField";
 import { LegalWorkProcessing } from "@prisma/client";
+import { fieldContext, formContext } from "~/utils/form";
 
-export const { fieldContext, formContext, useFieldContext, useFormContext } =
-  createFormHookContexts();
-
-const { useAppForm } = createFormHook({
+const { useAppForm, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {
@@ -25,7 +20,7 @@ const { useAppForm } = createFormHook({
   },
 });
 
-export { useAppForm as useBaseDataContractForm };
+export { useAppForm as useDataContractForm, withForm as withDataContractForm };
 
 export const baseFormSchema = z.object({
   applicantInfo: z.object({
