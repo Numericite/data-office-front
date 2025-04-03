@@ -55,14 +55,14 @@ export const baseFormSchema = z.object({
   dataAccesses: z.array(
     z.object({
       name: z.string().min(1, { message: "Nom requis" }),
-      owner: z.string().min(1, { message: "Propriétaire requis" }),
+      // owner: z.string().min(1, { message: "Propriétaire requis" }),
       processingDone: z.string().min(1, {
         message: "Traitement qui sera opéré sur les données requis",
       }),
-      peopleAccess: z.string().min(1, {
-        message:
-          "Accès requis (public, au sein de votre structure, partenaires éventuels - combien de personnes ?)",
-      }),
+      // peopleAccess: z.string().min(1, {
+      //   message:
+      //     "Accès requis (public, au sein de votre structure, partenaires éventuels - combien de personnes ?)",
+      // }),
       storageLocation: z.string().min(1, {
         message: "Lieu de stockage requis (bdd, fichiers)",
       }),

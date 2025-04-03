@@ -17,6 +17,7 @@ model Request {
   id            Int             @id @default(autoincrement())
   status        RequestStatus   @default(pending)
   formData      Json
+  yamlFile      String
   referenceData ReferenceData[] @relation("RequestReferenceData")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt

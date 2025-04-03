@@ -9,18 +9,19 @@ import {
 import { tss } from "tss-react";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
+import { api } from "~/utils/api";
 
 export default function Home() {
   const { classes, cx } = useStyles();
 
-  const defaultDataAccess = {
+  const { mutateAsync: createRequest } = api.request.create.useMutation();
+
+  const defaultDataAccess: BaseFormSchema["dataAccesses"][number] = {
     name: "",
-    owner: "",
     processingDone: "",
-    peopleAccess: "",
     storageLocation: "",
     dataFormat: "",
-  } as BaseFormSchema["dataAccesses"][number];
+  };
 
   const form = useBaseDataContractForm({
     defaultValues: {
@@ -44,6 +45,10 @@ export default function Home() {
     },
     onSubmit: async (values) => {
       console.log("Form submitted:", values.value);
+      const newRequest = await createRequest({
+        data: values.value,
+      });
+      console.log("New request created:", newRequest);
     },
   });
 
