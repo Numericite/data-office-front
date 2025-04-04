@@ -23,8 +23,12 @@ const { useAppForm, withForm } = createFormHook({
 export { useAppForm as useDataContractForm, withForm as withDataContractForm };
 
 export const dataContractSchema = z.object({
-  dataContractSpecification: z.string(),
-  id: z.string(),
+  id: z.string().min(1, {
+    message: "ID requis",
+  }),
+  dataContractSpecification: z.string().min(1, {
+    message: "Spécification du contrat de données requise",
+  }),
   applicantInfo: z.object({
     firstName: z.string().min(1, { message: "Prénom requis" }),
     lastName: z.string().min(1, { message: "Nom requis" }),

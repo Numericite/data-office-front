@@ -13,11 +13,16 @@ import {
 import { tss } from "tss-react";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { useState } from "react";
+import type { ZodError } from "zod";
+import Badge from "@codegouvfr/react-dsfr/Badge";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 
 export default function Visualizer() {
   const { classes, cx } = useStyles();
 
   const [yamlFile, setYamlFile] = useState<File | null>(null);
+  const [validYamlFile, setValidYamlFile] = useState<boolean>(false);
+  const [errors, setErrors] = useState<ZodError>();
   const [formData, setFormData] = useState(dataContractFormDefaultValues);
 
   const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,10 +34,11 @@ export default function Visualizer() {
         const fileContent = event.target?.result;
         if (fileContent) {
           try {
-            const parsedData = yaml.parse(
-              fileContent as string
-            ) as DataContractSchema;
-            setFormData(parsedData);
+            const parsedData = yaml.parse(fileContent as string);
+            const { success, error } = dataContractSchema.safeParse(parsedData);
+            setValidYamlFile(success);
+            setErrors(error);
+            setFormData(parsedData as DataContractSchema);
             form.reset(parsedData);
           } catch (error) {
             console.error("Error parsing YAML file:", error);
@@ -62,29 +68,58 @@ export default function Visualizer() {
       </Head>
       <main>
         <div className={fr.cx("fr-mt-4w", "fr-mb-8w")}>
-          <h1 className={fr.cx("fr-h1")}>Visualiseur de formulaire</h1>
-          <p className={fr.cx("fr-h5")}>
+          <h1 className={fr.cx("fr-h1")}>
             Visualisez le formulaire de contrat de données
-          </p>
-          <div>
-            <Upload
-              nativeInputProps={{
-                accept: ".yaml, .yml",
-                onChange: (e) => onChangeFile(e),
-              }}
-            />
-          </div>
-          <div className={cx("fr-mt-4w", classes.formWrapper)}>
-            {yamlFile && (
-              <form.AppForm>
-                <BaseDataContractForm
-                  formId="visualizer-data-contract-form"
-                  disabled={true}
-                  form={form}
-                />
-              </form.AppForm>
-            )}
-          </div>
+          </h1>
+          <Upload
+            hint="Formats acceptés : .yaml, .yml"
+            nativeInputProps={{
+              accept: ".yaml, .yml",
+              onChange: (e) => onChangeFile(e),
+            }}
+          />
+          {yamlFile && (
+            <div className={fr.cx("fr-mt-4w")}>
+              <Alert
+                closable={false}
+                severity={validYamlFile ? "success" : "error"}
+                title={
+                  validYamlFile
+                    ? "Le fichier YAML est valide et a été chargé avec succès."
+                    : "Le fichier YAML est invalide. Veuillez vérifier le contenu."
+                }
+              />
+              {errors && (
+                <div className={fr.cx("fr-mt-3w")}>
+                  <h2 className={fr.cx("fr-h5")}>Erreurs de validation :</h2>
+                  <ul className={classes.errorsWrapper}>
+                    {errors.errors.map((error, index) => (
+                      <li key={index} className={fr.cx("fr-p-0")}>
+                        <strong>{error.path.join(".")}</strong>: {error.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <h2 className={fr.cx("fr-h5", "fr-mt-4w")}>
+                Données du fichier YAML :
+              </h2>
+              <div className={cx(classes.yamlWrapper)}>
+                <pre>{yaml.stringify(formData)}</pre>
+              </div>
+              {validYamlFile && (
+                <form.AppForm>
+                  <div className={cx(fr.cx("fr-mt-4w"), classes.formWrapper)}>
+                    <BaseDataContractForm
+                      formId="visualizer-data-contract-form"
+                      disabled={true}
+                      form={form}
+                    />
+                  </div>
+                </form.AppForm>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </>
@@ -96,5 +131,17 @@ const useStyles = tss.withName(Visualizer.name).create(() => ({
     display: "flex",
     flexDirection: "column",
     gap: fr.spacing("3w"),
+  },
+  yamlWrapper: {
+    backgroundColor: "#f5f5f5",
+    padding: `0 ${fr.spacing("4w")}`,
+    borderRadius: fr.spacing("2w"),
+    overflow: "auto",
+  },
+  errorsWrapper: {
+    listStyleType: "none",
+    padding: `${fr.spacing("4v")} ${fr.spacing("6v")}`,
+    border: `1px solid ${fr.colors.decisions.border.default.beigeGrisGalet.default}`,
+    borderRadius: fr.spacing("3v"),
   },
 }));
