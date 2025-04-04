@@ -6,12 +6,12 @@ import path from "path";
 import fs from "fs";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { baseFormSchema } from "~/utils/form-schema";
+import { dataContractSchema } from "~/utils/forms/data-contract/schema";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export const requestRouter = createTRPCRouter({
   create: publicProcedure
-    .input(z.object({ data: baseFormSchema }))
+    .input(z.object({ data: dataContractSchema }))
     .mutation(async ({ ctx, input }) => {
       const { data } = input;
 

@@ -1,7 +1,7 @@
 import {
-  baseFormSchema,
+  dataContractSchema,
   withDataContractForm,
-  type BaseFormSchema,
+  type DataContractSchema,
 } from "~/utils/forms/data-contract/schema";
 import { tss } from "tss-react";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -10,7 +10,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Fragment } from "react";
 
-const defaultDataAccess: BaseFormSchema["dataAccesses"][number] = {
+const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
   name: "",
   processingDone: "",
   storageLocation: "",
@@ -18,6 +18,8 @@ const defaultDataAccess: BaseFormSchema["dataAccesses"][number] = {
 };
 
 export const dataContractFormDefaultValues = {
+  dataContractSpecification: "0.1",
+  id: "data-contract:request",
   applicantInfo: {
     firstName: "",
     lastName: "",
@@ -32,10 +34,10 @@ export const dataContractFormDefaultValues = {
     targetAudience: "internes",
   },
   dataAccesses: [defaultDataAccess],
-} as BaseFormSchema;
+} as DataContractSchema;
 
 const targetAudienceOptions =
-  baseFormSchema.shape.dataProduct.shape.targetAudience.options.map(
+  dataContractSchema.shape.dataProduct.shape.targetAudience.options.map(
     (option) => ({
       label: option,
       value: option,

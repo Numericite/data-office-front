@@ -2,21 +2,19 @@ import yaml from "yaml";
 import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
 import {
-  baseFormSchema,
+  dataContractSchema,
   useDataContractForm,
+  type DataContractSchema,
 } from "~/utils/forms/data-contract/schema";
 import {
   BaseDataContractForm,
   dataContractFormDefaultValues,
 } from "~/utils/forms/data-contract/form";
 import { tss } from "tss-react";
-import { api } from "~/utils/api";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { useState } from "react";
 
 export default function Visualizer() {
-  const { mutateAsync: createRequest } = api.request.create.useMutation();
-
   const { classes, cx } = useStyles();
 
   const [yamlFile, setYamlFile] = useState<File | null>(null);
@@ -31,7 +29,9 @@ export default function Visualizer() {
         const fileContent = event.target?.result;
         if (fileContent) {
           try {
-            const parsedData = yaml.parse(fileContent as string);
+            const parsedData = yaml.parse(
+              fileContent as string
+            ) as DataContractSchema;
             setFormData(parsedData);
             form.reset(parsedData);
           } catch (error) {
@@ -46,7 +46,7 @@ export default function Visualizer() {
   const form = useDataContractForm({
     defaultValues: formData,
     validators: {
-      onSubmit: baseFormSchema,
+      onSubmit: dataContractSchema,
     },
     onSubmit: async (values) => {
       console.log("Form submitted:", values.value);

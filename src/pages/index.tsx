@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
 import {
-  baseFormSchema,
+  dataContractSchema,
   useDataContractForm,
 } from "~/utils/forms/data-contract/schema";
 import {
@@ -19,7 +19,7 @@ export default function Home() {
   const form = useDataContractForm({
     defaultValues: dataContractFormDefaultValues,
     validators: {
-      onSubmit: baseFormSchema,
+      onSubmit: dataContractSchema,
     },
     onSubmit: async (values) => {
       console.log("Form submitted:", values.value);
