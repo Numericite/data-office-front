@@ -2,6 +2,7 @@ import {
   dataContractSchema,
   withDataContractForm,
   type DataContractSchema,
+  type PersonInfoSchema,
 } from "~/utils/forms/data-contract/schema";
 import { tss } from "tss-react";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -20,23 +21,28 @@ const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
   owner: "",
 };
 
+const defaultPersonInfo = {
+  firstName: "",
+  lastName: "",
+  phone: "",
+  emailPro: "",
+  structureName: "",
+  role: "",
+} as PersonInfoSchema;
+
 export const dataContractFormDefaultValues = {
   dataContractSpecification: "0.1",
   id: "data-contract:request",
-  applicantInfo: {
-    firstName: "",
-    lastName: "",
-    phone: "",
-    emailPro: "",
-    structureName: "",
-    role: "",
-  },
+  applicantInfo: defaultPersonInfo,
   dataProduct: {
     name: "",
     description: "",
     targetAudience: "internes",
   },
   dataAccesses: [defaultDataAccess],
+  businessContact: defaultPersonInfo,
+  technicalContact: defaultPersonInfo,
+  legalContact: defaultPersonInfo,
 } as DataContractSchema;
 
 const targetAudienceOptions =
@@ -86,79 +92,87 @@ export const BaseDataContractForm = withDataContractForm({
   render: function Render({ form, formId, disabled }) {
     const { classes, cx } = useStyles();
 
+    const PersonInfoFields = ({
+      accordionLabel,
+      pathPrefix,
+    }: {
+      accordionLabel: string;
+      pathPrefix:
+        | "applicantInfo"
+        | "businessContact"
+        | "technicalContact"
+        | "legalContact";
+    }) => (
+      <div
+        className={cx(fr.cx("fr-accordions-group"), classes.arccordionsWrapper)}
+      >
+        <Accordion
+          label={accordionLabel}
+          defaultExpanded
+          className={classes.accordionContent}
+        >
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.firstName`}
+                children={(field) => <field.TextField label="Prénom" />}
+              />
+            </div>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.lastName`}
+                children={(field) => <field.TextField label="Nom" />}
+              />
+            </div>
+          </div>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.emailPro`}
+                children={(field) => (
+                  <field.TextField label="Email profesionnel" kind="email" />
+                )}
+              />
+            </div>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.phone`}
+                children={(field) => (
+                  <field.TextField label="Numéro de téléphone pro" kind="tel" />
+                )}
+              />
+            </div>
+          </div>
+          <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.structureName`}
+                children={(field) => (
+                  <field.TextField label="Nom de l'administration" />
+                )}
+              />
+            </div>
+            <div className={fr.cx("fr-col-6")}>
+              <form.AppField
+                name={`${pathPrefix}.role`}
+                children={(field) => <field.TextField label="Rôle" />}
+              />
+            </div>
+          </div>
+        </Accordion>
+      </div>
+    );
+
     return (
       <Fragment key={formId}>
         <div className={cx(classes.formWrapper, classes.section)}>
           <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
             Section 1 - Informations générales
           </h2>
-          <div
-            className={cx(
-              fr.cx("fr-accordions-group"),
-              classes.arccordionsWrapper
-            )}
-          >
-            <Accordion
-              label="Informations sur le demandeur"
-              defaultExpanded
-              className={classes.accordionContent}
-            >
-              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.firstName"
-                    children={(field) => <field.TextField label="Prénom" />}
-                  />
-                </div>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.lastName"
-                    children={(field) => <field.TextField label="Nom" />}
-                  />
-                </div>
-              </div>
-              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.emailPro"
-                    children={(field) => (
-                      <field.TextField
-                        label="Email profesionnel"
-                        kind="email"
-                      />
-                    )}
-                  />
-                </div>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.phone"
-                    children={(field) => (
-                      <field.TextField
-                        label="Numéro de téléphone pro"
-                        kind="tel"
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.structureName"
-                    children={(field) => (
-                      <field.TextField label="Nom de l'administration" />
-                    )}
-                  />
-                </div>
-                <div className={fr.cx("fr-col-6")}>
-                  <form.AppField
-                    name="applicantInfo.role"
-                    children={(field) => <field.TextField label="Rôle" />}
-                  />
-                </div>
-              </div>
-            </Accordion>
-          </div>
+          <PersonInfoFields
+            accordionLabel="Informations sur le demandeur"
+            pathPrefix="applicantInfo"
+          />
           <div
             className={cx(
               fr.cx("fr-accordions-group"),
@@ -234,7 +248,7 @@ export const BaseDataContractForm = withDataContractForm({
                         <form.AppField
                           name="dataProduct.apiInfo.nbOfRequestsPerDay"
                           children={(field) => (
-                            <field.TextField label="Nom de l'API" />
+                            <field.NumberField label="Nombre de requêtes par jour" />
                           )}
                         />
                       </div>
@@ -307,7 +321,7 @@ export const BaseDataContractForm = withDataContractForm({
                           <form.AppField
                             name={`dataAccesses[${index}].processingDone`}
                             children={(field) => (
-                              <field.TextField label="Accès aux personnes" />
+                              <field.TextField label="Traitement effectué" />
                             )}
                           />
                         </div>
@@ -484,6 +498,23 @@ export const BaseDataContractForm = withDataContractForm({
               </div>
             )}
           </form.AppField>
+        </div>
+        <div className={cx(classes.formWrapper, classes.section)}>
+          <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
+            Section 3 - Personnes impliquées
+          </h2>
+          <PersonInfoFields
+            pathPrefix="businessContact"
+            accordionLabel="Informations sur le contact métier"
+          />
+          <PersonInfoFields
+            pathPrefix="technicalContact"
+            accordionLabel="Informations sur le contact technique"
+          />
+          <PersonInfoFields
+            pathPrefix="legalContact"
+            accordionLabel="Informations sur le contact juridique"
+          />
         </div>
         {!disabled && <form.SubscribeButton label="Soumettre" />}
       </Fragment>

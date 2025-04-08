@@ -9,6 +9,7 @@ import { TextField } from "~/components/form/TextField";
 import { SelectField } from "~/components/form/SelectField";
 import { DateField } from "~/components/form/DateField";
 import { CheckboxField } from "~/components/form/CheckboxField";
+import { NumberField } from "~/components/form/NumberField";
 
 const { useAppForm, withForm } = createFormHook({
   fieldContext,
@@ -19,6 +20,7 @@ const { useAppForm, withForm } = createFormHook({
     SelectField,
     DateField,
     CheckboxField,
+    NumberField,
   },
   formComponents: {
     SubscribeButton,
@@ -27,6 +29,21 @@ const { useAppForm, withForm } = createFormHook({
 
 export { useAppForm as useDataContractForm, withForm as withDataContractForm };
 
+export const personInfoSchema = z.object({
+  firstName: z.string().min(1, { message: "Prénom requis" }),
+  lastName: z.string().min(1, { message: "Nom requis" }),
+  phone: z
+    .string()
+    .regex(/^\+?[0-9]{10,15}$/, { message: "Numéro de téléphone invalide" }),
+  emailPro: z.string().email({ message: "Email invalide" }),
+  structureName: z.string().min(1, {
+    message: "Nom de l'administration requis",
+  }),
+  role: z.string().min(1, { message: "Rôle requis" }),
+});
+
+export type PersonInfoSchema = z.infer<typeof personInfoSchema>;
+
 export const dataContractSchema = z.object({
   id: z.string().min(1, {
     message: "ID requis",
@@ -34,18 +51,7 @@ export const dataContractSchema = z.object({
   dataContractSpecification: z.string().min(1, {
     message: "Spécification du contrat de données requise",
   }),
-  applicantInfo: z.object({
-    firstName: z.string().min(1, { message: "Prénom requis" }),
-    lastName: z.string().min(1, { message: "Nom requis" }),
-    phone: z
-      .string()
-      .regex(/^\+?[0-9]{10,15}$/, { message: "Numéro de téléphone invalide" }),
-    emailPro: z.string().email({ message: "Email invalide" }),
-    structureName: z
-      .string()
-      .min(1, { message: "Nom de l'administration requis" }),
-    role: z.string().min(1, { message: "Rôle requis" }),
-  }),
+  applicantInfo: personInfoSchema,
   dataProduct: z.object({
     name: z.string().min(1, { message: "Nom du projet requis" }),
     description: z.string().min(1, {
@@ -124,6 +130,9 @@ export const dataContractSchema = z.object({
         .optional(),
     })
   ),
+  businessContact: personInfoSchema,
+  technicalContact: personInfoSchema,
+  legalContact: personInfoSchema,
 });
 
 export type DataContractSchema = z.infer<typeof dataContractSchema>;
