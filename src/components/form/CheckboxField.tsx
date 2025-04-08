@@ -15,7 +15,6 @@ export function CheckboxField({ label }: CheckboxFieldProps) {
           label,
           nativeInputProps: {
             name: field.name,
-            value: field.name,
             onChange: (e) => field.setValue(e.target.checked),
           },
         },
