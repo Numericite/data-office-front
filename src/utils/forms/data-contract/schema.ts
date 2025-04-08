@@ -1,11 +1,14 @@
 import { createFormHook } from "@tanstack/react-form";
 import { z } from "zod";
+import { LegalWorkProcessing } from "@prisma/client";
+import { fieldContext, formContext } from "~/utils/form";
+
 import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
 import { TextField } from "~/components/form/TextField";
 import { SelectField } from "~/components/form/SelectField";
-import { LegalWorkProcessing } from "@prisma/client";
-import { fieldContext, formContext } from "~/utils/form";
+import { DateField } from "~/components/form/DateField";
+import { CheckboxField } from "~/components/form/CheckboxField";
 
 const { useAppForm, withForm } = createFormHook({
   fieldContext,
@@ -14,6 +17,8 @@ const { useAppForm, withForm } = createFormHook({
     TextField,
     TextAreaField,
     SelectField,
+    DateField,
+    CheckboxField,
   },
   formComponents: {
     SubscribeButton,
@@ -36,15 +41,15 @@ export const dataContractSchema = z.object({
       .string()
       .regex(/^\+?[0-9]{10,15}$/, { message: "Numéro de téléphone invalide" }),
     emailPro: z.string().email({ message: "Email invalide" }),
+    structureName: z
+      .string()
+      .min(1, { message: "Nom de l'administration requis" }),
     role: z.string().min(1, { message: "Rôle requis" }),
   }),
   dataProduct: z.object({
     name: z.string().min(1, { message: "Nom du projet requis" }),
     description: z.string().min(1, {
-      message: "Description du projet requise",
-    }),
-    purpose: z.string().min(1, {
-      message: "Objectif du projet requis",
+      message: "Description et objectif du projet requise",
     }),
     targetAudience: z.enum([
       "internes",
@@ -59,10 +64,33 @@ export const dataContractSchema = z.object({
     developmentResponsible: z.string().min(1, {
       message: "Responsable du développement du produit data requis",
     }),
+    kindAccessData: z.enum(["api", "extract"], {
+      required_error: "Type d'accès requis",
+    }),
+    apiInfo: z
+      .object({
+        nbOfRequestsPerDay: z
+          .number()
+          .min(1, { message: "Nombre de requêtes par jour requis" }),
+      })
+      .optional(),
+    extractInfo: z
+      .object({
+        format: z.enum(["csv", "json"], {
+          required_error: "Format requis",
+        }),
+        frequency: z.enum(["daily", "weekly", "monthly"], {
+          required_error: "Fréquence requise",
+        }),
+      })
+      .optional(),
   }),
   dataAccesses: z.array(
     z.object({
-      name: z.string().min(1, { message: "Nom requis" }),
+      description: z.string().min(1, {
+        message:
+          "A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
+      }),
       owner: z.string().min(1, { message: "Propriétaire requis" }),
       processingDone: z.string().min(1, {
         message: "Traitement qui sera opéré sur les données requis",
@@ -74,9 +102,7 @@ export const dataContractSchema = z.object({
       storageLocation: z.string().min(1, {
         message: "Lieu de stockage requis (bdd, fichiers)",
       }),
-      dataFormat: z.string().min(1, {
-        message: "Format de données requis",
-      }),
+      needPersonalData: z.boolean(),
       personalData: z
         .object({
           recipient: z.string().min(1, { message: "Destinataire requis" }),

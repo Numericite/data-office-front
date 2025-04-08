@@ -12,10 +12,10 @@ import { Fragment } from "react";
 import { LegalWorkProcessing } from "@prisma/client";
 
 const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
-  name: "",
+  needPersonalData: false,
+  description: "",
   processingDone: "",
   storageLocation: "",
-  dataFormat: "",
   peopleAccess: "",
   owner: "",
 };
@@ -28,12 +28,12 @@ export const dataContractFormDefaultValues = {
     lastName: "",
     phone: "",
     emailPro: "",
+    structureName: "",
     role: "",
   },
   dataProduct: {
     name: "",
     description: "",
-    purpose: "",
     targetAudience: "internes",
   },
   dataAccesses: [defaultDataAccess],
@@ -47,7 +47,30 @@ const targetAudienceOptions =
     })
   ) ?? [];
 
-// based on the prisma enums
+const kindAccessDataOptions =
+  dataContractSchema.shape.dataProduct.shape.kindAccessData.options.map(
+    (option) => ({
+      label: option,
+      value: option,
+    })
+  ) ?? [];
+
+const extractInfoFormatOptions =
+  dataContractSchema.shape.dataProduct.shape.extractInfo._def.innerType.shape.format.options.map(
+    (option) => ({
+      label: option,
+      value: option,
+    })
+  ) ?? [];
+
+const extractInfoFrequencyOptions =
+  dataContractSchema.shape.dataProduct.shape.extractInfo._def.innerType.shape.frequency.options.map(
+    (option) => ({
+      label: option,
+      value: option,
+    })
+  ) ?? [];
+
 const legalWorkOptions =
   Object.keys(LegalWorkProcessing).map((option) => ({
     label: option,
@@ -118,11 +141,21 @@ export const BaseDataContractForm = withDataContractForm({
                   />
                 </div>
               </div>
-              <div className={fr.cx("fr-mt-3v")}>
-                <form.AppField
-                  name="applicantInfo.role"
-                  children={(field) => <field.TextField label="Rôle" />}
-                />
+              <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
+                <div className={fr.cx("fr-col-6")}>
+                  <form.AppField
+                    name="applicantInfo.structureName"
+                    children={(field) => (
+                      <field.TextField label="Nom de l'administration" />
+                    )}
+                  />
+                </div>
+                <div className={fr.cx("fr-col-6")}>
+                  <form.AppField
+                    name="applicantInfo.role"
+                    children={(field) => <field.TextField label="Rôle" />}
+                  />
+                </div>
               </div>
             </Accordion>
           </div>
@@ -144,13 +177,7 @@ export const BaseDataContractForm = withDataContractForm({
               <form.AppField
                 name="dataProduct.description"
                 children={(field) => (
-                  <field.TextAreaField label="Description exhaustive du projet" />
-                )}
-              />
-              <form.AppField
-                name="dataProduct.purpose"
-                children={(field) => (
-                  <field.TextField label="Objectif du projet" />
+                  <field.TextAreaField label="Description exhaustive et objectif du projet" />
                 )}
               />
               <form.AppField
@@ -165,13 +192,16 @@ export const BaseDataContractForm = withDataContractForm({
               <form.AppField
                 name="dataProduct.expectedProductionDate"
                 children={(field) => (
-                  <field.TextField label="Date de mise en production prévisionnelle" />
+                  <field.DateField
+                    label="Date de mise en production prévisionnelle"
+                    min={new Date()}
+                  />
                 )}
               />
               <form.AppField
                 name="dataProduct.additionalDocuments"
                 children={(field) => (
-                  <field.TextField label="Documents complémentaires (maquette, note de service, etc." />
+                  <field.TextField label="Documents complémentaires (maquette, note de service, etc)" />
                 )}
               />
               <form.AppField
@@ -179,6 +209,64 @@ export const BaseDataContractForm = withDataContractForm({
                 children={(field) => (
                   <field.TextField label="Responsable du développement du produit" />
                 )}
+              />
+              <form.AppField
+                name="dataProduct.kindAccessData"
+                children={(field) => (
+                  <field.SelectField
+                    label="Type d'accès aux données"
+                    options={kindAccessDataOptions}
+                  />
+                )}
+                listeners={{
+                  onChange: () => {
+                    form.setFieldValue("dataProduct.apiInfo", undefined);
+                    form.setFieldValue("dataProduct.extractInfo", undefined);
+                  },
+                }}
+              />
+              <form.Subscribe
+                selector={(state) => state.values?.dataProduct.kindAccessData}
+                children={(kindAccessData) => {
+                  if (kindAccessData === "api") {
+                    return (
+                      <div key={kindAccessData}>
+                        <form.AppField
+                          name="dataProduct.apiInfo.nbOfRequestsPerDay"
+                          children={(field) => (
+                            <field.TextField label="Nom de l'API" />
+                          )}
+                        />
+                      </div>
+                    );
+                  }
+
+                  if (kindAccessData === "extract") {
+                    return (
+                      <div key={kindAccessData}>
+                        <form.AppField
+                          name="dataProduct.extractInfo.format"
+                          children={(field) => (
+                            <field.SelectField
+                              label="Format de l'extraction"
+                              options={extractInfoFormatOptions}
+                            />
+                          )}
+                        />
+                        <form.AppField
+                          name="dataProduct.extractInfo.frequency"
+                          children={(field) => (
+                            <field.SelectField
+                              label="Fréquence de l'extraction"
+                              options={extractInfoFrequencyOptions}
+                            />
+                          )}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
             </Accordion>
           </div>
@@ -192,204 +280,190 @@ export const BaseDataContractForm = withDataContractForm({
               <div className={cx(classes.arccordionsWrapper)}>
                 <div className={classes.formWrapper}>
                   {field.state.value.map((_, index) => (
-                    <form.Subscribe
-                      selector={(state) =>
-                        state.values?.dataAccesses[index]?.name ||
-                        `Données ${index + 1}`
-                      }
-                      children={(currentName) => (
-                        <Accordion
-                          key={index}
-                          label={currentName}
-                          defaultExpanded
-                          className={classes.accordionContent}
-                        >
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters"
+                    <Accordion
+                      key={index}
+                      label={`Données n°${index + 1}`}
+                      defaultExpanded
+                      className={classes.accordionContent}
+                    >
+                      <form.AppField
+                        name={`dataAccesses[${index}].description`}
+                        children={(field) => (
+                          <field.TextAreaField label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?" />
+                        )}
+                      />
+                      <div
+                        className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}
+                      >
+                        <div className={fr.cx("fr-col-6")}>
+                          <form.AppField
+                            name={`dataAccesses[${index}].owner`}
+                            children={(field) => (
+                              <field.TextField label="Propriétaire" />
                             )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].name`}
-                                children={(field) => (
-                                  <field.TextField label="Nom" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].storageLocation`}
-                                children={(field) => (
-                                  <field.TextField label="Propriétaire" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters"
+                          />
+                        </div>
+                        <div className={fr.cx("fr-col-6")}>
+                          <form.AppField
+                            name={`dataAccesses[${index}].processingDone`}
+                            children={(field) => (
+                              <field.TextField label="Accès aux personnes" />
                             )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].dataFormat`}
-                                children={(field) => (
-                                  <field.TextField label="Traitement qui sera opéré sur les données" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].processingDone`}
-                                children={(field) => (
-                                  <field.TextField label="Accès aux personnes" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters"
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}
+                      >
+                        <div className={fr.cx("fr-col-6")}>
+                          <form.AppField
+                            name={`dataAccesses[${index}].peopleAccess`}
+                            children={(field) => (
+                              <field.TextField label="Accès requis" />
                             )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].owner`}
-                                children={(field) => (
-                                  <field.TextField label="Propriétaire" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].peopleAccess`}
-                                children={(field) => (
-                                  <field.TextField label="Accès requis" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <h3
-                            className={cx(
-                              fr.cx("fr-h5"),
-                              "fr-mb-0",
-                              "fr-mt-4w"
+                          />
+                        </div>
+                        <div className={fr.cx("fr-col-6")}>
+                          <form.AppField
+                            name={`dataAccesses[${index}].storageLocation`}
+                            children={(field) => (
+                              <field.TextField label="Lieu de stockage (bdd, fichiers)" />
                             )}
-                          >
-                            Données personelles ?
-                          </h3>
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters",
-                              "fr-mt-1w"
-                            )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.recipient`}
-                                children={(field) => (
-                                  <field.TextField label="Déstinataire" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.retentionPeriodInMonths`}
-                                children={(field) => (
-                                  <field.TextField label="Durée de conservation requise (en mois)" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters",
-                              "fr-mt-1w"
-                            )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.processingType`}
-                                children={(field) => (
-                                  <field.TextField label="Type de traitement" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.dataController`}
-                                children={(field) => (
-                                  <field.TextField label="Responsable de traitement" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div
-                            className={fr.cx(
-                              "fr-grid-row",
-                              "fr-grid-row--gutters",
-                              "fr-mt-1w"
-                            )}
-                          >
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.authRequired`}
-                                children={(field) => (
-                                  <field.TextField label="Utilisateurs authentifiés sur le produit ?" />
-                                )}
-                              />
-                            </div>
-                            <div className={fr.cx("fr-col-6")}>
-                              <form.AppField
-                                name={`dataAccesses[${index}].personalData.securityMeasures`}
-                                children={(field) => (
-                                  <field.TextField label="Mesures de sécurité" />
-                                )}
-                              />
-                            </div>
-                          </div>
-                          <div className={fr.cx("fr-mt-2w")}>
-                            <form.AppField
-                              name={`dataAccesses[${index}].personalData.legalWork`}
-                              children={(field) => (
-                                <field.SelectField
-                                  label="Cadre juridique"
-                                  options={legalWorkOptions}
-                                />
-                              )}
-                            />
-                          </div>
-                          {field.state.value.length > 1 && (
-                            <div
-                              className={cx(
-                                fr.cx(
-                                  "fr-mt-4v",
-                                  "fr-col-2",
-                                  "fr-col-offset-10"
-                                ),
-                                "d-flex"
-                              )}
-                            >
-                              <Button
-                                priority="tertiary"
-                                iconId="fr-icon-delete-line"
-                                type="button"
-                                onClick={() => field.removeValue(index)}
-                                className={fr.cx("fr-ml-auto")}
-                              >
-                                Supprimer
-                              </Button>
-                            </div>
+                          />
+                        </div>
+                      </div>
+                      <div className={fr.cx("fr-mt-4w")}>
+                        <form.AppField
+                          name={`dataAccesses[${index}].needPersonalData`}
+                          children={(field) => (
+                            <field.CheckboxField label="Accès à des données personnelles ?" />
                           )}
-                        </Accordion>
+                          listeners={{
+                            onChange: () => {
+                              form.setFieldValue(
+                                `dataAccesses[${index}].personalData`,
+                                undefined
+                              );
+                            },
+                          }}
+                        />
+                        <form.Subscribe
+                          selector={(state) =>
+                            state.values?.dataAccesses[index]?.needPersonalData
+                          }
+                          children={(needPersonalData) =>
+                            needPersonalData && (
+                              <>
+                                <h3 className={cx(fr.cx("fr-h5"), "fr-mb-0")}>
+                                  Données personelles
+                                </h3>
+                                <div
+                                  className={fr.cx(
+                                    "fr-grid-row",
+                                    "fr-grid-row--gutters",
+                                    "fr-mt-1w"
+                                  )}
+                                >
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.recipient`}
+                                      children={(field) => (
+                                        <field.TextField label="Déstinataire" />
+                                      )}
+                                    />
+                                  </div>
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.retentionPeriodInMonths`}
+                                      children={(field) => (
+                                        <field.TextField label="Durée de conservation requise (en mois)" />
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                                <div
+                                  className={fr.cx(
+                                    "fr-grid-row",
+                                    "fr-grid-row--gutters",
+                                    "fr-mt-1w"
+                                  )}
+                                >
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.processingType`}
+                                      children={(field) => (
+                                        <field.TextField label="Type de traitement" />
+                                      )}
+                                    />
+                                  </div>
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.dataController`}
+                                      children={(field) => (
+                                        <field.TextField label="Responsable de traitement" />
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                                <div
+                                  className={fr.cx(
+                                    "fr-grid-row",
+                                    "fr-grid-row--gutters",
+                                    "fr-mt-1w"
+                                  )}
+                                >
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.authRequired`}
+                                      children={(field) => (
+                                        <field.TextField label="Utilisateurs authentifiés sur le produit ?" />
+                                      )}
+                                    />
+                                  </div>
+                                  <div className={fr.cx("fr-col-6")}>
+                                    <form.AppField
+                                      name={`dataAccesses[${index}].personalData.securityMeasures`}
+                                      children={(field) => (
+                                        <field.TextField label="Mesures de sécurité" />
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                                <div className={fr.cx("fr-mt-2w")}>
+                                  <form.AppField
+                                    name={`dataAccesses[${index}].personalData.legalWork`}
+                                    children={(field) => (
+                                      <field.SelectField
+                                        label="Cadre juridique"
+                                        options={legalWorkOptions}
+                                      />
+                                    )}
+                                  />
+                                </div>
+                              </>
+                            )
+                          }
+                        />
+                      </div>
+                      {field.state.value.length > 1 && (
+                        <div
+                          className={cx(
+                            fr.cx("fr-mt-4v", "fr-col-2", "fr-col-offset-10"),
+                            "d-flex"
+                          )}
+                        >
+                          <Button
+                            priority="tertiary"
+                            iconId="fr-icon-delete-line"
+                            type="button"
+                            onClick={() => field.removeValue(index)}
+                            className={fr.cx("fr-ml-auto")}
+                          >
+                            Supprimer
+                          </Button>
+                        </div>
                       )}
-                    />
+                    </Accordion>
                   ))}
                 </div>
                 <ButtonsGroup
