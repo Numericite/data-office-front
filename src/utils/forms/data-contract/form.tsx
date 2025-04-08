@@ -21,16 +21,16 @@ const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
   owner: "",
 };
 
-const defaultPersonInfo = {
+const defaultPersonInfo: PersonInfoSchema = {
   firstName: "",
   lastName: "",
   phone: "",
   emailPro: "",
   structureName: "",
   role: "",
-} as PersonInfoSchema;
+};
 
-export const dataContractFormDefaultValues = {
+export const dataContractFormDefaultValues: DataContractSchema = {
   dataContractSpecification: "0.1",
   id: "data-contract:request",
   applicantInfo: defaultPersonInfo,
@@ -38,12 +38,15 @@ export const dataContractFormDefaultValues = {
     name: "",
     description: "",
     targetAudience: "internes",
+    developmentResponsible: "",
+    expectedProductionDate: "",
+    kindAccessData: "api",
   },
   dataAccesses: [defaultDataAccess],
   businessContact: defaultPersonInfo,
   technicalContact: defaultPersonInfo,
   legalContact: defaultPersonInfo,
-} as DataContractSchema;
+};
 
 const targetAudienceOptions =
   dataContractSchema.shape.dataProduct.shape.targetAudience.options.map(
