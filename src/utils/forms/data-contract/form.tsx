@@ -9,12 +9,15 @@ import Accordion from "@codegouvfr/react-dsfr/Accordion";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Fragment } from "react";
+import { LegalWorkProcessing } from "@prisma/client";
 
 const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
   name: "",
   processingDone: "",
   storageLocation: "",
   dataFormat: "",
+  peopleAccess: "",
+  owner: "",
 };
 
 export const dataContractFormDefaultValues = {
@@ -43,6 +46,13 @@ const targetAudienceOptions =
       value: option,
     })
   ) ?? [];
+
+// based on the prisma enums
+const legalWorkOptions =
+  Object.keys(LegalWorkProcessing).map((option) => ({
+    label: option,
+    value: option,
+  })) ?? [];
 
 export const BaseDataContractForm = withDataContractForm({
   defaultValues: dataContractFormDefaultValues,
@@ -152,6 +162,24 @@ export const BaseDataContractForm = withDataContractForm({
                   />
                 )}
               />
+              <form.AppField
+                name="dataProduct.expectedProductionDate"
+                children={(field) => (
+                  <field.TextField label="Date de mise en production prévisionnelle" />
+                )}
+              />
+              <form.AppField
+                name="dataProduct.additionalDocuments"
+                children={(field) => (
+                  <field.TextField label="Documents complémentaires (maquette, note de service, etc." />
+                )}
+              />
+              <form.AppField
+                name="dataProduct.developmentResponsible"
+                children={(field) => (
+                  <field.TextField label="Responsable du développement du produit" />
+                )}
+              />
             </Accordion>
           </div>
         </div>
@@ -221,6 +249,121 @@ export const BaseDataContractForm = withDataContractForm({
                                 )}
                               />
                             </div>
+                          </div>
+                          <div
+                            className={fr.cx(
+                              "fr-grid-row",
+                              "fr-grid-row--gutters"
+                            )}
+                          >
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].owner`}
+                                children={(field) => (
+                                  <field.TextField label="Propriétaire" />
+                                )}
+                              />
+                            </div>
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].peopleAccess`}
+                                children={(field) => (
+                                  <field.TextField label="Accès requis" />
+                                )}
+                              />
+                            </div>
+                          </div>
+                          <h3
+                            className={cx(
+                              fr.cx("fr-h5"),
+                              "fr-mb-0",
+                              "fr-mt-4w"
+                            )}
+                          >
+                            Données personelles ?
+                          </h3>
+                          <div
+                            className={fr.cx(
+                              "fr-grid-row",
+                              "fr-grid-row--gutters",
+                              "fr-mt-1w"
+                            )}
+                          >
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.recipient`}
+                                children={(field) => (
+                                  <field.TextField label="Déstinataire" />
+                                )}
+                              />
+                            </div>
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.retentionPeriodInMonths`}
+                                children={(field) => (
+                                  <field.TextField label="Durée de conservation requise (en mois)" />
+                                )}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            className={fr.cx(
+                              "fr-grid-row",
+                              "fr-grid-row--gutters",
+                              "fr-mt-1w"
+                            )}
+                          >
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.processingType`}
+                                children={(field) => (
+                                  <field.TextField label="Type de traitement" />
+                                )}
+                              />
+                            </div>
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.dataController`}
+                                children={(field) => (
+                                  <field.TextField label="Responsable de traitement" />
+                                )}
+                              />
+                            </div>
+                          </div>
+                          <div
+                            className={fr.cx(
+                              "fr-grid-row",
+                              "fr-grid-row--gutters",
+                              "fr-mt-1w"
+                            )}
+                          >
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.authRequired`}
+                                children={(field) => (
+                                  <field.TextField label="Utilisateurs authentifiés sur le produit ?" />
+                                )}
+                              />
+                            </div>
+                            <div className={fr.cx("fr-col-6")}>
+                              <form.AppField
+                                name={`dataAccesses[${index}].personalData.securityMeasures`}
+                                children={(field) => (
+                                  <field.TextField label="Mesures de sécurité" />
+                                )}
+                              />
+                            </div>
+                          </div>
+                          <div className={fr.cx("fr-mt-2w")}>
+                            <form.AppField
+                              name={`dataAccesses[${index}].personalData.legalWork`}
+                              children={(field) => (
+                                <field.SelectField
+                                  label="Cadre juridique"
+                                  options={legalWorkOptions}
+                                />
+                              )}
+                            />
                           </div>
                           {field.state.value.length > 1 && (
                             <div
