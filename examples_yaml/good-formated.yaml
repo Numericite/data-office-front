@@ -1,0 +1,46 @@
+id: data-contract:request
+dataContractSpecification: "0.1"
+applicantInfo:
+  firstName: Claude
+  lastName: Dupont
+  phone: "0612345678"
+  emailPro: claude.dupont@test.loc
+  structureName: test
+  role: data engineer
+dataProduct:
+  name: Data Office App
+  description: Description de Data Office App
+  targetAudience: externes
+  expectedProductionDate: 2025-09-25
+  developmentResponsible: Thomas Dupont
+  kindAccessData: api
+  apiInfo:
+    nbOfRequestsPerDay: 4
+dataAccesses:
+  - description: Description de l'accès
+    owner: Arnaud Dupont
+    processingDone: Explication du traitement
+    peopleAccess: public
+    storageLocation: Base de données
+    needPersonalData: false
+businessContact:
+  firstName: Jean
+  lastName: Dupont
+  phone: "0623423212"
+  emailPro: jean.dupont@test.loc
+  structureName: Test2
+  role: Business
+technicalContact:
+  firstName: Marc
+  lastName: Dupont
+  phone: "0632421223"
+  emailPro: marc.dupont@test.loc
+  structureName: Test3
+  role: Technique
+legalContact:
+  firstName: Hugo
+  lastName: Dupont
+  phone: "0612425312"
+  emailPro: hugo.dupont@test.loc
+  structureName: Test4
+  role: Juridique
