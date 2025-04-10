@@ -65,13 +65,13 @@ function App({ Component, pageProps }: AppProps) {
             "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
         }}
         navigation={[
-          {
-            text: "Accueil",
-            linkProps: {
-              href: "/",
-            },
-            isActive: router.asPath === "/",
-          },
+          // {
+          //   text: "Accueil",
+          //   linkProps: {
+          //     href: "/",
+          //   },
+          //   isActive: router.asPath === "/",
+          // },
           {
             text: "Visualiser un formulaire",
             linkProps: {
@@ -79,13 +79,13 @@ function App({ Component, pageProps }: AppProps) {
             },
             isActive: router.asPath === "/visualizer",
           },
-          {
-            text: "Liste des demandes",
-            linkProps: {
-              href: "/list-requests",
-            },
-            isActive: router.asPath === "/list-requests",
-          },
+          // {
+          //   text: "Liste des demandes",
+          //   linkProps: {
+          //     href: "/list-requests",
+          //   },
+          //   isActive: router.asPath === "/list-requests",
+          // },
         ]}
         serviceTitle="Data Office - Data Contracts Formulaires"
       />
