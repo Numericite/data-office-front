@@ -22,6 +22,20 @@ dataAccesses:
     processingDone: Explication du traitement
     peopleAccess: public
     storageLocation: Base de données
+    needPersonalData: true
+    personalData:
+      recipient: "Nom du destinataire"
+      retentionPeriodInMonths: 12
+      processingType: "traitement"
+      dataController: Le responsable de traitement
+      authRequired: true
+      securityMeasures: "Description des mesures de sécurité"
+      legalWork: "general_legal_framework"
+  - description: Description de l'accès 2
+    owner: Arnaud Dupont
+    processingDone: Explication du traitement 2
+    peopleAccess: public
+    storageLocation: Base de données
     needPersonalData: false
 businessContact:
   firstName: Jean
