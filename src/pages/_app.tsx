@@ -8,6 +8,7 @@ import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { fr } from "@codegouvfr/react-dsfr";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
+import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 
 import "~/styles/globals.css";
 
@@ -92,7 +93,10 @@ function App({ Component, pageProps }: AppProps) {
       <div className={fr.cx("fr-container")} style={{ flex: 1 }}>
         <Component {...pageProps} />
       </div>
-      <Footer accessibility="non compliant" />
+      <Footer
+        accessibility="non compliant"
+        bottomItems={[headerFooterDisplayItem]}
+      />
     </div>
   );
 }
