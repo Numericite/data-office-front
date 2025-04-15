@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import type { AppProps } from "next/app";
 import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesdir";
 import Link from "next/link";
-import { Header } from "@codegouvfr/react-dsfr/Header";
+import { Header, type HeaderProps } from "@codegouvfr/react-dsfr/Header";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
@@ -10,6 +10,8 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 
 import "~/styles/globals.css";
+import { authClient } from "~/utils/auth-client";
+import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -40,8 +42,69 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
+const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
+  { text: "Accueil", linkProps: { href: "/" } },
+  { text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
+  { text: "Liste des demandes", linkProps: { href: "/list-requests" } },
+];
+
+const adminNavigationItems: MainNavigationProps.Item[] = [
+  { text: "Liste des demandes", linkProps: { href: "/admin" } },
+];
+
 function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+
+  const session = authClient.useSession();
+
+  const navigationItems = useMemo(() => {
+    if (session.isPending) return [];
+    const isAuthenticated = !!session.data?.user;
+    if (router.pathname.startsWith("/admin") && isAuthenticated) {
+      return adminNavigationItems.map((item) => ({
+        ...item,
+        isActive: router.asPath === item?.linkProps?.href,
+      }));
+    } else {
+      return unauthenticatedNavigationItems.map((item) => ({
+        ...item,
+        isActive: router.asPath === item?.linkProps?.href,
+      }));
+    }
+  }, [session.isPending, router.asPath]);
+
+  const quickAccessItems = useMemo(() => {
+    if (session.isPending) return [];
+    const isAuthenticated = !!session.data?.user;
+    if (isAuthenticated) {
+      return [
+        {
+          iconId: "ri-admin-fill",
+          text: "Administration",
+          linkProps: { href: "/admin" },
+        },
+        {
+          iconId: "ri-logout-box-line",
+          text: "Se déconnecter",
+          linkProps: {
+            href: "/",
+            onClick: async () => {
+              await authClient.signOut();
+            },
+            style: { color: fr.colors.decisions.text.default.error.default },
+          },
+        },
+      ] as HeaderProps.QuickAccessItem[];
+    } else {
+      return [
+        {
+          iconId: "ri-user-line",
+          text: "Se connecter",
+          linkProps: { href: "/sign-in" },
+        },
+      ] as HeaderProps.QuickAccessItem[];
+    }
+  }, [session.isPending, router.asPath]);
 
   return (
     <div
@@ -64,29 +127,8 @@ function App({ Component, pageProps }: AppProps) {
           title:
             "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
         }}
-        navigation={[
-          {
-            text: "Accueil",
-            linkProps: {
-              href: "/",
-            },
-            isActive: router.asPath === "/",
-          },
-          {
-            text: "Visualiser un formulaire",
-            linkProps: {
-              href: "/visualizer",
-            },
-            isActive: router.asPath === "/visualizer",
-          },
-          {
-            text: "Liste des demandes",
-            linkProps: {
-              href: "/list-requests",
-            },
-            isActive: router.asPath === "/list-requests",
-          },
-        ]}
+        navigation={navigationItems}
+        quickAccessItems={quickAccessItems}
         serviceTitle="Data Office - Data Contracts Formulaires"
       />
       <div className={fr.cx("fr-container")} style={{ flex: 1 }}>

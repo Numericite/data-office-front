@@ -17,6 +17,7 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: z.string(),
     S3_BUCKET: z.string(),
     S3_ENDPOINT: z.string().optional(),
+    BETTER_AUTH_SECRET: z.string(),
   },
 
   /**
@@ -25,6 +26,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
+    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
 
@@ -40,6 +42,8 @@ export const env = createEnv({
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
     S3_BUCKET: process.env.S3_BUCKET,
     S3_ENDPOINT: `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com`,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

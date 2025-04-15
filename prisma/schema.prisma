@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -38,12 +39,12 @@ model ReferenceData {
 }
 
 enum LegalWorkProcessing {
-  general_legal_framework  @map("Cadre légal général")
+  general_legal_framework @map("Cadre légal général")
   specific_legal_framework @map("Cadre légal spécifique")
-  deliberation             @map("Délibération")
-  none                     @map("Aucun - demande décret DNUM")
-  sufficient_decree        @map("Décret suffisant")
-  insufficient_decree      @map("Décret insuffisant - révision nécessaire")
+  deliberation @map("Délibération")
+  none @map("Aucun - demande décret DNUM")
+  sufficient_decree @map("Décret suffisant")
+  insufficient_decree @map("Décret insuffisant - révision nécessaire")
 }
 
 model PersonalData {
@@ -61,4 +62,64 @@ model PersonalData {
   updatedAt               DateTime            @updatedAt
 
   @@index([referenceDataId])
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
