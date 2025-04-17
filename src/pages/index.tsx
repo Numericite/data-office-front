@@ -21,14 +21,14 @@ export default function Home() {
 
   const { classes } = useStyles();
 
-  const wizard = useStepDataContractForm({
+  const stepForm = useStepDataContractForm({
     defaultValues: dataContractFormDefaultValues,
     onFinalSubmit: async (values) => {
       await createRequest({ data: values });
     },
   });
 
-  const visible = DATA_CONTRACT_STEP_MAP[wizard.step] as Array<
+  const visible = DATA_CONTRACT_STEP_MAP[stepForm.step] as Array<
     keyof typeof dataContractSchema.shape
   >;
 
@@ -43,29 +43,33 @@ export default function Home() {
         <div className={fr.cx("fr-mt-4w", "fr-mb-8w")}>
           <h1>Formulaire de demande</h1>
           <Stepper
-            currentStep={wizard.step + 1}
+            currentStep={stepForm.step + 1}
             stepCount={DATA_CONTRACT_STEPS}
-            title={DATA_CONTRACT_STEP_LABELS[wizard.step]}
-            nextTitle={DATA_CONTRACT_STEP_LABELS[wizard.step + 1] ?? undefined}
+            title={DATA_CONTRACT_STEP_LABELS[stepForm.step]}
+            nextTitle={
+              DATA_CONTRACT_STEP_LABELS[stepForm.step + 1] ?? undefined
+            }
             className={fr.cx("fr-mb-4w")}
           />
-          <wizard.form.AppForm>
+          <stepForm.form.AppForm>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                wizard.isLast ? wizard.form.handleSubmit() : wizard.next();
+                stepForm.isLast
+                  ? stepForm.form.handleSubmit()
+                  : stepForm.next();
               }}
             >
               <BaseDataContractForm
-                form={wizard.form}
+                form={stepForm.form}
                 visibleSections={visible}
                 formId="dcf"
               />
               <div className={fr.cx("fr-mt-4w", "fr-btns-group--inline")}>
-                {wizard.step > 0 && (
+                {stepForm.step > 0 && (
                   <Button
                     priority="tertiary"
-                    onClick={wizard.previous}
+                    onClick={stepForm.previous}
                     type="button"
                   >
                     Précédent
@@ -73,11 +77,11 @@ export default function Home() {
                 )}
 
                 <Button priority="primary">
-                  {wizard.isLast ? "Soumettre" : "Suivant"}
+                  {stepForm.isLast ? "Soumettre" : "Suivant"}
                 </Button>
               </div>
             </form>
-          </wizard.form.AppForm>
+          </stepForm.form.AppForm>
         </div>
       </main>
     </>

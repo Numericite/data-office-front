@@ -23,7 +23,8 @@ type StepMap = { [step: number]: string[] };
 export function buildStepMap(schema: z.ZodSchema): StepMap {
   const map: StepMap = {};
   Object.entries((schema as z.ZodObject<any>).shape).forEach(([key, value]) => {
-    const step = ((value as z.ZodTypeAny)._def as any).__formStep ?? 0;
+    const step = ((value as z.ZodTypeAny)._def as any).__formStep;
+    if (step === undefined) return;
     map[step] ??= [];
     map[step].push(key);
   });
