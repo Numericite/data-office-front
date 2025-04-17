@@ -8,11 +8,11 @@ import {
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
-import { useWizardForm } from "~/utils/forms/data-contract/useWizardForm";
+import { useStepDataContractForm } from "~/utils/forms/data-contract/useStepForm";
 import {
-  STEP_LABELS,
-  STEP_MAP,
-  STEPS,
+  DATA_CONTRACT_STEP_LABELS,
+  DATA_CONTRACT_STEP_MAP,
+  DATA_CONTRACT_STEPS,
 } from "~/utils/forms/data-contract/stepMaps";
 import Button from "@codegouvfr/react-dsfr/Button";
 
@@ -21,14 +21,14 @@ export default function Home() {
 
   const { classes } = useStyles();
 
-  const wizard = useWizardForm({
+  const wizard = useStepDataContractForm({
     defaultValues: dataContractFormDefaultValues,
     onFinalSubmit: async (values) => {
       await createRequest({ data: values });
     },
   });
 
-  const visible = STEP_MAP[wizard.step] as Array<
+  const visible = DATA_CONTRACT_STEP_MAP[wizard.step] as Array<
     keyof typeof dataContractSchema.shape
   >;
 
@@ -44,9 +44,9 @@ export default function Home() {
           <h1>Formulaire de demande</h1>
           <Stepper
             currentStep={wizard.step + 1}
-            stepCount={STEPS}
-            title={STEP_LABELS[wizard.step]}
-            nextTitle={STEP_LABELS[wizard.step + 1] ?? undefined}
+            stepCount={DATA_CONTRACT_STEPS}
+            title={DATA_CONTRACT_STEP_LABELS[wizard.step]}
+            nextTitle={DATA_CONTRACT_STEP_LABELS[wizard.step + 1] ?? undefined}
             className={fr.cx("fr-mb-4w")}
           />
           <wizard.form.AppForm>

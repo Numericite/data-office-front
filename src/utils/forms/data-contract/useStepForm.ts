@@ -4,13 +4,13 @@ import {
   useDataContractForm,
 } from "~/utils/forms/data-contract/schema";
 import {
-  STEP_MAP,
-  STEP_SCHEMAS,
-  STEPS,
+  DATA_CONTRACT_STEP_MAP,
+  DATA_CONTRACT_STEP_SCHEMAS,
+  DATA_CONTRACT_STEPS,
 } from "~/utils/forms/data-contract/stepMaps";
 import { z } from "zod";
 
-export function useWizardForm(opts: {
+export function useStepDataContractForm(opts: {
   defaultValues: z.infer<typeof dataContractSchema>;
   onFinalSubmit: (values: z.infer<typeof dataContractSchema>) => void;
 }) {
@@ -27,12 +27,12 @@ export function useWizardForm(opts: {
   });
 
   const validateCurrentStep = async () => {
-    const schema = STEP_SCHEMAS[step]!;
+    const schema = DATA_CONTRACT_STEP_SCHEMAS[step]!;
     const values = form.state.values;
     const parse = schema.safeParse(values);
 
     // clear all errors for the current step
-    STEP_MAP[step]!.forEach((prefix) => {
+    DATA_CONTRACT_STEP_MAP[step]!.forEach((prefix) => {
       Object.keys(form.state.fieldMeta)
         .filter((name) => name.startsWith(prefix))
         .forEach((name) =>
@@ -56,9 +56,16 @@ export function useWizardForm(opts: {
 
   const next = async () => {
     const isCurrentFormStepValid = await validateCurrentStep();
-    if (isCurrentFormStepValid) setStep((s) => Math.min(s + 1, STEPS - 1));
+    if (isCurrentFormStepValid)
+      setStep((s) => Math.min(s + 1, DATA_CONTRACT_STEPS - 1));
   };
   const previous = () => setStep((s) => Math.max(s - 1, 0));
 
-  return { form, step, next, previous, isLast: step === STEPS - 1 };
+  return {
+    form,
+    step,
+    next,
+    previous,
+    isLast: step === DATA_CONTRACT_STEPS - 1,
+  };
 }
