@@ -2,17 +2,9 @@ import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
-import Download from "@codegouvfr/react-dsfr/Download";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import type { Request, User } from "@prisma/client";
-import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
-import Link from "next/link";
+import { createColumnHelper } from "@tanstack/react-table";
+import type { User } from "@prisma/client";
+import DsfrTable from "~/components/DsfrTable";
 
 type UserForTable = Pick<User, "id" | "email" | "name">;
 
@@ -40,12 +32,6 @@ export default function AdminHome() {
 
   const { cx, classes } = useStyles();
 
-  const table = useReactTable({
-    data: data ?? fallbackData,
-    columns: columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
     <>
       <Head>
@@ -57,45 +43,10 @@ export default function AdminHome() {
         <div className={fr.cx("fr-mt-4w")}>
           <h1>Liste des utilisateurs</h1>
         </div>
-        <div
-          className={cx(
-            fr.cx("fr-table", "fr-table--bordered"),
-            classes.tableWrapper
-          )}
-        >
-          <table className={classes.table}>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} scope="col">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DsfrTable<UserForTable>
+          data={data ?? fallbackData}
+          columns={columns}
+        />
       </main>
     </>
   );

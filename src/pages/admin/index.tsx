@@ -3,16 +3,12 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
 import Download from "@codegouvfr/react-dsfr/Download";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import type { Request } from "@prisma/client";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
+import DsfrTable from "~/components/DsfrTable";
 
 type RequestForTable = Pick<Request, "id" | "status" | "yamlFile">;
 
@@ -87,12 +83,6 @@ export default function AdminHome() {
 
   const { cx, classes } = useStyles();
 
-  const table = useReactTable({
-    data: data ?? fallbackData,
-    columns: columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
     <>
       <Head>
@@ -104,45 +94,7 @@ export default function AdminHome() {
         <div className={fr.cx("fr-mt-4w")}>
           <h1>Liste des demandes</h1>
         </div>
-        <div
-          className={cx(
-            fr.cx("fr-table", "fr-table--bordered"),
-            classes.tableWrapper
-          )}
-        >
-          <table className={classes.table}>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} scope="col">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DsfrTable data={data ?? fallbackData} columns={columns} />
       </main>
     </>
   );

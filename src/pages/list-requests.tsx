@@ -2,17 +2,13 @@ import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import type { Request } from "@prisma/client";
 import Link from "next/link";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Download } from "@codegouvfr/react-dsfr/Download";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
+import DsfrTable from "~/components/DsfrTable";
 
 type RequestForTable = Pick<Request, "id" | "status" | "yamlFile">;
 
@@ -89,12 +85,6 @@ export default function ListRequests() {
     userId: "123",
   });
 
-  const table = useReactTable({
-    data: data ?? fallbackData,
-    columns: columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
     <>
       <Head>
@@ -106,40 +96,10 @@ export default function ListRequests() {
         <div className={fr.cx("fr-mt-4w")}>
           <h1>Liste des demandes</h1>
         </div>
-        <div className={cx(fr.cx("fr-table"), classes.table)}>
-          <table>
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DsfrTable<RequestForTable>
+          data={data ?? fallbackData}
+          columns={columns}
+        />
       </main>
     </>
   );
