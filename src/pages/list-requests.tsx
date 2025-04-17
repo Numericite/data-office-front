@@ -146,10 +146,9 @@ export default function ListRequests() {
 }
 
 const useStyles = tss.withName(ListRequests.name).create(() => ({
-  formWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    gap: fr.spacing("3w"),
+  table: {
+    "& > table": {
+      display: "inline-table",
+    },
   },
-  table: {},
 }));
