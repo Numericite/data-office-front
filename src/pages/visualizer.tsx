@@ -51,12 +51,6 @@ export default function Visualizer() {
 
   const form = useDataContractForm({
     defaultValues: formData,
-    validators: {
-      onSubmit: dataContractSchema,
-    },
-    onSubmit: async (values) => {
-      console.log("Form submitted:", values.value);
-    },
   });
 
   return (
@@ -112,7 +106,7 @@ export default function Visualizer() {
                   <div className={cx(fr.cx("fr-mt-4w"), classes.formWrapper)}>
                     <BaseDataContractForm
                       formId="visualizer-data-contract-form"
-                      visibleSections={Object.keys(STEP_MAP).flat()}
+                      visibleSections={Object.values(STEP_MAP).flat()}
                       form={form}
                     />
                   </div>
