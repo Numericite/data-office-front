@@ -51,6 +51,7 @@ const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
   { text: "Liste des demandes", linkProps: { href: "/admin" } },
+  { text: "Liste des utilisateurs", linkProps: { href: "/admin/users" } },
 ];
 
 function App({ Component, pageProps }: AppProps) {

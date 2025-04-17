@@ -9,81 +9,34 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { Request } from "@prisma/client";
+import type { Request, User } from "@prisma/client";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 
-type RequestForTable = Pick<Request, "id" | "status" | "yamlFile">;
+type UserForTable = Pick<User, "id" | "email" | "name">;
 
-const columnHelper = createColumnHelper<RequestForTable>();
+const columnHelper = createColumnHelper<UserForTable>();
 
 const columns = [
   columnHelper.accessor("id", {
     header: "ID",
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor("yamlFile", {
-    header: "Fichier YAML",
-    cell: (info) => {
-      const fileName = info.getValue().split("/").pop();
-      return (
-        <Download
-          details={false}
-          label={fileName}
-          className={fr.cx("fr-m-0", "fr-p-0")}
-          linkProps={{
-            href: info.getValue(),
-          }}
-        />
-      );
-    },
+  columnHelper.accessor("email", {
+    header: "Email",
+    cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor("status", {
-    header: "Statut",
-    cell: (info) => {
-      const status = info.getValue();
-      let severity: AlertProps.Severity | undefined;
-      let text = "";
-
-      switch (status) {
-        case "pending":
-          severity = "info";
-          text = "En attente";
-          break;
-        case "approved":
-          severity = "success";
-          text = "Approuvé";
-          break;
-        case "rejected":
-          severity = "error";
-          text = "Rejeté";
-          break;
-        default:
-          severity = undefined;
-      }
-
-      return (
-        <Badge severity={severity} noIcon>
-          {text}
-        </Badge>
-      );
-    },
-  }),
-  columnHelper.accessor("id", {
-    header: "Actions",
-    cell: (info) => (
-      <Link href={`/requests/${info.getValue()}`} target="_blank">
-        Voir
-      </Link>
-    ),
+  columnHelper.accessor("name", {
+    header: "Nom",
+    cell: (info) => info.getValue(),
   }),
 ];
 
-const fallbackData: RequestForTable[] = [];
+const fallbackData: UserForTable[] = [];
 
 export default function AdminHome() {
-  const { data } = api.request.getAll.useQuery();
+  const { data } = api.user.getAll.useQuery();
 
   const { cx, classes } = useStyles();
 
@@ -102,7 +55,7 @@ export default function AdminHome() {
       </Head>
       <main>
         <div className={fr.cx("fr-mt-4w")}>
-          <h1>Liste des demandes</h1>
+          <h1>Liste des utilisateurs</h1>
         </div>
         <div
           className={cx(
@@ -155,11 +108,5 @@ const useStyles = tss.withName(AdminHome.name).create(() => ({
   },
   table: {
     display: "inline-table!important",
-    "& td:nth-child(2)": {
-      maxWidth: "16rem",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    },
   },
 }));
