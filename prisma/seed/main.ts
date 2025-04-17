@@ -1,30 +1,28 @@
 import { PrismaClient } from "@prisma/client";
-import { authClient } from "~/utils/auth-client";
+import { auth } from "~/utils/auth";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const user = await prisma.user.findUnique({
-    where: {
-      email: "admin@test.loc",
-    },
+  const existingUser = await prisma.user.findUnique({
+    where: { email: "admin@test.loc" },
   });
 
-  if (!user) {
-    await authClient.signUp.email({
+  if (existingUser) return;
+
+  await auth.api.signUpEmail({
+    body: {
       email: "admin@test.loc",
       password: "admin123",
       name: "Admin",
-    });
+    },
+    // headers are optional here, but you can pass
+    // something like new Headers({ "user-agent": "seed-script" })
+  });
 
-    await prisma.session.deleteMany({
-      where: {
-        user: {
-          email: "admin@test.loc",
-        },
-      },
-    });
-  }
+  await prisma.session.deleteMany({
+    where: { user: { email: "admin@test.loc" } },
+  });
 }
 main()
   .then(async () => {

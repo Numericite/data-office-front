@@ -65,7 +65,7 @@ model PersonalData {
 }
 
 model User {
-  id            String    @id
+  id            Int       @id @default(autoincrement())
   name          String
   email         String
   emailVerified Boolean
@@ -80,14 +80,14 @@ model User {
 }
 
 model Session {
-  id        String   @id
+  id        Int      @id @default(autoincrement())
   expiresAt DateTime
   token     String
   createdAt DateTime
   updatedAt DateTime
   ipAddress String?
   userAgent String?
-  userId    String
+  userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
@@ -95,10 +95,10 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
+  id                    Int       @id @default(autoincrement())
+  accountId             Int
   providerId            String
-  userId                String
+  userId                Int
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?

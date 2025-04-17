@@ -13,4 +13,7 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
   },
+  advanced: {
+    generateId: false,
+  },
 });
