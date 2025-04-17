@@ -1,4 +1,3 @@
-// utils/stepMaps.ts
 import { z } from "zod";
 import { dataContractSchema } from "~/utils/forms/data-contract/schema";
 
@@ -15,13 +14,9 @@ export function buildStepMap(schema: z.ZodSchema): StepMap {
 }
 
 export const STEP_MAP = buildStepMap(dataContractSchema);
-// -> { 0: ['applicantInfo','dataProduct'],
-//      1: ['dataAccesses'],
-//      2: ['businessContact','technicalContact','legalContact'] }
 
 export const STEP_SCHEMAS = Object.fromEntries(
   Object.entries(STEP_MAP).map(([step, keys]) => {
-    // z.object({...}).pick expects an object like { key: true }
     const pickShape = Object.fromEntries(keys.map((k) => [k, true])) as Record<
       keyof typeof dataContractSchema.shape,
       true
