@@ -46,7 +46,7 @@
     "superjson": "^2.2.1",
     "tss-react": "^4.9.16",
     "yaml": "^2.7.1",
-    "zod": "^3.24.2"
+    "zod": "^4.0.0-beta.20250417T043022"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

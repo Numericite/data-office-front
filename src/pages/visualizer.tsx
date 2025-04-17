@@ -14,8 +14,8 @@ import { tss } from "tss-react";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { useState } from "react";
 import type { ZodError } from "zod";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import Alert from "@codegouvfr/react-dsfr/Alert";
+import { STEP_MAP } from "~/utils/forms/data-contract/stepMaps";
 
 export default function Visualizer() {
   const { classes, cx } = useStyles();
@@ -93,7 +93,7 @@ export default function Visualizer() {
                 <div className={fr.cx("fr-mt-3w")}>
                   <h2 className={fr.cx("fr-h5")}>Erreurs de validation :</h2>
                   <ul className={classes.errorsWrapper}>
-                    {errors.errors.map((error, index) => (
+                    {errors.issues.map((error, index) => (
                       <li key={index} className={fr.cx("fr-p-0")}>
                         <strong>{error.path.join(".")}</strong>: {error.message}
                       </li>
@@ -112,7 +112,7 @@ export default function Visualizer() {
                   <div className={cx(fr.cx("fr-mt-4w"), classes.formWrapper)}>
                     <BaseDataContractForm
                       formId="visualizer-data-contract-form"
-                      disabled={true}
+                      visibleSections={Object.keys(STEP_MAP).flat()}
                       form={form}
                     />
                   </div>

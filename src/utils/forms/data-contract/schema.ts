@@ -2,6 +2,7 @@ import { createFormHook } from "@tanstack/react-form";
 import { z } from "zod";
 import { LegalWorkProcessing } from "@prisma/client";
 import { fieldContext, formContext } from "~/utils/form";
+import { withStep } from "~/utils/zod/stepper";
 
 import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
@@ -51,88 +52,94 @@ export const dataContractSchema = z.object({
   dataContractSpecification: z.string().min(1, {
     message: "Spécification du contrat de données requise",
   }),
-  applicantInfo: personInfoSchema,
-  dataProduct: z.object({
-    name: z.string().min(1, { message: "Nom du projet requis" }),
-    description: z.string().min(1, {
-      message: "Description et objectif du projet requise",
-    }),
-    targetAudience: z.enum([
-      "internes",
-      "externes",
-      "partenaires référencés",
-      "public",
-    ]),
-    expectedProductionDate: z.string().min(1, {
-      message: "Date de mise en production prévisionnelle requise",
-    }),
-    additionalDocuments: z.string().optional(),
-    developmentResponsible: z.string().min(1, {
-      message: "Responsable du développement du produit data requis",
-    }),
-    kindAccessData: z.enum(["api", "extract"], {
-      required_error: "Type d'accès requis",
-    }),
-    apiInfo: z
-      .object({
-        nbOfRequestsPerDay: z
-          .number()
-          .min(1, { message: "Nombre de requêtes par jour requis" }),
-      })
-      .optional(),
-    extractInfo: z
-      .object({
-        format: z.enum(["csv", "json"], {
-          required_error: "Format requis",
-        }),
-        frequency: z.enum(["daily", "weekly", "monthly"], {
-          required_error: "Fréquence requise",
-        }),
-      })
-      .optional(),
-  }),
-  dataAccesses: z.array(
+  applicantInfo: withStep(personInfoSchema, 0),
+  dataProduct: withStep(
     z.object({
+      name: z.string().min(1, { message: "Nom du projet requis" }),
       description: z.string().min(1, {
-        message:
-          "A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
+        message: "Description et objectif du projet requise",
       }),
-      owner: z.string().min(1, { message: "Propriétaire requis" }),
-      processingDone: z.string().min(1, {
-        message: "Traitement qui sera opéré sur les données requis",
+      targetAudience: z.enum([
+        "internes",
+        "externes",
+        "partenaires référencés",
+        "public",
+      ]),
+      expectedProductionDate: z.string().min(1, {
+        message: "Date de mise en production prévisionnelle requise",
       }),
-      peopleAccess: z.string().min(1, {
-        message:
-          "Accès requis (public, au sein de votre structure, partenaires éventuels - combien de personnes ?)",
+      additionalDocuments: z.string().optional(),
+      developmentResponsible: z.string().min(1, {
+        message: "Responsable du développement du produit data requis",
       }),
-      storageLocation: z.string().min(1, {
-        message: "Lieu de stockage requis (bdd, fichiers)",
+      kindAccessData: z.enum(["api", "extract"], {
+        error: "Type d'accès requis",
       }),
-      needPersonalData: z.boolean(),
-      personalData: z
+      apiInfo: z
         .object({
-          recipient: z.string().min(1, { message: "Destinataire requis" }),
-          retentionPeriodInMonths: z.number().min(1, {
-            message: "Durée de conservation requise (en mois)",
-          }),
-          processingType: z.string().min(1, {
-            message: "Type de traitement requis",
-          }),
-          dataController: z.string().min(1, {
-            message: "Responsable de traitement requis",
-          }),
-          authRequired: z.boolean(),
-          securityMeasures: z.string().min(1, {
-            message: "Mesures de sécurité requises",
-          }),
-          legalWork: z.nativeEnum(LegalWorkProcessing),
+          nbOfRequestsPerDay: z
+            .number()
+            .min(1, { message: "Nombre de requêtes par jour requis" }),
         })
         .optional(),
-    })
+      extractInfo: z
+        .object({
+          format: z.enum(["csv", "json"], {
+            error: "Format requis",
+          }),
+          frequency: z.enum(["daily", "weekly", "monthly"], {
+            error: "Fréquence requise",
+          }),
+        })
+        .optional(),
+    }),
+    0
   ),
-  businessContact: personInfoSchema,
-  technicalContact: personInfoSchema,
-  legalContact: personInfoSchema,
+  dataAccesses: withStep(
+    z.array(
+      z.object({
+        description: z.string().min(1, {
+          message:
+            "A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
+        }),
+        owner: z.string().min(1, { message: "Propriétaire requis" }),
+        processingDone: z.string().min(1, {
+          message: "Traitement qui sera opéré sur les données requis",
+        }),
+        peopleAccess: z.string().min(1, {
+          message:
+            "Accès requis (public, au sein de votre structure, partenaires éventuels - combien de personnes ?)",
+        }),
+        storageLocation: z.string().min(1, {
+          message: "Lieu de stockage requis (bdd, fichiers)",
+        }),
+        needPersonalData: z.boolean(),
+        personalData: z
+          .object({
+            recipient: z.string().min(1, { message: "Destinataire requis" }),
+            retentionPeriodInMonths: z.number().min(1, {
+              message: "Durée de conservation requise (en mois)",
+            }),
+            processingType: z.string().min(1, {
+              message: "Type de traitement requis",
+            }),
+            dataController: z.string().min(1, {
+              message: "Responsable de traitement requis",
+            }),
+            authRequired: z.boolean(),
+            securityMeasures: z.string().min(1, {
+              message: "Mesures de sécurité requises",
+            }),
+            legalWork: z.enum(LegalWorkProcessing),
+          })
+          .optional(),
+      })
+    ),
+    1
+  ),
+  businessContact: withStep(personInfoSchema, 2),
+  technicalContact: withStep(personInfoSchema, 2),
+  legalContact: withStep(personInfoSchema, 2),
 });
 
 export type DataContractSchema = z.infer<typeof dataContractSchema>;

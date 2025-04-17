@@ -1,34 +1,36 @@
 import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
-import {
-  dataContractSchema,
-  useDataContractForm,
-} from "~/utils/forms/data-contract/schema";
+import { dataContractSchema } from "~/utils/forms/data-contract/schema";
 import {
   BaseDataContractForm,
   dataContractFormDefaultValues,
 } from "~/utils/forms/data-contract/form";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
+import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
+import { useWizardForm } from "~/utils/forms/data-contract/useWizardForm";
+import {
+  STEP_LABELS,
+  STEP_MAP,
+  STEPS,
+} from "~/utils/forms/data-contract/stepMaps";
+import Button from "@codegouvfr/react-dsfr/Button";
 
 export default function Home() {
   const { mutateAsync: createRequest } = api.request.create.useMutation();
 
   const { classes } = useStyles();
 
-  const form = useDataContractForm({
+  const wizard = useWizardForm({
     defaultValues: dataContractFormDefaultValues,
-    validators: {
-      onSubmit: dataContractSchema,
-    },
-    onSubmit: async (values) => {
-      console.log("Form submitted:", values.value);
-      const newRequest = await createRequest({
-        data: values.value,
-      });
-      console.log("New request created:", newRequest);
+    onFinalSubmit: async (values) => {
+      await createRequest({ data: values });
     },
   });
+
+  const visible = STEP_MAP[wizard.step] as Array<
+    keyof typeof dataContractSchema.shape
+  >;
 
   return (
     <>
@@ -40,25 +42,42 @@ export default function Home() {
       <main>
         <div className={fr.cx("fr-mt-4w", "fr-mb-8w")}>
           <h1>Formulaire de demande</h1>
-          <p className={fr.cx("fr-text--lg")}>
-            Veuillez remplir le formulaire ci-dessous pour soumettre votre
-            demande.
-          </p>
-          <form.AppForm>
+          <Stepper
+            currentStep={wizard.step + 1}
+            stepCount={STEPS}
+            title={STEP_LABELS[wizard.step]}
+            nextTitle={STEP_LABELS[wizard.step + 1] ?? undefined}
+            className={fr.cx("fr-mb-4w")}
+          />
+          <wizard.form.AppForm>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                form.handleSubmit();
+                wizard.isLast ? wizard.form.handleSubmit() : wizard.next();
               }}
-              className={classes.formWrapper}
             >
               <BaseDataContractForm
-                formId="base-data-contract-form"
-                disabled={false}
-                form={form}
+                form={wizard.form}
+                visibleSections={visible}
+                formId="dcf"
               />
+              <div className={fr.cx("fr-mt-4w", "fr-btns-group--inline")}>
+                {wizard.step > 0 && (
+                  <Button
+                    priority="tertiary"
+                    onClick={wizard.previous}
+                    type="button"
+                  >
+                    Précédent
+                  </Button>
+                )}
+
+                <Button priority="primary">
+                  {wizard.isLast ? "Soumettre" : "Suivant"}
+                </Button>
+              </div>
             </form>
-          </form.AppForm>
+          </wizard.form.AppForm>
         </div>
       </main>
     </>
