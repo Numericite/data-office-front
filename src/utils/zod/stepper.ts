@@ -17,3 +17,15 @@ export const withStep = <T extends ZodTypeAny>(schema: T, step: number): T => {
     _def: { ...schema._def, [STEP_KEY]: step },
   }) as T;
 };
+
+type StepMap = { [step: number]: string[] };
+
+export function buildStepMap(schema: z.ZodSchema): StepMap {
+  const map: StepMap = {};
+  Object.entries((schema as z.ZodObject<any>).shape).forEach(([key, value]) => {
+    const step = ((value as z.ZodTypeAny)._def as any).__formStep ?? 0;
+    map[step] ??= [];
+    map[step].push(key);
+  });
+  return map;
+}

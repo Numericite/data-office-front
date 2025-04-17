@@ -31,6 +31,7 @@ export function useWizardForm(opts: {
     const values = form.state.values;
     const parse = schema.safeParse(values);
 
+    // clear all errors for the current step
     STEP_MAP[step]!.forEach((prefix) => {
       Object.keys(form.state.fieldMeta)
         .filter((name) => name.startsWith(prefix))
@@ -39,6 +40,7 @@ export function useWizardForm(opts: {
         );
     });
 
+    // set errors for the current step
     if (!parse.success) {
       parse.error.issues.forEach((issue) => {
         const path = issue.path.join(".") as any;
