@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesdir";
 import Link from "next/link";
 import { Header, type HeaderProps } from "@codegouvfr/react-dsfr/Header";
+import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
@@ -134,7 +135,10 @@ function App({ Component, pageProps }: AppProps) {
       <div className={fr.cx("fr-container")} style={{ flex: 1 }}>
         <Component {...pageProps} />
       </div>
-      <Footer accessibility="non compliant" />
+      <Footer
+        accessibility="non compliant"
+        bottomItems={[headerFooterDisplayItem]}
+      />
     </div>
   );
 }
