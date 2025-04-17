@@ -95,7 +95,7 @@ export const BaseDataContractForm = withDataContractForm({
   render: function Render({ form, formId, visibleSections }) {
     const { classes, cx } = useStyles();
 
-    const show = (key: string) =>
+    const show = (key: keyof typeof dataContractFormDefaultValues) =>
       visibleSections[0] === "all" || visibleSections.includes(key);
 
     const PersonInfoFields = ({
