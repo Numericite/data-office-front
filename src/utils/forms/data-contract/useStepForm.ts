@@ -66,6 +66,7 @@ export function useStepDataContractForm(opts: {
     step,
     next,
     previous,
+    setStep,
     isLast: step === DATA_CONTRACT_STEPS - 1,
   };
 }

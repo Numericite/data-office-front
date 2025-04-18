@@ -172,10 +172,7 @@ export const BaseDataContractForm = withDataContractForm({
     return (
       <Fragment key={formId}>
         {show("applicantInfo") && show("dataProduct") && (
-          <div className={cx(classes.formWrapper, classes.section)}>
-            <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
-              Section 1 - Informations générales
-            </h2>
+          <div className={cx(classes.formWrapper)}>
             <PersonInfoFields
               accordionLabel="Informations sur le demandeur"
               pathPrefix="applicantInfo"
@@ -296,10 +293,7 @@ export const BaseDataContractForm = withDataContractForm({
           </div>
         )}
         {show("dataAccesses") && (
-          <div className={cx(classes.formWrapper, classes.section)}>
-            <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
-              Section 2 - Liste des données
-            </h2>
+          <div className={cx(classes.formWrapper)}>
             <form.AppField name="dataAccesses" mode="array">
               {(field) => (
                 <div className={cx(classes.arccordionsWrapper)}>
@@ -521,10 +515,7 @@ export const BaseDataContractForm = withDataContractForm({
         {show("businessContact") &&
           show("technicalContact") &&
           show("legalContact") && (
-            <div className={cx(classes.formWrapper, classes.section)}>
-              <h2 className={cx(fr.cx("fr-h4"), "fr-mb-0")}>
-                Section 3 - Personnes impliquées
-              </h2>
+            <div className={cx(classes.formWrapper)}>
               <PersonInfoFields
                 pathPrefix="businessContact"
                 accordionLabel="Informations sur le contact métier"

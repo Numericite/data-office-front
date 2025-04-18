@@ -14,7 +14,8 @@ import {
   DATA_CONTRACT_STEP_MAP,
   DATA_CONTRACT_STEPS,
 } from "~/utils/forms/data-contract/stepMaps";
-import Button from "@codegouvfr/react-dsfr/Button";
+import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
+import { Toaster, toast } from "sonner";
 
 export default function Home() {
   const { mutateAsync: createRequest } = api.request.create.useMutation();
@@ -25,6 +26,9 @@ export default function Home() {
     defaultValues: dataContractFormDefaultValues,
     onFinalSubmit: async (values) => {
       await createRequest({ data: values });
+      toast.success("Votre demande a bien été envoyée.");
+      stepForm.setStep(0);
+      stepForm.form.reset();
     },
   });
 
@@ -40,6 +44,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
+        <Toaster position="top-center" richColors />
         <div className={fr.cx("fr-mt-4w", "fr-mb-8w")}>
           <h1>Formulaire de demande</h1>
           <Stepper
@@ -55,6 +60,7 @@ export default function Home() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 stepForm.isLast
                   ? stepForm.form.handleSubmit()
                   : stepForm.next();
@@ -65,21 +71,36 @@ export default function Home() {
                 visibleSections={visible}
                 formId="dcf"
               />
-              <div className={fr.cx("fr-mt-4w", "fr-btns-group--inline")}>
-                {stepForm.step > 0 && (
-                  <Button
-                    priority="tertiary"
-                    onClick={stepForm.previous}
-                    type="button"
-                  >
-                    Précédent
-                  </Button>
-                )}
-
-                <Button priority="primary">
-                  {stepForm.isLast ? "Soumettre" : "Suivant"}
-                </Button>
-              </div>
+              <ButtonsGroup
+                className={fr.cx("fr-mt-4w")}
+                buttons={[
+                  {
+                    children: "Précédent",
+                    iconId: "ri-arrow-left-line",
+                    onClick: stepForm.previous,
+                    priority: "tertiary",
+                    iconPosition: "left",
+                    type: "button",
+                    disabled: stepForm.step === 0,
+                  },
+                  {
+                    children: stepForm.isLast ? "Soumettre" : "Suivant",
+                    iconId: stepForm.isLast
+                      ? "ri-check-line"
+                      : "ri-arrow-right-line",
+                    type: "submit",
+                    priority: "primary",
+                    iconPosition: "right",
+                    disabled: stepForm.isLast
+                      ? stepForm.form.state.isSubmitting
+                      : stepForm.form.state.isSubmitting ||
+                        stepForm.form.state.isValidating,
+                  },
+                ]}
+                alignment="right"
+                buttonsEquisized
+                inlineLayoutWhen="always"
+              />
             </form>
           </stepForm.form.AppForm>
         </div>

@@ -3,19 +3,14 @@ import Head from "next/head";
 import { fr } from "@codegouvfr/react-dsfr";
 import {
   dataContractSchema,
-  useDataContractForm,
   type DataContractSchema,
 } from "~/utils/forms/data-contract/schema";
-import {
-  BaseDataContractForm,
-  dataContractFormDefaultValues,
-} from "~/utils/forms/data-contract/form";
+import { dataContractFormDefaultValues } from "~/utils/forms/data-contract/form";
 import { tss } from "tss-react";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { useState } from "react";
 import type { ZodError } from "zod";
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import { STEP_MAP } from "~/utils/forms/data-contract/stepMaps";
 
 export default function Visualizer() {
   const { classes, cx } = useStyles();
@@ -39,7 +34,6 @@ export default function Visualizer() {
             setValidYamlFile(success);
             setErrors(error);
             setFormData(parsedData as DataContractSchema);
-            form.reset(parsedData);
           } catch (error) {
             console.error("Error parsing YAML file:", error);
           }
@@ -48,10 +42,6 @@ export default function Visualizer() {
       reader.readAsText(file);
     }
   };
-
-  const form = useDataContractForm({
-    defaultValues: formData,
-  });
 
   return (
     <>
@@ -101,17 +91,6 @@ export default function Visualizer() {
               <div className={cx(classes.yamlWrapper)}>
                 <pre>{yaml.stringify(formData)}</pre>
               </div>
-              {validYamlFile && (
-                <form.AppForm>
-                  <div className={cx(fr.cx("fr-mt-4w"), classes.formWrapper)}>
-                    <BaseDataContractForm
-                      formId="visualizer-data-contract-form"
-                      visibleSections={Object.values(STEP_MAP).flat()}
-                      form={form}
-                    />
-                  </div>
-                </form.AppForm>
-              )}
             </div>
           )}
         </div>
