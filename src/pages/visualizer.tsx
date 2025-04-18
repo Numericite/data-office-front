@@ -9,7 +9,7 @@ import { dataContractFormDefaultValues } from "~/utils/forms/data-contract/form"
 import { tss } from "tss-react";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { useState } from "react";
-import type { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import Alert from "@codegouvfr/react-dsfr/Alert";
 
 export default function Visualizer() {
@@ -77,11 +77,20 @@ export default function Visualizer() {
                 <div className={fr.cx("fr-mt-3w")}>
                   <h2 className={fr.cx("fr-h5")}>Erreurs de validation :</h2>
                   <ul className={classes.errorsWrapper}>
-                    {errors.issues.map((error, index) => (
-                      <li key={index} className={fr.cx("fr-p-0")}>
-                        <strong>{error.path.join(".")}</strong>: {error.message}
-                      </li>
-                    ))}
+                    {z
+                      .prettifyError(errors)
+                      .split("\n")
+                      .map((error, index) => (
+                        <li
+                          key={index}
+                          className={cx(
+                            "fr-pb-0",
+                            error.includes("→") ? cx("fr-ml-2w") : undefined
+                          )}
+                        >
+                          {error}
+                        </li>
+                      ))}
                   </ul>
                 </div>
               )}
