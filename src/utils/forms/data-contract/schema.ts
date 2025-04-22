@@ -36,7 +36,7 @@ export const personInfoSchema = z.object({
   phone: z
     .string()
     .regex(/^\+?[0-9]{10,15}$/, { message: "Numéro de téléphone invalide" }),
-  emailPro: z.string().email({ message: "Email invalide" }),
+  emailPro: z.email({ message: "Email invalide" }),
   structureName: z.string().min(1, {
     message: "Nom de l'administration requis",
   }),

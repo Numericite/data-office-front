@@ -16,7 +16,7 @@ export interface DsfrTableProps<TData> {
   data: TData[];
   /** Column definitions created with TanStack Table helpers */
   columns: ColumnDef<TData, any>[];
-  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
+  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   /**
    * Extra options forwarded to `useReactTable`.
    * `data` and `columns` are automatically injected and therefore cannot be
@@ -98,7 +98,7 @@ export function DsfrTable<TData>({
                     </td>
                   ))}
                 </tr>
-                {row.getIsExpanded() && (
+                {row.getIsExpanded() && renderSubComponent && (
                   <tr>
                     {/* 2nd row is a custom 1 cell row */}
                     <td colSpan={row.getVisibleCells().length}>
