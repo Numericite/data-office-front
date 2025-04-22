@@ -7,10 +7,14 @@ import {
 import { tss } from "tss-react";
 import { fr } from "@codegouvfr/react-dsfr";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
+import SearchBar from "@codegouvfr/react-dsfr/SearchBar";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
-import { Fragment } from "react";
+import { Fragment, use, useMemo, useState } from "react";
 import { LegalWorkProcessing } from "@prisma/client";
+import CustomAutocomplete from "~/components/Autocomplete";
+import { api } from "~/utils/api";
+import { useDebounceValue } from "usehooks-ts";
 
 const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
   needPersonalData: false,
@@ -94,6 +98,47 @@ export const BaseDataContractForm = withDataContractForm({
   },
   render: function Render({ form, formId, visibleSections }) {
     const { classes, cx } = useStyles();
+
+    const [searchValue, setSearchValue] = useState("");
+    const [selectedReferenceId, setSelectedReferenceId] = useState<
+      number | null
+    >(null);
+
+    const [debouncedSearchValue] = useDebounceValue(searchValue, 400);
+
+    const { data: references } = api.reference.getBySearch.useQuery(
+      {
+        search: debouncedSearchValue,
+      },
+      {
+        enabled: debouncedSearchValue.length > 0,
+      }
+    );
+
+    const onSelectDataAccess = (id: number) => {
+      const selectedReference = references?.find((ref) => ref.id === id);
+      if (selectedReference) {
+        setSelectedReferenceId(id);
+        form.setFieldValue("dataAccesses", [
+          {
+            needPersonalData: false,
+            ...selectedReference,
+          },
+        ]);
+      } else {
+        setSelectedReferenceId(null);
+        form.setFieldValue("dataAccesses", [defaultDataAccess]);
+      }
+    };
+
+    const referenceOptions = useMemo(() => {
+      return (
+        references?.map((reference) => ({
+          label: reference.description,
+          value: reference.id,
+        })) ?? []
+      );
+    }, [references]);
 
     const show = (key: keyof typeof dataContractFormDefaultValues) =>
       visibleSections[0] === "all" || visibleSections.includes(key);
@@ -305,10 +350,33 @@ export const BaseDataContractForm = withDataContractForm({
                         defaultExpanded
                         className={classes.accordionContent}
                       >
+                        <div className={fr.cx("fr-mb-3w")}>
+                          <SearchBar
+                            renderInput={({
+                              className,
+                              id,
+                              placeholder,
+                              type,
+                            }) => (
+                              <CustomAutocomplete
+                                className={className}
+                                id={id}
+                                placeholder={placeholder}
+                                options={referenceOptions}
+                                type={type}
+                                setSearch={setSearchValue}
+                                onSelect={onSelectDataAccess}
+                              />
+                            )}
+                          />
+                        </div>
                         <form.AppField
                           name={`dataAccesses[${index}].description`}
                           children={(field) => (
-                            <field.TextAreaField label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?" />
+                            <field.TextAreaField
+                              label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?"
+                              disabled={selectedReferenceId !== null}
+                            />
                           )}
                         />
                         <div
@@ -321,7 +389,10 @@ export const BaseDataContractForm = withDataContractForm({
                             <form.AppField
                               name={`dataAccesses[${index}].owner`}
                               children={(field) => (
-                                <field.TextField label="Propriétaire" />
+                                <field.TextField
+                                  label="Propriétaire"
+                                  disabled={selectedReferenceId !== null}
+                                />
                               )}
                             />
                           </div>
@@ -329,7 +400,10 @@ export const BaseDataContractForm = withDataContractForm({
                             <form.AppField
                               name={`dataAccesses[${index}].processingDone`}
                               children={(field) => (
-                                <field.TextField label="Traitement effectué" />
+                                <field.TextField
+                                  label="Traitement effectué"
+                                  disabled={selectedReferenceId !== null}
+                                />
                               )}
                             />
                           </div>
@@ -344,7 +418,10 @@ export const BaseDataContractForm = withDataContractForm({
                             <form.AppField
                               name={`dataAccesses[${index}].peopleAccess`}
                               children={(field) => (
-                                <field.TextField label="Accès requis" />
+                                <field.TextField
+                                  label="Accès requis"
+                                  disabled={selectedReferenceId !== null}
+                                />
                               )}
                             />
                           </div>
@@ -352,7 +429,10 @@ export const BaseDataContractForm = withDataContractForm({
                             <form.AppField
                               name={`dataAccesses[${index}].storageLocation`}
                               children={(field) => (
-                                <field.TextField label="Lieu de stockage (bdd, fichiers)" />
+                                <field.TextField
+                                  label="Lieu de stockage (bdd, fichiers)"
+                                  disabled={selectedReferenceId !== null}
+                                />
                               )}
                             />
                           </div>

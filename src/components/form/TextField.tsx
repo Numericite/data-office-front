@@ -5,9 +5,10 @@ import { PasswordInput } from "@codegouvfr/react-dsfr/blocks/PasswordInput";
 type TextFieldProps = {
   kind?: "tel" | "email" | "password";
   label: string;
+  disabled?: boolean;
 };
 
-export function TextField({ kind, label }: TextFieldProps) {
+export function TextField({ kind, label, disabled }: TextFieldProps) {
   const field = useFieldContext<string>();
 
   if (kind === "password") {
@@ -18,6 +19,7 @@ export function TextField({ kind, label }: TextFieldProps) {
         value: field.state.value,
         onChange: (e) => field.setValue(e.target.value),
       }}
+      disabled={disabled}
     />;
   }
 
@@ -30,6 +32,7 @@ export function TextField({ kind, label }: TextFieldProps) {
         value: field.state.value,
         onChange: (e) => field.setValue(e.target.value),
       }}
+      disabled={disabled}
       state={field.state.meta.errors.length > 0 ? "error" : "default"}
       stateRelatedMessage={
         field.state.meta.errors.map((error) => error.message).join(",") ?? ""

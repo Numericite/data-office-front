@@ -32,7 +32,7 @@
     "@mui/material": "^7.0.1",
     "@prisma/client": "^5.14.0",
     "@t3-oss/env-nextjs": "^0.12.0",
-    "@tanstack/react-form": "^1.2.1",
+    "@tanstack/react-form": "^1.6.3",
     "@tanstack/react-query": "^5.69.0",
     "@tanstack/react-table": "^8.21.2",
     "@trpc/client": "^11.0.0",
@@ -46,6 +46,7 @@
     "sonner": "^2.0.3",
     "superjson": "^2.2.1",
     "tss-react": "^4.9.16",
+    "usehooks-ts": "^3.1.1",
     "yaml": "^2.7.1",
     "zod": "^4.0.0-beta.20250417T043022"
   },
