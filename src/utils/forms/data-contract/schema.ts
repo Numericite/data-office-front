@@ -137,9 +137,9 @@ export const dataContractSchema = z.object({
     ),
     1
   ),
-  businessContact: withStep(personInfoSchema, 2),
-  technicalContact: withStep(personInfoSchema, 2),
-  legalContact: withStep(personInfoSchema, 2),
+  // businessContact: withStep(personInfoSchema, 2),
+  // technicalContact: withStep(personInfoSchema, 2),
+  // legalContact: withStep(personInfoSchema, 2),
 });
 
 export type DataContractSchema = z.infer<typeof dataContractSchema>;

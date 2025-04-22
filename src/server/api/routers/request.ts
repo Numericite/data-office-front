@@ -15,6 +15,26 @@ export const requestRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { data } = input;
 
+      const { dataAccesses } = data;
+
+      await ctx.db.referenceData.createMany({
+        data: dataAccesses.map(
+          ({
+            description,
+            owner,
+            processingDone,
+            peopleAccess,
+            storageLocation,
+          }) => ({
+            description,
+            owner,
+            processingDone,
+            peopleAccess,
+            storageLocation,
+          })
+        ),
+      });
+
       const yamlString = yaml.stringify(data, {
         indent: 2,
       });

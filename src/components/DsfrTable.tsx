@@ -2,10 +2,13 @@ import { fr } from "@codegouvfr/react-dsfr";
 import {
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   useReactTable,
   type ColumnDef,
+  type Row,
   type TableOptions,
 } from "@tanstack/react-table";
+import { Fragment } from "react";
 import { tss } from "tss-react";
 
 export interface DsfrTableProps<TData> {
@@ -13,6 +16,7 @@ export interface DsfrTableProps<TData> {
   data: TData[];
   /** Column definitions created with TanStack Table helpers */
   columns: ColumnDef<TData, any>[];
+  renderSubComponent: (props: { row: Row<TData> }) => React.ReactElement;
   /**
    * Extra options forwarded to `useReactTable`.
    * `data` and `columns` are automatically injected and therefore cannot be
@@ -41,6 +45,7 @@ export function DsfrTable<TData>({
   tableOptions,
   tableClassName,
   wrapperClassName,
+  renderSubComponent,
 }: DsfrTableProps<TData>) {
   const { cx, classes } = useStyles();
 
@@ -48,7 +53,9 @@ export function DsfrTable<TData>({
     data,
     columns,
     // Always include the core row model; users can override or extend through `tableOptions`.
+    getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     ...tableOptions,
   });
 
@@ -80,13 +87,26 @@ export function DsfrTable<TData>({
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
+              <Fragment key={row.id}>
+                <tr>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+                {row.getIsExpanded() && (
+                  <tr>
+                    {/* 2nd row is a custom 1 cell row */}
+                    <td colSpan={row.getVisibleCells().length}>
+                      {renderSubComponent({ row })}
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
           </tbody>
         </table>
