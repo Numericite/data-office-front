@@ -23,7 +23,9 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { fakerFR as faker } from "@faker-js/faker";
 import { fake, setFaker } from "zod-schema-faker";
 
-setFaker(faker);
+if (process.env.NODE_ENV === "development") {
+  setFaker(faker);
+}
 
 export default function Home() {
   const { mutateAsync: createRequest } = api.request.create.useMutation();
