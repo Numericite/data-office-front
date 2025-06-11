@@ -8,12 +8,10 @@ import { Toaster, toast } from "sonner";
 import { tss } from "tss-react";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
-import {
-	BaseDataContractForm,
-	dataContractFormDefaultValues,
-} from "~/utils/forms/data-contract/form";
+import { BaseDataContractForm } from "~/utils/forms/data-contract/form";
 import {
 	type PersonInfoSchema,
+	dataContractFormDefaultValues,
 	dataContractSchema,
 } from "~/utils/forms/data-contract/schema";
 import {

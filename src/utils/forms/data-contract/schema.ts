@@ -1,34 +1,6 @@
 import { LegalWorkProcessing } from "@prisma/client";
-import { createFormHook } from "@tanstack/react-form";
 import { z } from "zod";
-import { fieldContext, formContext } from "~/utils/form";
 import { withStep } from "~/utils/zod/stepper";
-
-import { CheckboxField } from "~/components/form/CheckboxField";
-import { DateField } from "~/components/form/DateField";
-import { NumberField } from "~/components/form/NumberField";
-import { SelectField } from "~/components/form/SelectField";
-import { SubscribeButton } from "~/components/form/SubmitButton";
-import { TextAreaField } from "~/components/form/TextAreaField";
-import { TextField } from "~/components/form/TextField";
-
-const { useAppForm, withForm } = createFormHook({
-	fieldContext,
-	formContext,
-	fieldComponents: {
-		TextField,
-		TextAreaField,
-		SelectField,
-		DateField,
-		CheckboxField,
-		NumberField,
-	},
-	formComponents: {
-		SubscribeButton,
-	},
-});
-
-export { useAppForm as useDataContractForm, withForm as withDataContractForm };
 
 export const personInfoSchema = z.object({
 	firstName: z.string().min(1, { message: "Prénom requis" }),
@@ -144,4 +116,40 @@ export const dataContractSchema = z.object({
 	legalContact: withStep(personInfoSchema, 2),
 });
 
-export type DataContractSchema = z.infer<typeof dataContractSchema>;
+export type DataContractSchema = z.input<typeof dataContractSchema>;
+
+export const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
+	needPersonalData: false,
+	description: "",
+	processingDone: "",
+	storageLocation: "",
+	peopleAccess: "",
+	owner: "",
+};
+
+const defaultPersonInfo: PersonInfoSchema = {
+	firstName: "",
+	lastName: "",
+	phone: "",
+	emailPro: "",
+	structureName: "",
+	role: "",
+};
+
+export const dataContractFormDefaultValues: DataContractSchema = {
+	dataContractSpecification: "0.1",
+	id: "data-contract:request",
+	applicantInfo: defaultPersonInfo,
+	dataProduct: {
+		name: "",
+		description: "",
+		targetAudience: "internes",
+		developmentResponsible: "",
+		expectedProductionDate: "",
+		kindAccessData: "api",
+	},
+	dataAccesses: [defaultDataAccess],
+	businessContact: defaultPersonInfo,
+	technicalContact: defaultPersonInfo,
+	legalContact: defaultPersonInfo,
+};
