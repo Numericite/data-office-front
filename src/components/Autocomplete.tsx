@@ -8,8 +8,9 @@ type MySearchInputProps = {
 	options: { value: number; label: string }[];
 	type: "search";
 	setSearch: (value: string) => void;
-	onSelect: (id: number) => void;
+	onSelect: (id: number | undefined) => void;
 	isLoading?: boolean;
+	disabled?: boolean;
 };
 
 function CustomAutocomplete(props: MySearchInputProps) {
@@ -22,6 +23,7 @@ function CustomAutocomplete(props: MySearchInputProps) {
 		setSearch,
 		onSelect,
 		isLoading,
+		disabled,
 	} = props;
 
 	return (
@@ -35,12 +37,13 @@ function CustomAutocomplete(props: MySearchInputProps) {
 				if (newValue) onSelect(newValue.value);
 			}}
 			onInputChange={(_, newInputValue) => {
-				if (newInputValue === "") onSelect(-1);
+				if (newInputValue === "") onSelect(undefined);
 				setSearch(newInputValue);
 			}}
 			getOptionKey={(option) => option.value}
 			getOptionLabel={(option) => option.label}
 			clearIcon="ri-arrow-right-s-fill"
+			disabled={disabled}
 			renderInput={(params) => (
 				<div ref={params.InputProps.ref}>
 					<input

@@ -72,6 +72,7 @@ export const dataContractSchema = z.object({
 	dataAccesses: withStep(
 		z.array(
 			z.object({
+				referenceId: z.number().optional(),
 				description: z.string().min(1, {
 					message:
 						"A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
