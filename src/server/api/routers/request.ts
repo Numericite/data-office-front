@@ -3,7 +3,6 @@ import os from "node:os";
 import path from "node:path";
 import yaml from "yaml";
 import { z } from "zod";
-import { env } from "~/env";
 
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -28,7 +27,7 @@ export const requestRouter = createTRPCRouter({
 			fs.writeFileSync(tmpFilePath, yamlString, "utf8");
 
 			const uploadParams = new PutObjectCommand({
-				Bucket: env.S3_BUCKET,
+				Bucket: process.env.S3_BUCKET,
 				Key: `requests/${fileName}`,
 				Body: fs.createReadStream(tmpFilePath),
 				ContentType: "application/yaml",
@@ -39,7 +38,7 @@ export const requestRouter = createTRPCRouter({
 			const newRequest = await ctx.db.request.create({
 				data: {
 					formData: data,
-					yamlFile: `${env.S3_ENDPOINT}/requests/${fileName}`,
+					yamlFile: `${process.env.S3_ENDPOINT}/requests/${fileName}`,
 				},
 			});
 
