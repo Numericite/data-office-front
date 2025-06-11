@@ -27,6 +27,7 @@ model Request {
 
 model ReferenceData {
   id              Int           @id @default(autoincrement())
+  name            String
   description     String
   owner           String
   processingDone  String

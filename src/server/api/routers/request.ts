@@ -1,90 +1,70 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import yaml from "yaml";
 import { z } from "zod";
 import { env } from "~/env";
-import os from "os";
-import path from "path";
-import fs from "fs";
 
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { dataContractSchema } from "~/utils/forms/data-contract/schema";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export const requestRouter = createTRPCRouter({
-  create: publicProcedure
-    .input(z.object({ data: dataContractSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const { data } = input;
+	create: publicProcedure
+		.input(z.object({ data: dataContractSchema }))
+		.mutation(async ({ ctx, input }) => {
+			const { data } = input;
 
-      const { dataAccesses } = data;
+			const yamlString = yaml.stringify(data, {
+				indent: 2,
+			});
 
-      await ctx.db.referenceData.createMany({
-        data: dataAccesses.map(
-          ({
-            description,
-            owner,
-            processingDone,
-            peopleAccess,
-            storageLocation,
-          }) => ({
-            description,
-            owner,
-            processingDone,
-            peopleAccess,
-            storageLocation,
-          })
-        ),
-      });
+			const tmpDir = os.tmpdir();
+			const fileName = `request_${data.dataProduct.name
+				.toLowerCase()
+				.replace(/\s+/g, "_")}_${Date.now()}.yaml`;
+			const tmpFilePath = path.join(tmpDir, fileName);
 
-      const yamlString = yaml.stringify(data, {
-        indent: 2,
-      });
+			fs.writeFileSync(tmpFilePath, yamlString, "utf8");
 
-      const tmpDir = os.tmpdir();
-      const fileName = `request_${data.dataProduct.name
-        .toLowerCase()
-        .replace(/\s+/g, "_")}_${Date.now()}.yaml`;
-      const tmpFilePath = path.join(tmpDir, fileName);
+			const uploadParams = new PutObjectCommand({
+				Bucket: env.S3_BUCKET,
+				Key: `requests/${fileName}`,
+				Body: fs.createReadStream(tmpFilePath),
+				ContentType: "application/yaml",
+			});
 
-      fs.writeFileSync(tmpFilePath, yamlString, "utf8");
+			await ctx.s3Client.send(uploadParams);
 
-      const uploadParams = new PutObjectCommand({
-        Bucket: env.S3_BUCKET,
-        Key: `requests/${fileName}`,
-        Body: fs.createReadStream(tmpFilePath),
-        ContentType: "application/yaml",
-      });
+			const newRequest = await ctx.db.request.create({
+				data: {
+					formData: data,
+					yamlFile: `${env.S3_ENDPOINT}/requests/${fileName}`,
+				},
+			});
 
-      await ctx.s3Client.send(uploadParams);
+			return newRequest;
+		}),
 
-      const newRequest = await ctx.db.request.create({
-        data: {
-          formData: data,
-          yamlFile: `${env.S3_ENDPOINT}/requests/${fileName}`,
-        },
-      });
+	getByUserId: publicProcedure
+		.input(z.object({ userId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const { userId } = input;
 
-      return newRequest;
-    }),
+			const requests = await ctx.db.request.findMany({
+				select: {
+					id: true,
+					status: true,
+					yamlFile: true,
+				},
+			});
 
-  getByUserId: publicProcedure
-    .input(z.object({ userId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { userId } = input;
+			return requests;
+		}),
 
-      const requests = await ctx.db.request.findMany({
-        select: {
-          id: true,
-          status: true,
-          yamlFile: true,
-        },
-      });
+	getAll: publicProcedure.query(async ({ ctx, input }) => {
+		const requests = await ctx.db.request.findMany();
 
-      return requests;
-    }),
-
-  getAll: publicProcedure.query(async ({ ctx, input }) => {
-    const requests = await ctx.db.request.findMany();
-
-    return requests;
-  }),
+		return requests;
+	}),
 });
