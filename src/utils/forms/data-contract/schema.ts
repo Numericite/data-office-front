@@ -11,7 +11,6 @@ import { SelectField } from "~/components/form/SelectField";
 import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
 import { TextField } from "~/components/form/TextField";
-import { dataContractFormDefaultValues } from "./form";
 
 const { useAppForm, withForm } = createFormHook({
 	fieldContext,

@@ -52,30 +52,23 @@ export default function Home() {
 
 		const fakerData = fake(dataContractSchema);
 		if (stepForm.step === 0) {
-			stepForm.form.reset({
-				...fakerData,
-				dataProduct: {
-					...fakerData.dataProduct,
-					expectedProductionDate:
-						new Date(faker.date.future({ years: 1 }).getTime())
-							.toISOString()
-							.split("T")[0] ?? "",
-				},
-				applicantInfo: makeFakerPersonInfo(),
+			stepForm.form.setFieldValue("dataProduct", {
+				...fakerData.dataProduct,
+				expectedProductionDate:
+					new Date(faker.date.future({ years: 1 }).getTime())
+						.toISOString()
+						.split("T")[0] ?? "",
 			});
+			stepForm.form.setFieldValue("applicantInfo", makeFakerPersonInfo());
 		} else if (stepForm.step === 1) {
-			stepForm.form.reset({
-				...fakerData,
+			stepForm.form.setFieldValue("dataAccesses[0]", {
 				// biome-ignore lint/style/noNonNullAssertion: <explanation>
-				dataAccesses: [fakerData.dataAccesses[0]!],
+				...fakerData.dataAccesses[0]!,
 			});
 		} else if (stepForm.step === 2) {
-			stepForm.form.reset({
-				...fakerData,
-				businessContact: makeFakerPersonInfo(),
-				technicalContact: makeFakerPersonInfo(),
-				legalContact: makeFakerPersonInfo(),
-			});
+			stepForm.form.setFieldValue("businessContact", makeFakerPersonInfo());
+			stepForm.form.setFieldValue("technicalContact", makeFakerPersonInfo());
+			stepForm.form.setFieldValue("legalContact", makeFakerPersonInfo());
 		}
 	};
 
