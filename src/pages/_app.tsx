@@ -46,7 +46,6 @@ export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
 	{ text: "Accueil", linkProps: { href: "/" } },
 	{ text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
-	{ text: "Liste des demandes", linkProps: { href: "/list-requests" } },
 ];
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
