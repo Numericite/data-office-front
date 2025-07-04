@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import type { ReferenceData } from "@prisma/client";
 import { type Row, createColumnHelper } from "@tanstack/react-table";
 import Head from "next/head";
-import { tss } from "tss-react";
 import DsfrTable from "~/components/DsfrTable";
 import { api } from "~/utils/api";
 
@@ -105,8 +104,6 @@ const renderSubComponent = ({ row }: { row: Row<ReferenceDataForTable> }) => {
 export default function AdminHome() {
 	const { data } = api.reference.getAll.useQuery();
 
-	const { cx, classes } = useStyles();
-
 	return (
 		<>
 			<Head>
@@ -127,13 +124,3 @@ export default function AdminHome() {
 		</>
 	);
 }
-
-const useStyles = tss.withName(AdminHome.name).create(() => ({
-	tableWrapper: {
-		overflowX: "auto",
-		boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-	},
-	table: {
-		display: "inline-table!important",
-	},
-}));

@@ -12,7 +12,7 @@ export const DATA_CONTRACT_STEP_SCHEMAS = Object.fromEntries(
 		>;
 		return [Number(step), dataContractSchema.pick(pickShape)];
 	}),
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// biome-ignore lint/suspicious/noExplicitAny: dynamic form
 ) as Record<number, z.ZodObject<any>>;
 
 export const DATA_CONTRACT_STEPS = Object.keys(DATA_CONTRACT_STEP_MAP).length;

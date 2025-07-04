@@ -48,9 +48,7 @@ export const requestRouter = createTRPCRouter({
 
 	getByUserId: publicProcedure
 		.input(z.object({ userId: z.string() }))
-		.query(async ({ ctx, input }) => {
-			const { userId } = input;
-
+		.query(async ({ ctx }) => {
 			const requests = await ctx.db.request.findMany({
 				select: {
 					id: true,
@@ -62,7 +60,7 @@ export const requestRouter = createTRPCRouter({
 			return requests;
 		}),
 
-	getAll: publicProcedure.query(async ({ ctx, input }) => {
+	getAll: publicProcedure.query(async ({ ctx }) => {
 		const requests = await ctx.db.request.findMany();
 
 		return requests;

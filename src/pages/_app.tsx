@@ -6,7 +6,7 @@ import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesd
 import type { AppProps } from "next/app";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 import { api } from "~/utils/api";
 

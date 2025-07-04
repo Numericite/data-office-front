@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: dynamic form */
+/** biome-ignore-all lint/suspicious/noExplicitAny: dynamic form */
 import { useState } from "react";
 import type { z } from "zod";
 import { useAppForm } from "~/utils/forms";
@@ -25,29 +27,22 @@ export function useStepDataContractForm(opts: {
 	});
 
 	const validateCurrentStep = async () => {
-		// biome-ignore lint/style/noNonNullAssertion: <explanation>
 		const schema = DATA_CONTRACT_STEP_SCHEMAS[step]!;
 		const values = form.state.values;
 		const parse = schema.safeParse(values);
 
 		// clear all errors for the current step
-		// biome-ignore lint/complexity/noForEach: <explanation>
-		// biome-ignore lint/style/noNonNullAssertion: <explanation>
 		DATA_CONTRACT_STEP_MAP[step]!.forEach((prefix) => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			Object.keys(form.state.fieldMeta)
 				.filter((name) => name.startsWith(prefix))
 				.forEach((name) =>
-					// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 					form.setFieldMeta(name as any, (m) => ({ ...m, errorMap: {} })),
 				);
 		});
 
 		// set errors for the current step
 		if (!parse.success) {
-			// biome-ignore lint/complexity/noForEach: <explanation>
 			parse.error.issues.forEach((issue) => {
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				const path = issue.path.join(".") as any;
 				form.setFieldMeta(path, (m) => ({
 					...m,

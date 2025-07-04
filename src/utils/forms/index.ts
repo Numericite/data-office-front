@@ -1,4 +1,4 @@
-import { createFormHook, formOptions } from "@tanstack/react-form";
+import { createFormHook } from "@tanstack/react-form";
 import { fieldContext, formContext } from "~/utils/form";
 
 import { CheckboxField } from "~/components/form/CheckboxField";

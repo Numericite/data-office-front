@@ -5,7 +5,6 @@ import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
 import { fakerFR as faker } from "@faker-js/faker";
 import Head from "next/head";
 import { Toaster, toast } from "sonner";
-import { tss } from "tss-react";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
 import { BaseDataContractForm } from "~/utils/forms/data-contract/form";
@@ -60,7 +59,7 @@ export default function Home() {
 			stepForm.form.setFieldValue("applicantInfo", makeFakerPersonInfo());
 		} else if (stepForm.step === 1) {
 			stepForm.form.setFieldValue("dataAccesses[0]", {
-				// biome-ignore lint/style/noNonNullAssertion: <explanation>
+				// biome-ignore lint/style/noNonNullAssertion: faker data is always defined
 				...fakerData.dataAccesses[0]!,
 			});
 		} else if (stepForm.step === 2) {
@@ -156,11 +155,3 @@ export default function Home() {
 		</>
 	);
 }
-
-const useStyles = tss.withName(Home.name).create(() => ({
-	formWrapper: {
-		display: "flex",
-		flexDirection: "column",
-		gap: fr.spacing("3w"),
-	},
-}));
