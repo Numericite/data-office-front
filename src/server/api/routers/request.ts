@@ -30,6 +30,7 @@ export const requestRouter = createTRPCRouter({
 				Bucket: process.env.S3_BUCKET,
 				Key: `requests/${fileName}`,
 				Body: fs.createReadStream(tmpFilePath),
+				ACL: "public-read",
 				ContentType: "application/yaml",
 			});
 
