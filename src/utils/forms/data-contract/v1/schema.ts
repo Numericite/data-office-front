@@ -21,9 +21,8 @@ export const dataContractSchema = z.object({
 	id: z.string().min(1, {
 		message: "ID requis",
 	}),
-	dataContractSpecification: z.string().min(1, {
-		message: "Spécification du contrat de données requise",
-	}),
+	version: z.number(),
+	templateVersion: z.number(),
 	applicantInfo: withStep(personInfoSchema, 0),
 	dataProduct: withStep(
 		z.object({
@@ -138,8 +137,9 @@ const defaultPersonInfo: PersonInfoSchema = {
 };
 
 export const dataContractFormDefaultValues: DataContractSchema = {
-	dataContractSpecification: "0.1",
 	id: "data-contract:request",
+	version: 1,
+	templateVersion: 1,
 	applicantInfo: defaultPersonInfo,
 	dataProduct: {
 		name: "",

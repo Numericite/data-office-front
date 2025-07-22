@@ -46,10 +46,11 @@ export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
 	{ text: "Accueil", linkProps: { href: "/" } },
 	{ text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
+	{ text: "Nouvelle demande", linkProps: { href: "/requests/new/v1" } },
 ];
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Liste des demandes", linkProps: { href: "/admin" } },
+	{ text: "Liste des demandes", linkProps: { href: "/admin/requests" } },
 	{ text: "Liste des utilisateurs", linkProps: { href: "/admin/users" } },
 	{ text: "Liste des références", linkProps: { href: "/admin/references" } },
 ];
@@ -62,17 +63,14 @@ function App({ Component, pageProps }: AppProps) {
 	const navigationItems = useMemo(() => {
 		if (session.isPending) return [];
 		const isAuthenticated = !!session.data?.user;
-		if (router.pathname.startsWith("/admin") && isAuthenticated) {
-			return adminNavigationItems.map((item) => ({
-				...item,
-				isActive: router.asPath === item?.linkProps?.href,
-			}));
-		}
-		return unauthenticatedNavigationItems.map((item) => ({
+		return [
+			...unauthenticatedNavigationItems,
+			...(isAuthenticated ? adminNavigationItems : []),
+		].map((item) => ({
 			...item,
 			isActive: router.asPath === item?.linkProps?.href,
 		}));
-	}, [session.isPending, session.data?.user, router.pathname, router.asPath]);
+	}, [session.isPending, session.data?.user, router.asPath]);
 
 	const quickAccessItems = useMemo(() => {
 		if (session.isPending) return [];
@@ -82,7 +80,7 @@ function App({ Component, pageProps }: AppProps) {
 				{
 					iconId: "ri-admin-fill",
 					text: "Administration",
-					linkProps: { href: "/admin" },
+					linkProps: { href: "/admin/requests" },
 				},
 				{
 					iconId: "ri-logout-box-line",

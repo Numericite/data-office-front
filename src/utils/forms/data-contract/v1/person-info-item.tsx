@@ -1,7 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
 import { tss } from "tss-react";
-import { withForm } from "..";
+import { withForm } from "../..";
 import { dataContractFormDefaultValues } from "./schema";
 
 export const PersonInfoItem = withForm({

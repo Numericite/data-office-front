@@ -3,12 +3,12 @@
 import { useState } from "react";
 import type { z } from "zod";
 import { useAppForm } from "~/utils/forms";
-import { dataContractSchema } from "~/utils/forms/data-contract/schema";
+import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import {
 	DATA_CONTRACT_STEPS,
 	DATA_CONTRACT_STEP_MAP,
 	DATA_CONTRACT_STEP_SCHEMAS,
-} from "~/utils/forms/data-contract/stepMaps";
+} from "~/utils/forms/data-contract/v1/stepMaps";
 
 export function useStepDataContractForm(opts: {
 	defaultValues: z.infer<typeof dataContractSchema>;

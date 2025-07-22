@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { dataContractSchema } from "~/utils/forms/data-contract/schema";
+import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { buildStepMap } from "~/utils/zod/stepper";
 
 export const DATA_CONTRACT_STEP_MAP = buildStepMap(dataContractSchema);

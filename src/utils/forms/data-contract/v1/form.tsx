@@ -8,7 +8,7 @@ import {
 	dataContractFormDefaultValues,
 	dataContractSchema,
 	defaultDataAccess,
-} from "~/utils/forms/data-contract/schema";
+} from "~/utils/forms/data-contract/v1/schema";
 import { DataAccessItem } from "./data-access-item";
 import { PersonInfoItem } from "./person-info-item";
 

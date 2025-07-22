@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
 	}
 
 	if (sessionCookie && pathname === "/sign-in") {
-		return NextResponse.redirect(new URL("/admin", request.url));
+		return NextResponse.redirect(new URL("/admin/requests", request.url));
 	}
 
 	return NextResponse.next();

@@ -37,7 +37,7 @@ export default function ListRequests() {
 			} else {
 				console.log("Sign in successful:", data);
 			}
-			router.push("/admin");
+			router.push("/admin/requests");
 		},
 	});
 

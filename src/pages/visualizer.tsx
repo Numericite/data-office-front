@@ -9,8 +9,8 @@ import { type ZodError, z } from "zod";
 import {
 	type DataContractSchema,
 	dataContractSchema,
-} from "~/utils/forms/data-contract/schema";
-import { dataContractFormDefaultValues } from "~/utils/forms/data-contract/schema";
+} from "~/utils/forms/data-contract/v1/schema";
+import { dataContractFormDefaultValues } from "~/utils/forms/data-contract/v1/schema";
 
 export default function Visualizer() {
 	const { classes, cx } = useStyles();

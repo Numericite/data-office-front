@@ -68,7 +68,7 @@ const columns = [
 	columnHelper.accessor("id", {
 		header: "Actions",
 		cell: (info) => (
-			<Link href={`/requests/${info.getValue()}`} target="_blank">
+			<Link href={`/requests/${info.getValue()}/v1`} target="_blank">
 				Voir
 			</Link>
 		),
