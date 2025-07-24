@@ -97,6 +97,7 @@ export const DataAccessItem = withForm({
 											nativeInputProps: {
 												name: `new-reference-${itemIndex}`,
 												value: "new-reference",
+												checked: isNewReference,
 												onChange: () => setIsNewReference((prev) => !prev),
 											},
 										},

@@ -35,9 +35,7 @@ export default function ProcedureForm() {
 	const { mutateAsync: updateRequest } = api.request.update.useMutation();
 	const { data: requestData } = api.request.getById.useQuery(
 		Number(request_id),
-		{
-			enabled: request_id !== "new",
-		},
+		{ enabled: request_id !== "new" },
 	);
 
 	const stepForm = useStepDataContractForm({
@@ -46,19 +44,21 @@ export default function ProcedureForm() {
 				? (requestData.formData as DataContractSchema)
 				: dataContractFormDefaultValues,
 		onFinalSubmit: async (values) => {
-			if (request_id !== "new") {
-				console.log("Updating request with values:", values);
+			if (request_id === "new") {
+				await createRequest({ data: values });
+			} else {
 				await updateRequest({
 					id: Number(request_id),
 					data: values,
 				});
-				toast.success("Votre demande a bien été mise à jour.");
-			} else {
-				await createRequest({ data: values });
-				toast.success("Votre demande a bien été envoyée.");
-				stepForm.setStep(0);
-				stepForm.form.reset();
 			}
+
+			toast.success(
+				`Votre demande a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
+			);
+
+			stepForm.setStep(0);
+			stepForm.form.reset();
 		},
 	});
 
@@ -86,6 +86,7 @@ export default function ProcedureForm() {
 			stepForm.form.setFieldValue("dataAccesses[0]", {
 				// biome-ignore lint/style/noNonNullAssertion: faker data is always defined
 				...fakerData.dataAccesses[0]!,
+				referenceId: undefined,
 			});
 		} else if (stepForm.step === 2) {
 			stepForm.form.setFieldValue("businessContact", makeFakerPersonInfo());
