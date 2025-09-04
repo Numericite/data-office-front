@@ -44,15 +44,19 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Accueil", linkProps: { href: "/" } },
-	{ text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
-	{ text: "Nouvelle demande", linkProps: { href: "/requests/new/v1" } },
+	{ text: "Demandes", linkProps: { href: "/dashboard/requests" } },
+	{
+		text: "Data-marketplace",
+		linkProps: { href: "/dashboard/data-marketplace" },
+	},
+	// { text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
 ];
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Liste des demandes", linkProps: { href: "/admin/requests" } },
-	{ text: "Liste des utilisateurs", linkProps: { href: "/admin/users" } },
-	{ text: "Liste des références", linkProps: { href: "/admin/references" } },
+	{ text: "Demandes", linkProps: { href: "/admin/requests" } },
+	{ text: "Utilisateurs", linkProps: { href: "/admin/users" } },
+	{ text: "Data-marketplace", linkProps: { href: "/admin/data-marketplace" } },
+	{ text: "Data-contracts", linkProps: { href: "/admin/data-contracts" } },
 ];
 
 function App({ Component, pageProps }: AppProps) {
@@ -68,7 +72,13 @@ function App({ Component, pageProps }: AppProps) {
 			...(isAuthenticated ? adminNavigationItems : []),
 		].map((item) => ({
 			...item,
-			isActive: router.asPath === item?.linkProps?.href,
+			isActive:
+				router.asPath === item?.linkProps?.href ||
+				router.asPath.startsWith(
+					typeof item?.linkProps?.href === "string"
+						? item?.linkProps?.href
+						: "",
+				),
 		}));
 	}, [session.isPending, session.data?.user, router.asPath]);
 
@@ -129,9 +139,9 @@ function App({ Component, pageProps }: AppProps) {
 				quickAccessItems={quickAccessItems}
 				serviceTitle="Data Office - Data Contracts Formulaires"
 			/>
-			<div className={fr.cx("fr-container")} style={{ flex: 1 }}>
+			<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
 				<Component {...pageProps} />
-			</div>
+			</main>
 			<Footer
 				accessibility="non compliant"
 				bottomItems={[headerFooterDisplayItem]}

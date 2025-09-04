@@ -159,9 +159,23 @@ export const requestRouter = createTRPCRouter({
 			return requests;
 		}),
 
-	getAll: publicProcedure.query(async ({ ctx }) => {
-		const requests = await ctx.db.request.findMany();
+	getAll: publicProcedure
+		.input(
+			z
+				.object({
+					status: z.enum(["pending", "approved", "rejected"]).optional(),
+				})
+				.optional(),
+		)
+		.query(async ({ ctx, input }) => {
+			const { status } = input || {};
 
-		return requests;
-	}),
+			const requests = await ctx.db.request.findMany({
+				where: {
+					status: status ? { equals: status } : undefined,
+				},
+			});
+
+			return requests;
+		}),
 });
