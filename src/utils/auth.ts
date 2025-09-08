@@ -5,15 +5,23 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
-  }),
-  plugins: [nextCookies()],
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: false,
-  },
-  advanced: {
-    generateId: false,
-  },
+	database: prismaAdapter(prisma, {
+		provider: "postgresql", // or "mysql", "postgresql", ...etc
+	}),
+	user: {
+		additionalFields: {
+			role: {
+				type: "string",
+				// input: false,
+			},
+		},
+	},
+	plugins: [nextCookies()],
+	emailAndPassword: {
+		enabled: true,
+		autoSignIn: false,
+	},
+	advanced: {
+		generateId: false,
+	},
 });

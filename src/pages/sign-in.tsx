@@ -27,17 +27,20 @@ export default function ListRequests() {
 		onSubmit: async (values) => {
 			const { email, password } = values.value;
 
-			const { data, error } = await authClient.signIn.email({
+			const { error } = await authClient.signIn.email({
 				email,
 				password,
 			});
 
-			if (error) {
-				console.error("Error signing in:", error);
+			if (error) console.error("Error signing in:", error);
+
+			const { data } = await authClient.getSession();
+
+			if (data?.user.role === "SUPERADMIN" || data?.user.role === "ADMIN") {
+				router.push("/dashboard/admin/requests");
 			} else {
-				console.log("Sign in successful:", data);
+				router.push("/dashboard/requests");
 			}
-			router.push("/admin/requests");
 		},
 	});
 

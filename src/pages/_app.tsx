@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: d */
 import { fr } from "@codegouvfr/react-dsfr";
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
@@ -43,20 +44,24 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
-const unauthenticatedNavigationItems: MainNavigationProps.Item[] = [
+const userNavigationItems: MainNavigationProps.Item[] = [
 	{ text: "Demandes", linkProps: { href: "/dashboard/requests" } },
 	{
 		text: "Data-marketplace",
 		linkProps: { href: "/dashboard/data-marketplace" },
 	},
-	// { text: "Visualiser un formulaire", linkProps: { href: "/visualizer" } },
 ];
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Demandes", linkProps: { href: "/admin/requests" } },
-	{ text: "Utilisateurs", linkProps: { href: "/admin/users" } },
-	{ text: "Data-marketplace", linkProps: { href: "/admin/data-marketplace" } },
-	{ text: "Data-contracts", linkProps: { href: "/admin/data-contracts" } },
+	{
+		text: "Demandes en cours",
+		linkProps: { href: "/dashboard/admin/requests" },
+	},
+	{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
+	{
+		text: "Data-marketplace",
+		linkProps: { href: "/dashboard/admin/data-marketplace" },
+	},
 ];
 
 function App({ Component, pageProps }: AppProps) {
@@ -64,13 +69,26 @@ function App({ Component, pageProps }: AppProps) {
 
 	const session = authClient.useSession();
 
+	const isAuthenticated = !!session.data?.user;
+
+	const logout = async () => {
+		await authClient.signOut();
+		router.push("/");
+	};
+
 	const navigationItems = useMemo(() => {
 		if (session.isPending) return [];
-		const isAuthenticated = !!session.data?.user;
-		return [
-			...unauthenticatedNavigationItems,
-			...(isAuthenticated ? adminNavigationItems : []),
-		].map((item) => ({
+
+		if (!isAuthenticated) return [];
+
+		const userRole = session.data?.user?.role;
+
+		const items =
+			userRole === "ADMIN" || userRole === "SUPERADMIN"
+				? adminNavigationItems
+				: userNavigationItems;
+
+		return items.map((item) => ({
 			...item,
 			isActive:
 				router.asPath === item?.linkProps?.href ||
@@ -80,39 +98,42 @@ function App({ Component, pageProps }: AppProps) {
 						: "",
 				),
 		}));
-	}, [session.isPending, session.data?.user, router.asPath]);
+	}, [session.isPending, session.data?.user, router.asPath, isAuthenticated]);
 
 	const quickAccessItems = useMemo(() => {
+		const items = [] as HeaderProps.QuickAccessItem[];
 		if (session.isPending) return [];
-		const isAuthenticated = !!session.data?.user;
+
+		const userRole = session.data?.user?.role;
+
 		if (isAuthenticated) {
-			return [
-				{
+			items.push({
+				iconId: "ri-logout-box-line",
+				text: "Se déconnecter",
+				linkProps: {
+					href: "/",
+					onClick: logout,
+					style: { color: fr.colors.decisions.text.default.error.default },
+				},
+			});
+
+			if (userRole === "ADMIN" || userRole === "SUPER_ADMIN") {
+				items.push({
 					iconId: "ri-admin-fill",
 					text: "Administration",
 					linkProps: { href: "/admin/requests" },
-				},
-				{
-					iconId: "ri-logout-box-line",
-					text: "Se déconnecter",
-					linkProps: {
-						href: "/",
-						onClick: async () => {
-							await authClient.signOut();
-						},
-						style: { color: fr.colors.decisions.text.default.error.default },
-					},
-				},
-			] as HeaderProps.QuickAccessItem[];
-		}
-		return [
-			{
+				});
+			}
+		} else {
+			items.push({
 				iconId: "ri-user-line",
 				text: "Se connecter",
 				linkProps: { href: "/sign-in" },
-			},
-		] as HeaderProps.QuickAccessItem[];
-	}, [session.isPending, session.data?.user]);
+			});
+		}
+
+		return items;
+	}, [session.isPending, session.data?.user, isAuthenticated]);
 
 	return (
 		<div
@@ -131,9 +152,13 @@ function App({ Component, pageProps }: AppProps) {
 					</>
 				}
 				homeLinkProps={{
-					href: "/",
+					href: !isAuthenticated
+						? "/"
+						: session?.data?.user.role === "USER"
+							? "/dashboard/requests"
+							: "/dashboard/admin/requests",
 					title:
-						"Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
+						"Accueil - Nom de l’entité (ministère, secrétariat d'état, gouvernement)",
 				}}
 				navigation={navigationItems}
 				quickAccessItems={quickAccessItems}

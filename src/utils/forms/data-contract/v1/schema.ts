@@ -1,4 +1,3 @@
-import { LegalWorkProcessing } from "@prisma/client";
 import { z } from "zod";
 import { withStep } from "~/utils/zod/stepper";
 
@@ -76,37 +75,9 @@ export const dataContractSchema = z.object({
 					message:
 						"A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
 				}),
-				owner: z.string().min(1, { message: "Propriétaire requis" }),
-				processingDone: z.string().min(1, {
-					message: "Traitement qui sera opéré sur les données requis",
+				explanationDescription: z.string().min(1, {
+					message: "Explication requise",
 				}),
-				peopleAccess: z.string().min(1, {
-					message:
-						"Accès requis (public, au sein de votre structure, partenaires éventuels - combien de personnes ?)",
-				}),
-				storageLocation: z.string().min(1, {
-					message: "Lieu de stockage requis (bdd, fichiers)",
-				}),
-				needPersonalData: z.boolean(),
-				personalData: z
-					.object({
-						recipient: z.string().min(1, { message: "Destinataire requis" }),
-						retentionPeriodInMonths: z.number().min(1, {
-							message: "Durée de conservation requise (en mois)",
-						}),
-						processingType: z.string().min(1, {
-							message: "Type de traitement requis",
-						}),
-						dataController: z.string().min(1, {
-							message: "Responsable de traitement requis",
-						}),
-						authRequired: z.boolean(),
-						securityMeasures: z.string().min(1, {
-							message: "Mesures de sécurité requises",
-						}),
-						legalWork: z.enum(LegalWorkProcessing),
-					})
-					.optional(),
 			}),
 		),
 		1,
@@ -119,12 +90,8 @@ export const dataContractSchema = z.object({
 export type DataContractSchema = z.input<typeof dataContractSchema>;
 
 export const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
-	needPersonalData: false,
 	description: "",
-	processingDone: "",
-	storageLocation: "",
-	peopleAccess: "",
-	owner: "",
+	explanationDescription: "",
 };
 
 const defaultPersonInfo: PersonInfoSchema = {

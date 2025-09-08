@@ -24,7 +24,15 @@ export default function DashboardDataMarketplace() {
 				]}
 			/>
 			<h1>Data Marketplace - Fiche "{data?.name}"</h1>
-			<p>{data?.description}</p>
+			<p>Description : {data?.description}</p>
+			<p>Responsable du domaine : {data?.owner}</p>
+			<p>Lieu du stockage : {data?.storageLocation}</p>
+			<p>Traitement effectué : {data?.processingDone}</p>
+			<p>Personnes ayant accès aux données : {data?.peopleAccess}</p>
+			<p>
+				Date de création :{" "}
+				{data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : ""}
+			</p>
 		</div>
 	);
 }

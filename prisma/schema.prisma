@@ -68,6 +68,7 @@ model PersonalData {
 model User {
   id            Int       @id @default(autoincrement())
   name          String
+  role          UserRole  @default(USER)
   email         String
   emailVerified Boolean
   image         String?
@@ -78,6 +79,12 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  USER
 }
 
 model Session {
@@ -94,6 +101,8 @@ model Session {
   @@unique([token])
   @@map("session")
 }
+
+
 
 model Account {
   id                    Int       @id @default(autoincrement())

@@ -8,13 +8,13 @@ export async function middleware(request: NextRequest) {
 	if (
 		!sessionCookie &&
 		pathname !== "/sign-in" &&
-		pathname.startsWith("/admin")
+		pathname.startsWith("/dashboard")
 	) {
 		return NextResponse.redirect(new URL("/sign-in", request.url));
 	}
 
-	if (sessionCookie && pathname === "/sign-in") {
-		return NextResponse.redirect(new URL("/admin/requests", request.url));
+	if (sessionCookie && (pathname === "/sign-in" || pathname === "/")) {
+		return NextResponse.redirect(new URL("/dashboard/requests", request.url));
 	}
 
 	return NextResponse.next();

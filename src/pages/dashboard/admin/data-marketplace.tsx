@@ -102,7 +102,7 @@ const renderSubComponent = ({ row }: { row: Row<ReferenceDataForTable> }) => {
 };
 
 export default function AdminHome() {
-	const { data } = api.reference.getAll.useQuery();
+	const { data } = api.reference.getBySearch.useQuery();
 
 	return (
 		<>
