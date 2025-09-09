@@ -1,10 +1,10 @@
 import type { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const referenceRouter = createTRPCRouter({
-	getByInfiniteQuery: publicProcedure
+	getByInfiniteQuery: protectedProcedure
 		.input(
 			z.object({
 				search: z.string().optional(),
@@ -60,7 +60,7 @@ export const referenceRouter = createTRPCRouter({
 			};
 		}),
 
-	getBySearch: publicProcedure
+	getBySearch: protectedProcedure
 		.input(z.object({ search: z.string().optional() }).optional())
 		.query(async ({ ctx, input }) => {
 			const { search } = input || {};
@@ -93,7 +93,7 @@ export const referenceRouter = createTRPCRouter({
 			return tmpReferences;
 		}),
 
-	getById: publicProcedure
+	getById: protectedProcedure
 		.input(z.number())
 		.query(async ({ ctx, input: id }) => {
 			const reference = await ctx.db.referenceData.findUnique({

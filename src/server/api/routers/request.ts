@@ -6,7 +6,7 @@ import yaml from "yaml";
 import { z } from "zod";
 
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { TRPCError } from "@trpc/server";
 
@@ -42,7 +42,7 @@ const uploadRequestYamlToS3 = async ({
 };
 
 export const requestRouter = createTRPCRouter({
-	create: publicProcedure
+	create: protectedProcedure
 		.input(z.object({ data: dataContractSchema }))
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
@@ -53,6 +53,7 @@ export const requestRouter = createTRPCRouter({
 
 			const newRequest = await ctx.db.request.create({
 				data: {
+					userId: Number.parseInt(ctx.session.user.id),
 					formData: data,
 					yamlFile: "",
 				},
@@ -76,7 +77,7 @@ export const requestRouter = createTRPCRouter({
 			return newRequest;
 		}),
 
-	update: publicProcedure
+	update: protectedProcedure
 		.input(z.object({ id: z.number(), data: dataContractSchema }))
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
@@ -123,7 +124,7 @@ export const requestRouter = createTRPCRouter({
 			return newRequest;
 		}),
 
-	getById: publicProcedure
+	getById: protectedProcedure
 		.input(z.number())
 		.query(async ({ ctx, input: id }) => {
 			const request = await ctx.db.request.findUnique({
@@ -145,10 +146,15 @@ export const requestRouter = createTRPCRouter({
 			return request;
 		}),
 
-	getByUserId: publicProcedure
-		.input(z.object({ userId: z.string() }))
-		.query(async ({ ctx }) => {
+	getByUserId: protectedProcedure
+		.input(
+			z.object({
+				status: z.enum(["pending", "approved", "rejected"]).optional(),
+			}),
+		)
+		.query(async ({ ctx, input: { status } }) => {
 			const requests = await ctx.db.request.findMany({
+				where: { userId: Number.parseInt(ctx.session.user.id), status },
 				select: {
 					id: true,
 					status: true,
@@ -159,7 +165,7 @@ export const requestRouter = createTRPCRouter({
 			return requests;
 		}),
 
-	getAll: publicProcedure
+	getAll: protectedProcedure
 		.input(
 			z
 				.object({

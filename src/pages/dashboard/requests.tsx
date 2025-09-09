@@ -11,6 +11,7 @@ import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { useState } from "react";
 import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { authClient } from "~/utils/auth-client";
 
 type RequestForTable = Pick<Request, "id" | "status" | "yamlFile">;
 
@@ -81,6 +82,8 @@ const fallbackData: RequestForTable[] = [];
 export default function DashboardRequests() {
 	const { classes, cx } = useStyles();
 
+	const { data: session } = authClient.useSession();
+
 	const [selectedTabId, setSelectedTabId] = useState("pending");
 
 	const tabs = [
@@ -91,11 +94,14 @@ export default function DashboardRequests() {
 
 	const queries = api.useQueries((t) =>
 		tabs.map(({ tabId }) =>
-			t.request.getAll({
-				// numberPerPage,
-				// page: currentTabIndex === index ? page : 1,
-				status: tabId as Request["status"],
-			}),
+			t.request.getByUserId(
+				{
+					// numberPerPage,
+					// page: currentTabIndex === index ? page : 1,
+					status: tabId as Request["status"],
+				},
+				{ enabled: !!session?.user.id },
+			),
 		),
 	);
 

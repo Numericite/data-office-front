@@ -34,7 +34,7 @@ export default function ProcedureForm() {
 	const { mutateAsync: updateRequest } = api.request.update.useMutation();
 	const { data: requestData } = api.request.getById.useQuery(
 		Number(request_id),
-		{ enabled: request_id !== "new" },
+		{ enabled: !!request_id && request_id !== "new" },
 	);
 
 	const stepForm = useStepDataContractForm({

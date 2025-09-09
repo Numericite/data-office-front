@@ -20,6 +20,8 @@ model Request {
   formData      Json
   yamlFile      String
   referenceData ReferenceData[] @relation("RequestReferenceData")
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -77,6 +79,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  requests      Request[]
 
   @@unique([email])
   @@map("user")
