@@ -6,6 +6,7 @@ import { genericOAuth } from "better-auth/plugins";
 import { jwtDecode } from "jwt-decode";
 
 const prisma = new PrismaClient();
+
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",

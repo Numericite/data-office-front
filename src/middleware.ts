@@ -1,26 +1,46 @@
-import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "./utils/auth";
+import { headers } from "next/headers";
 
 export async function middleware(request: NextRequest) {
-	const sessionCookie = getSessionCookie(request);
-	const { pathname } = request.nextUrl;
+	const sessionCookie = await auth.api.getSession({
+		headers: await headers(),
+	});
 
-	if (
-		!sessionCookie &&
-		pathname !== "/auth/sign-in" &&
-		pathname.startsWith("/dashboard")
-	) {
-		return NextResponse.redirect(new URL("/auth/sign-in", request.url));
-	}
+	const pathname = request.nextUrl.pathname;
 
-	if (sessionCookie && (pathname === "/auth/sign-in" || pathname === "/")) {
-		return NextResponse.redirect(new URL("/dashboard/requests", request.url));
+	if (sessionCookie) {
+		switch (sessionCookie?.user.role) {
+			case "ADMIN":
+			case "SUPERADMIN":
+				if (!pathname.startsWith("/dashboard/admin")) {
+					return NextResponse.redirect(
+						new URL("/dashboard/admin", request.url),
+					);
+				}
+				break;
+			case "USER":
+				if (
+					pathname.startsWith("/dashboard/admin") ||
+					!pathname.startsWith("/dashboard")
+				) {
+					return NextResponse.redirect(
+						new URL("/dashboard/requests", request.url),
+					);
+				}
+				break;
+		}
+	} else {
+		if (pathname.startsWith("/dashboard")) {
+			return NextResponse.redirect(new URL("/", request.url));
+		}
 	}
 
 	return NextResponse.next();
 }
 
 export const config = {
+	runtime: "nodejs",
 	matcher: [
 		"/",
 		"/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
