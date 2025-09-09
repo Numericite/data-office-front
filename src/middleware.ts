@@ -7,13 +7,13 @@ export async function middleware(request: NextRequest) {
 
 	if (
 		!sessionCookie &&
-		pathname !== "/sign-in" &&
+		pathname !== "/auth/sign-in" &&
 		pathname.startsWith("/dashboard")
 	) {
-		return NextResponse.redirect(new URL("/sign-in", request.url));
+		return NextResponse.redirect(new URL("/auth/sign-in", request.url));
 	}
 
-	if (sessionCookie && (pathname === "/sign-in" || pathname === "/")) {
+	if (sessionCookie && (pathname === "/auth/sign-in" || pathname === "/")) {
 		return NextResponse.redirect(new URL("/dashboard/requests", request.url));
 	}
 

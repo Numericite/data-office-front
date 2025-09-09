@@ -14,6 +14,7 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { authClient } from "~/utils/auth-client";
+import Head from "next/head";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -124,54 +125,54 @@ function App({ Component, pageProps }: AppProps) {
 					linkProps: { href: "/admin/requests" },
 				});
 			}
-		} else {
-			items.push({
-				iconId: "ri-user-line",
-				text: "Se connecter",
-				linkProps: { href: "/sign-in" },
-			});
 		}
 
 		return items;
 	}, [session.isPending, session.data?.user, isAuthenticated]);
 
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				display: "flex",
-				flexDirection: "column",
-			}}
-		>
-			<Header
-				brandTop={
-					<>
-						INTITULE
-						<br />
-						OFFICIEL
-					</>
-				}
-				homeLinkProps={{
-					href: !isAuthenticated
-						? "/"
-						: session?.data?.user.role === "USER"
-							? "/dashboard/requests"
-							: "/dashboard/admin/requests",
-					title:
-						"Accueil - Nom de l’entité (ministère, secrétariat d'état, gouvernement)",
+		<>
+			<Head>
+				<title>Data Office - Data Contracts</title>
+			</Head>
+			<div
+				style={{
+					minHeight: "100vh",
+					display: "flex",
+					flexDirection: "column",
 				}}
-				navigation={navigationItems}
-				quickAccessItems={quickAccessItems}
-				serviceTitle="Data Office - Data Contracts Formulaires"
-			/>
-			<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
-				<Component {...pageProps} />
-			</main>
-			<Footer
-				accessibility="non compliant"
-				bottomItems={[headerFooterDisplayItem]}
-			/>
-		</div>
+			>
+				<Header
+					brandTop={
+						<>
+							RÉPUBLIQUE
+							<br />
+							FRANÇAISE
+						</>
+					}
+					homeLinkProps={{
+						href: !isAuthenticated
+							? "/"
+							: session?.data?.user.role === "USER"
+								? "/dashboard/requests"
+								: "/dashboard/admin/requests",
+						title:
+							"Accueil - Nom de l’entité (ministère, secrétariat d'état, gouvernement)",
+					}}
+					navigation={navigationItems}
+					quickAccessItems={quickAccessItems}
+					serviceTitle="Data Office"
+					serviceTagline="Data Contracts"
+				/>
+				<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
+					<Component {...pageProps} />
+				</main>
+				<Footer
+					accessibility="non compliant"
+					bottomItems={[headerFooterDisplayItem]}
+				/>
+			</div>
+		</>
 	);
 }
 

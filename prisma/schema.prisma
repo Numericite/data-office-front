@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -40,12 +41,12 @@ model ReferenceData {
 }
 
 enum LegalWorkProcessing {
-  general_legal_framework  @map("Cadre légal général")
+  general_legal_framework @map("Cadre légal général")
   specific_legal_framework @map("Cadre légal spécifique")
-  deliberation             @map("Délibération")
-  none                     @map("Aucun - demande décret DNUM")
-  sufficient_decree        @map("Décret suffisant")
-  insufficient_decree      @map("Décret insuffisant - révision nécessaire")
+  deliberation @map("Délibération")
+  none @map("Aucun - demande décret DNUM")
+  sufficient_decree @map("Décret suffisant")
+  insufficient_decree @map("Décret insuffisant - révision nécessaire")
 }
 
 model PersonalData {
@@ -102,11 +103,9 @@ model Session {
   @@map("session")
 }
 
-
-
 model Account {
   id                    Int       @id @default(autoincrement())
-  accountId             Int
+  accountId             String
   providerId            String
   userId                Int
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -124,7 +123,7 @@ model Account {
 }
 
 model Verification {
-  id         String    @id
+  id         Int    @id @default(autoincrement())
   identifier String
   value      String
   expiresAt  DateTime
