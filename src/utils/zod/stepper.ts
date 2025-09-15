@@ -1,35 +1,30 @@
-import type { z, ZodTypeAny } from "zod";
+import type { z } from "zod";
 
-const STEP_KEY = "__formStep";
+const STEP_TAG = "__formStep:" as const;
 
-declare module "zod" {
-	interface ZodTypeDef {
-		[STEP_KEY]?: number;
-	}
-}
+export const withStep = <T extends z.ZodTypeAny>(
+	schema: T,
+	step: number,
+): T => {
+	const existing = schema.description ? `${schema.description} ` : "";
+	return schema.describe(`${existing}${STEP_TAG}${step}`) as T;
+};
 
-/**
- * Annotates a Zod schema (object OR primitive) with the step index.
- */
-export const withStep = <T extends ZodTypeAny>(schema: T, step: number): T => {
-	const schemaCloned = schema.clone();
-	return Object.assign(schemaCloned, {
-		_def: { ...schema._def, [STEP_KEY]: step },
-	}) as T;
+// Helper to extract the step number from a schema
+const getStep = (s: z.ZodTypeAny): number | undefined => {
+	const m = s.description?.match(/__formStep:(\d+)/);
+	return m ? Number(m[1]) : undefined;
 };
 
 type StepMap = { [step: number]: string[] };
 
-export function buildStepMap(schema: z.ZodSchema): StepMap {
+export function buildStepMap(schema: z.ZodObject<z.ZodRawShape>): StepMap {
 	const map: StepMap = {};
-	Object.entries((schema as z.ZodObject<z.ZodRawShape>).shape).forEach(
-		([key, value]) => {
-			// biome-ignore lint/suspicious/noExplicitAny: dasdsa
-			const step = ((value as z.ZodTypeAny)._def as any).__formStep;
-			if (step === undefined) return;
-			map[step] ??= [];
-			map[step].push(key);
-		},
-	);
+	for (const [key, value] of Object.entries(schema.shape)) {
+		const step = getStep(value as z.ZodTypeAny);
+		if (step === undefined) continue;
+		if (!map[step]) map[step] = [];
+		map[step].push(key);
+	}
 	return map;
 }

@@ -58,6 +58,7 @@ export default function ProcedureForm() {
 
 			stepForm.setStep(0);
 			stepForm.form.reset();
+			router.push("/dashboard/requests");
 		},
 	});
 
