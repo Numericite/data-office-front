@@ -8,7 +8,8 @@ import {
 	type Row,
 	type TableOptions,
 } from "@tanstack/react-table";
-import { Fragment } from "react";
+import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
+import { Fragment, type Dispatch } from "react";
 import { tss } from "tss-react";
 
 export interface DsfrTableProps<TData> {
@@ -28,6 +29,12 @@ export interface DsfrTableProps<TData> {
 	tableClassName?: string;
 	/** Additional class name(s) applied to the wrapper `<div>` */
 	wrapperClassName?: string;
+	pagination: {
+		numberPerPage: number;
+		currentPage: number;
+		setCurrentPage: Dispatch<React.SetStateAction<number>>;
+	};
+	totalCount: number;
 }
 
 const useStyles = tss.withName("DsfrTable").create(() => ({
@@ -38,11 +45,17 @@ const useStyles = tss.withName("DsfrTable").create(() => ({
 	table: {
 		display: "inline-table!important",
 	},
+	paginationWrapper: {
+		display: "flex",
+		justifyContent: "center",
+	},
 }));
 
 export function DsfrTable<TData>({
 	data,
 	columns,
+	pagination,
+	totalCount,
 	tableOptions,
 	tableClassName,
 	wrapperClassName,
@@ -112,8 +125,22 @@ export function DsfrTable<TData>({
 					</tbody>
 				</table>
 			</div>
+			{totalCount > pagination.numberPerPage && (
+				<div className={classes.paginationWrapper}>
+					<Pagination
+						count={totalCount}
+						defaultPage={pagination.currentPage}
+						getPageLinkProps={(page) => ({
+							href: "#",
+							onClick: (e) => {
+								e.preventDefault();
+								pagination.setCurrentPage(page);
+							},
+						})}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }
-
 export default DsfrTable;

@@ -706,10 +706,10 @@
   resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-x64/-/cli-win32-x64-2.0.6.tgz#53acf543060bfda18853dfa81b34e6e95fb545a5"
   integrity sha512-bfM1Bce0d69Ao7pjTjUS+AWSZ02+5UHdiAP85Th8e9yV5xzw6JrHXbL5YWlcEKQ84FIZMdDc7ncuti1wd2sdbw==
 
-"@codegouvfr/react-dsfr@^1.22.1":
-  version "1.22.1"
-  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-1.22.1.tgz#3af16b4f769acaac85b608a4391fba08af82091e"
-  integrity sha512-EstsaebNe7OI2BSFjq0V9N8wHeDJkmZRwnsKT9ohqVXtMsi2lqL2FvoqNcFj9QQjlAz4QTcqdZzk9JYOUDUHZw==
+"@codegouvfr/react-dsfr@^1.26.0":
+  version "1.26.0"
+  resolved "https://registry.yarnpkg.com/@codegouvfr/react-dsfr/-/react-dsfr-1.26.0.tgz#7358adbaf0c25ef98ec9996c0a0a38ac4f1853ef"
+  integrity sha512-yfevs/blAVDqw03/w7Gb/rumTlFC2i//ly0SHwrs6ZXmxRayc+UiKoou71uZSAwu1lZ9J9wyCYUbvQug57uStg==
   dependencies:
     tsafe "^1.8.5"
     yargs-parser "^21.1.1"

@@ -1,7 +1,8 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import type { ReferenceData } from "@prisma/client";
-import { type Row, createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import Head from "next/head";
+import { useState } from "react";
 import DsfrTable from "~/components/DsfrTable";
 import { api } from "~/utils/api";
 
@@ -10,30 +11,6 @@ type ReferenceDataForTable = ReferenceData & { requestCount: number };
 const columnHelper = createColumnHelper<ReferenceDataForTable>();
 
 const columns = [
-	columnHelper.display({
-		id: "expander",
-		cell: ({ row }) => {
-			return row.getCanExpand() ? (
-				<button
-					onClick={row.getToggleExpandedHandler()}
-					type="button"
-					style={{
-						background: "none",
-						border: "none",
-						cursor: "pointer",
-					}}
-				>
-					{row.getIsExpanded() ? (
-						<i className="ri-arrow-down-s-fill" />
-					) : (
-						<i className="ri-arrow-right-s-fill" />
-					)}
-				</button>
-			) : (
-				"🔵"
-			);
-		},
-	}),
 	columnHelper.accessor("id", {
 		header: "ID",
 		cell: (info) => info.getValue(),
@@ -56,53 +33,19 @@ const columns = [
 	}),
 ];
 
-const fallbackData: ReferenceDataForTable[] = [];
-
-const renderSubComponent = ({ row }: { row: Row<ReferenceDataForTable> }) => {
-	const blockStyle = {
-		backgroundColor: "white",
-		padding: `${fr.spacing("5v")} ${fr.spacing("4v")}`,
-		borderRadius: fr.spacing("3v"),
-		border: `1px solid ${fr.colors.decisions.background.contrast.grey.hover}`,
-	};
-
-	return (
-		<div
-			className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}
-			style={{
-				backgroundColor: fr.colors.decisions.background.raised.grey.hover,
-				margin: `-${fr.spacing("4v")}`,
-				padding: fr.spacing("5v"),
-				columnGap: fr.spacing("4v"),
-				rowGap: fr.spacing("4v"),
-			}}
-		>
-			<div className={fr.cx("fr-col-6")} style={blockStyle}>
-				<span>Description</span>
-				<p>{row.original.description}</p>
-			</div>
-			<div className={fr.cx("fr-col-3")} style={blockStyle}>
-				<span>Propriétaire</span>
-				<p>{row.original.owner}</p>
-			</div>
-			<div className={fr.cx("fr-col-3")} style={blockStyle}>
-				<span>Emplacement de stockage</span>
-				<p>{row.original.storageLocation}</p>
-			</div>
-			<div className={fr.cx("fr-col-3")} style={blockStyle}>
-				<span>Traitement effectué</span>
-				<p>{row.original.processingDone}</p>
-			</div>
-			<div className={fr.cx("fr-col-3")} style={blockStyle}>
-				<span>Personnes ayant accès</span>
-				<p>{row.original.peopleAccess}</p>
-			</div>
-		</div>
-	);
-};
+const numberPerPage = 10;
 
 export default function AdminHome() {
-	const { data } = api.reference.getBySearch.useQuery();
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const { data: totalCount } = api.reference.getCount.useQuery(undefined, {
+		initialData: 0,
+	});
+
+	const { data } = api.reference.getList.useQuery({
+		page: currentPage,
+		numberPerPage,
+	});
 
 	return (
 		<>
@@ -116,9 +59,14 @@ export default function AdminHome() {
 					<h1>Liste des références</h1>
 				</div>
 				<DsfrTable<ReferenceDataForTable>
-					data={data ?? fallbackData}
+					data={data ?? []}
 					columns={columns}
-					renderSubComponent={renderSubComponent}
+					totalCount={totalCount}
+					pagination={{
+						numberPerPage,
+						currentPage,
+						setCurrentPage,
+					}}
 				/>
 			</main>
 		</>

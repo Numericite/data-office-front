@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { ZGetListParams } from "../defaultZodParams";
 
 export const referenceRouter = createTRPCRouter({
 	getByInfiniteQuery: protectedProcedure
@@ -60,10 +61,10 @@ export const referenceRouter = createTRPCRouter({
 			};
 		}),
 
-	getBySearch: protectedProcedure
-		.input(z.object({ search: z.string().optional() }).optional())
+	getList: protectedProcedure
+		.input(ZGetListParams.extend({ search: z.string().optional() }))
 		.query(async ({ ctx, input }) => {
-			const { search } = input || {};
+			const { page, numberPerPage, search } = input || {};
 
 			const where: Prisma.ReferenceDataWhereInput = {};
 
@@ -75,6 +76,8 @@ export const referenceRouter = createTRPCRouter({
 			}
 
 			const references = await ctx.db.referenceData.findMany({
+				take: numberPerPage,
+				skip: (page - 1) * numberPerPage,
 				where,
 				include: {
 					request: {
@@ -92,6 +95,11 @@ export const referenceRouter = createTRPCRouter({
 
 			return tmpReferences;
 		}),
+
+	getCount: protectedProcedure.query(async ({ ctx }) => {
+		const totalCount = await ctx.db.referenceData.count();
+		return totalCount;
+	}),
 
 	getById: protectedProcedure
 		.input(z.number())

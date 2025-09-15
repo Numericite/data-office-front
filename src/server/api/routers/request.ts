@@ -9,6 +9,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { TRPCError } from "@trpc/server";
+import { ZGetListParams } from "../defaultZodParams";
 
 type UploadRequestYamlToS3Props = {
 	yamlString: string;
@@ -148,7 +149,7 @@ export const requestRouter = createTRPCRouter({
 
 	getByUserId: protectedProcedure
 		.input(
-			z.object({
+			ZGetListParams.extend({
 				status: z.enum(["pending", "approved", "rejected"]).optional(),
 			}),
 		)
@@ -165,23 +166,31 @@ export const requestRouter = createTRPCRouter({
 			return requests;
 		}),
 
-	getAll: protectedProcedure
+	getList: protectedProcedure
 		.input(
-			z
-				.object({
-					status: z.enum(["pending", "approved", "rejected"]).optional(),
-				})
-				.optional(),
+			ZGetListParams.extend({
+				status: z.enum(["pending", "approved", "rejected"]).optional(),
+			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const { status } = input || {};
+			const { page, numberPerPage, status } = input || {};
 
 			const requests = await ctx.db.request.findMany({
+				take: numberPerPage,
+				skip: (page - 1) * numberPerPage,
 				where: {
 					status: status ? { equals: status } : undefined,
+				},
+				include: {
+					user: true,
 				},
 			});
 
 			return requests;
 		}),
+
+	getCount: protectedProcedure.query(async ({ ctx }) => {
+		const count = await ctx.db.request.count();
+		return count;
+	}),
 });

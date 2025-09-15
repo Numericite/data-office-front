@@ -78,6 +78,7 @@ const columns = [
 ];
 
 const fallbackData: RequestForTable[] = [];
+const numberPerPage = 10;
 
 export default function DashboardRequests() {
 	const { classes, cx } = useStyles();
@@ -85,6 +86,7 @@ export default function DashboardRequests() {
 	const { data: session } = authClient.useSession();
 
 	const [selectedTabId, setSelectedTabId] = useState("pending");
+	const [currentPage, setCurrentPage] = useState(1);
 
 	const tabs = [
 		{ label: "En attente", tabId: "pending" },
@@ -93,11 +95,11 @@ export default function DashboardRequests() {
 	];
 
 	const queries = api.useQueries((t) =>
-		tabs.map(({ tabId }) =>
+		tabs.map(({ tabId }, index) =>
 			t.request.getByUserId(
 				{
-					// numberPerPage,
-					// page: currentTabIndex === index ? page : 1,
+					numberPerPage,
+					page: currentPage === index ? currentPage : 1,
 					status: tabId as Request["status"],
 				},
 				{ enabled: !!session?.user.id },
@@ -139,6 +141,15 @@ export default function DashboardRequests() {
 						fallbackData
 					}
 					columns={columns}
+					totalCount={
+						requests_status.find((tab) => tab.tabId === selectedTabId)?.data
+							.length ?? 0
+					}
+					pagination={{
+						numberPerPage,
+						currentPage,
+						setCurrentPage,
+					}}
 				/>
 			</Tabs>
 		</>

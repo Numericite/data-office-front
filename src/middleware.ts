@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
 			case "SUPERADMIN":
 				if (!pathname.startsWith("/dashboard/admin")) {
 					return NextResponse.redirect(
-						new URL("/dashboard/admin", request.url),
+						new URL("/dashboard/admin/requests", request.url),
 					);
 				}
 				break;
