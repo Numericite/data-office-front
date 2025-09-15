@@ -10,6 +10,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
+import { RequestReviewStatus, RequestStatus } from "@prisma/client";
 
 type UploadRequestYamlToS3Props = {
 	yamlString: string;
@@ -150,16 +151,14 @@ export const requestRouter = createTRPCRouter({
 	getByUserId: protectedProcedure
 		.input(
 			ZGetListParams.extend({
-				status: z.enum(["pending", "approved", "rejected"]).optional(),
+				status: z.enum(RequestStatus).optional(),
 			}),
 		)
 		.query(async ({ ctx, input: { status } }) => {
 			const requests = await ctx.db.request.findMany({
 				where: { userId: Number.parseInt(ctx.session.user.id), status },
-				select: {
-					id: true,
-					status: true,
-					yamlFile: true,
+				omit: {
+					formData: true,
 				},
 			});
 
@@ -169,17 +168,19 @@ export const requestRouter = createTRPCRouter({
 	getList: protectedProcedure
 		.input(
 			ZGetListParams.extend({
-				status: z.enum(["pending", "approved", "rejected"]).optional(),
+				status: z.enum(RequestStatus).optional(),
+				reviewStatus: z.enum(RequestReviewStatus).optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
-			const { page, numberPerPage, status } = input || {};
+			const { page, numberPerPage, status, reviewStatus } = input || {};
 
 			const requests = await ctx.db.request.findMany({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				where: {
 					status: status ? { equals: status } : undefined,
+					reviewStatus: reviewStatus ? { equals: reviewStatus } : undefined,
 				},
 				include: {
 					user: true,

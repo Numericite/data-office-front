@@ -30,7 +30,7 @@
 		"@emotion/server": "^11.11.0",
 		"@emotion/styled": "^11.14.0",
 		"@mui/material": "^7.0.1",
-		"@prisma/client": "^5.14.0",
+		"@prisma/client": "^6.16.1",
 		"@t3-oss/env-nextjs": "^0.12.0",
 		"@tanstack/react-form": "^1.6.3",
 		"@tanstack/react-query": "^5.69.0",
@@ -59,7 +59,7 @@
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"lefthook": "^1.11.13",
-		"prisma": "^5.14.0",
+		"prisma": "^6.16.1",
 		"typescript": "^5.8.2",
 		"zod-schema-faker": "^2.0.0-beta.2"
 	},

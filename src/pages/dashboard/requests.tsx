@@ -2,9 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import Download from "@codegouvfr/react-dsfr/Download";
 import { createColumnHelper } from "@tanstack/react-table";
-import type { Request } from "@prisma/client";
-import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
-import Badge from "@codegouvfr/react-dsfr/Badge";
+import { type Request, RequestStatus } from "@prisma/client";
 import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
@@ -12,8 +10,11 @@ import { useState } from "react";
 import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { authClient } from "~/utils/auth-client";
+import { getRequestStatus } from "~/utils/tools";
+import z from "zod";
+import { Badge } from "@mui/material";
 
-type RequestForTable = Pick<Request, "id" | "status" | "yamlFile">;
+type RequestForTable = Omit<Request, "formData">;
 
 const columnHelper = createColumnHelper<RequestForTable>();
 
@@ -38,35 +39,14 @@ const columns = [
 			);
 		},
 	}),
-	columnHelper.accessor("status", {
-		header: "Statut",
+	columnHelper.accessor("reviewStatus", {
+		header: "Statut de révision",
 		cell: (info) => {
-			const status = info.getValue();
-			let severity: AlertProps.Severity | undefined;
-			let text = "";
+			const reviewStatus = info.getValue();
 
-			switch (status) {
-				case "pending":
-					severity = "info";
-					text = "En attente";
-					break;
-				case "approved":
-					severity = "success";
-					text = "Approuvé";
-					break;
-				case "rejected":
-					severity = "error";
-					text = "Rejeté";
-					break;
-				default:
-					severity = undefined;
-			}
+			if (!reviewStatus) return "-";
 
-			return (
-				<Badge severity={severity} noIcon>
-					{text}
-				</Badge>
-			);
+			return <Badge>{reviewStatus}</Badge>;
 		},
 	}),
 	columnHelper.accessor("id", {
@@ -88,11 +68,12 @@ export default function DashboardRequests() {
 	const [selectedTabId, setSelectedTabId] = useState("pending");
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const tabs = [
-		{ label: "En attente", tabId: "pending" },
-		{ label: "Approuvées", tabId: "approved" },
-		{ label: "Rejetées", tabId: "rejected" },
-	];
+	const tabs: { label: string; tabId: RequestStatus }[] = z
+		.enum(RequestStatus)
+		.options.map((status) => ({
+			tabId: status,
+			label: getRequestStatus(status).text,
+		}));
 
 	const queries = api.useQueries((t) =>
 		tabs.map(({ tabId }, index) =>
@@ -100,7 +81,7 @@ export default function DashboardRequests() {
 				{
 					numberPerPage,
 					page: currentPage === index ? currentPage : 1,
-					status: tabId as Request["status"],
+					status: tabId,
 				},
 				{ enabled: !!session?.user.id },
 			),
@@ -134,8 +115,9 @@ export default function DashboardRequests() {
 				selectedTabId={selectedTabId}
 				tabs={tabs}
 				onTabChange={setSelectedTabId}
+				className={classes.tabsWrapper}
 			>
-				<DsfrTable
+				<DsfrTable<RequestForTable>
 					data={
 						requests_status.find((tab) => tab.tabId === selectedTabId)?.data ??
 						fallbackData
@@ -164,5 +146,21 @@ const useStyles = tss.withName(DashboardRequests.name).create(() => ({
 	buttonNew: {
 		alignSelf: "center",
 		height: "fit-content",
+	},
+	tabsWrapper: {
+		".fr-tabs__list": {
+			paddingLeft: 0,
+			paddingRight: 0,
+		},
+		boxShadow: "none",
+		"::before": {
+			display: "none",
+		},
+		".fr-tabs__panel": {
+			paddingTop: fr.spacing("5w"),
+			paddingLeft: 0,
+			paddingRight: 0,
+			outlineOffset: "-1px",
+		},
 	},
 }));

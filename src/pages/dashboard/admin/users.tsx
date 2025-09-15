@@ -59,9 +59,12 @@ export default function AdminHome() {
 			header: "Rôle",
 			cell: (info) => (
 				<Select label="" nativeSelectProps={{ value: info.getValue() }}>
-					<option value="SUPERADMIN">Super Administrateur</option>
-					<option value="ADMIN">Administrateur</option>
-					<option value="USER">Utilisateur</option>
+					<option value="superadmin">Super Administrateur</option>
+					<option value="admin">Administrateur</option>
+					<option value="dpo">DPO</option>
+					<option value="rssi">RSSI</option>
+					<option value="daj">DAJ</option>
+					<option value="instructor">Instructeur</option>
 				</Select>
 			),
 		}),

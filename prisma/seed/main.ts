@@ -14,7 +14,7 @@ async function main() {
 				email: "admin@test.loc",
 				password: "admin123",
 				name: "Admin",
-				role: "SUPERADMIN",
+				role: "superadmin",
 			},
 		});
 
@@ -33,7 +33,7 @@ async function main() {
 				email: "user@test.loc",
 				password: "userr123",
 				name: "User",
-				role: "USER",
+				role: "instructor",
 			},
 		});
 

@@ -2,28 +2,40 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import Download from "@codegouvfr/react-dsfr/Download";
 import { createColumnHelper } from "@tanstack/react-table";
-import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
 import type { RequestsWithUser } from "~/utils/prisma-augmented";
 import { useState } from "react";
+import { getRequestStatus } from "~/utils/tools";
+import { authClient } from "~/utils/auth-client";
+import type { UserRole } from "@prisma/client";
 
 const columnHelper = createColumnHelper<RequestsWithUser>();
 
 const numberPerPage = 10;
 
 export default function AdminHome() {
+	const { data: session } = authClient.useSession();
+	const userRole = session?.user.role as Exclude<UserRole, "instructor">;
+
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data: totalCount } = api.request.getCount.useQuery(undefined, {
 		initialData: 0,
 	});
 
-	const { data } = api.request.getList.useQuery({
-		page: currentPage,
-		numberPerPage,
-	});
+	const { data } = api.request.getList.useQuery(
+		{
+			page: currentPage,
+			numberPerPage,
+			reviewStatus:
+				userRole !== "admin" && userRole !== "superadmin"
+					? userRole
+					: undefined,
+		},
+		{ enabled: !!session?.user.role },
+	);
 
 	const columns = [
 		columnHelper.accessor("id", {
@@ -50,25 +62,7 @@ export default function AdminHome() {
 			header: "Statut",
 			cell: (info) => {
 				const status = info.getValue();
-				let severity: AlertProps.Severity | undefined;
-				let text = "";
-
-				switch (status) {
-					case "pending":
-						severity = "info";
-						text = "En attente";
-						break;
-					case "approved":
-						severity = "success";
-						text = "Approuvé";
-						break;
-					case "rejected":
-						severity = "error";
-						text = "Rejeté";
-						break;
-					default:
-						severity = undefined;
-				}
+				const { text, severity } = getRequestStatus(status);
 
 				return (
 					<Badge severity={severity} noIcon>

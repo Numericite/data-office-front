@@ -36,7 +36,7 @@ export default function ListRequests() {
 
 			const { data } = await authClient.getSession();
 
-			if (data?.user.role === "SUPERADMIN" || data?.user.role === "ADMIN") {
+			if (data?.user.role.endsWith("admin")) {
 				router.push("/dashboard/admin/requests");
 			} else {
 				router.push("/dashboard/requests");

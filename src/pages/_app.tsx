@@ -16,6 +16,7 @@ import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation"
 import { authClient } from "~/utils/auth-client";
 import Head from "next/head";
 import { Toaster } from "sonner";
+import type { UserRole } from "@prisma/client";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -56,13 +57,8 @@ const userNavigationItems: MainNavigationProps.Item[] = [
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
 	{
-		text: "Demandes en cours",
+		text: "Gestion des demandes en cours",
 		linkProps: { href: "/dashboard/admin/requests" },
-	},
-	{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
-	{
-		text: "Data-marketplace",
-		linkProps: { href: "/dashboard/admin/data-marketplace" },
 	},
 ];
 
@@ -83,12 +79,20 @@ function App({ Component, pageProps }: AppProps) {
 
 		if (!isAuthenticated) return [];
 
-		const userRole = session.data?.user?.role;
+		const userRole = session.data?.user?.role as UserRole;
 
 		const items =
-			userRole === "ADMIN" || userRole === "SUPERADMIN"
-				? adminNavigationItems
-				: userNavigationItems;
+			userRole === "instructor" ? userNavigationItems : adminNavigationItems;
+
+		if (userRole === "superadmin") {
+			items.push(
+				{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
+				{
+					text: "Data-marketplace",
+					linkProps: { href: "/dashboard/admin/data-marketplace" },
+				},
+			);
+		}
 
 		return items.map((item) => ({
 			...item,
@@ -119,7 +123,7 @@ function App({ Component, pageProps }: AppProps) {
 				},
 			});
 
-			if (userRole === "ADMIN" || userRole === "SUPER_ADMIN") {
+			if (userRole?.endsWith("admin")) {
 				items.push({
 					iconId: "ri-admin-fill",
 					text: "Administration",
