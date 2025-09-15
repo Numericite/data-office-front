@@ -25,8 +25,10 @@ export const DataAccessItem = withForm({
 		const [debouncedSearchValue] = useDebounceValue(searchValue, 400);
 
 		const { data: references, isLoading: isLoadingReferences } =
-			api.reference.getBySearch.useQuery({
+			api.reference.getList.useQuery({
 				search: debouncedSearchValue,
+				page: 1,
+				numberPerPage: 10,
 			});
 
 		const onSelectDataAccess = (id: number | undefined) => {
@@ -106,25 +108,22 @@ export const DataAccessItem = withForm({
 					}
 					children={(referenceId) =>
 						(referenceId || isNewReference) && (
-							<>
+							<div className={fr.cx("fr-mt-2w")}>
 								<form.AppField
-									name={`dataAccesses[${itemIndex}].description`}
+									name={`dataAccesses[${itemIndex}].explanationDescription`}
 									children={(field) => (
-										<field.TextAreaField
-											label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?"
-											disabled={!!referenceId}
-										/>
+										<field.TextAreaField label="À quoi vont servir ces données ?" />
 									)}
 								/>
 								{isNewReference && (
 									<form.AppField
-										name={`dataAccesses[${itemIndex}].explanationDescription`}
+										name={`dataAccesses[${itemIndex}].description`}
 										children={(field) => (
-											<field.TextAreaField label="À quoi vont servir ces données ?" />
+											<field.TextAreaField label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?" />
 										)}
 									/>
 								)}
-							</>
+							</div>
 						)
 					}
 				/>

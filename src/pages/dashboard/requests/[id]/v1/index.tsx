@@ -4,7 +4,7 @@ import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
 import { fakerFR as faker } from "@faker-js/faker";
 import { useRouter } from "next/router";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
 import { BaseDataContractForm } from "~/utils/forms/data-contract/v1/form";
@@ -99,87 +99,84 @@ export default function ProcedureForm() {
 	>;
 
 	return (
-		<>
-			<Toaster position="top-center" richColors />
-			<div className={fr.cx("fr-mb-8w")}>
-				<Breadcrumb
-					currentPageLabel={
-						request_id !== "new" ? `#${request_id}` : "Nouvelle demande"
-					}
-					className="fr-mb-0"
-					segments={[
-						{
-							label: "Demandes",
-							linkProps: {
-								href: "/dashboard/requests",
-							},
+		<div className={fr.cx("fr-mb-8w")}>
+			<Breadcrumb
+				currentPageLabel={
+					request_id !== "new" ? `#${request_id}` : "Nouvelle demande"
+				}
+				className="fr-mb-0"
+				segments={[
+					{
+						label: "Demandes",
+						linkProps: {
+							href: "/dashboard/requests",
 						},
-					]}
-				/>
-				<h1>Formulaire de demande</h1>
-				<Stepper
-					currentStep={stepForm.step + 1}
-					stepCount={DATA_CONTRACT_STEPS}
-					title={DATA_CONTRACT_STEP_LABELS[stepForm.step]}
-					nextTitle={DATA_CONTRACT_STEP_LABELS[stepForm.step + 1] ?? undefined}
-					className={fr.cx("fr-mb-4w")}
-				/>
-				{process.env.NODE_ENV === "development" && (
-					<div className={fr.cx("fr-mb-4w")}>
-						<Button
-							className={fr.cx("fr-btn", "fr-btn--secondary")}
-							onClick={generateFakeData}
-						>
-							Générer des données factices
-						</Button>
-					</div>
-				)}
-				<stepForm.form.AppForm>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							stepForm.isLast ? stepForm.form.handleSubmit() : stepForm.next();
-						}}
+					},
+				]}
+			/>
+			<h1>Formulaire de demande</h1>
+			<Stepper
+				currentStep={stepForm.step + 1}
+				stepCount={DATA_CONTRACT_STEPS}
+				title={DATA_CONTRACT_STEP_LABELS[stepForm.step]}
+				nextTitle={DATA_CONTRACT_STEP_LABELS[stepForm.step + 1] ?? undefined}
+				className={fr.cx("fr-mb-4w")}
+			/>
+			{process.env.NODE_ENV === "development" && (
+				<div className={fr.cx("fr-mb-4w")}>
+					<Button
+						className={fr.cx("fr-btn", "fr-btn--secondary")}
+						onClick={generateFakeData}
 					>
-						<BaseDataContractForm
-							form={stepForm.form}
-							visibleSections={visible}
-							formId="dcf"
-						/>
-						<ButtonsGroup
-							className={fr.cx("fr-mt-4w")}
-							buttons={[
-								{
-									children: "Précédent",
-									iconId: "ri-arrow-left-line",
-									onClick: stepForm.previous,
-									priority: "tertiary",
-									iconPosition: "left",
-									type: "button",
-									disabled: stepForm.step === 0,
-								},
-								{
-									children: stepForm.isLast ? "Soumettre" : "Suivant",
-									iconId: stepForm.isLast
-										? "ri-check-line"
-										: "ri-arrow-right-line",
-									type: "submit",
-									priority: "primary",
-									iconPosition: "right",
-									disabled: stepForm.isLast
-										? stepForm.form.state.isSubmitting
-										: stepForm.form.state.isSubmitting ||
-											stepForm.form.state.isValidating,
-								},
-							]}
-							alignment="right"
-							buttonsEquisized
-							inlineLayoutWhen="always"
-						/>
-					</form>
-				</stepForm.form.AppForm>
-			</div>
-		</>
+						Générer des données factices
+					</Button>
+				</div>
+			)}
+			<stepForm.form.AppForm>
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						stepForm.isLast ? stepForm.form.handleSubmit() : stepForm.next();
+					}}
+				>
+					<BaseDataContractForm
+						form={stepForm.form}
+						visibleSections={visible}
+						formId="dcf"
+					/>
+					<ButtonsGroup
+						className={fr.cx("fr-mt-4w")}
+						buttons={[
+							{
+								children: "Précédent",
+								iconId: "ri-arrow-left-line",
+								onClick: stepForm.previous,
+								priority: "tertiary",
+								iconPosition: "left",
+								type: "button",
+								disabled: stepForm.step === 0,
+							},
+							{
+								children: stepForm.isLast ? "Soumettre" : "Suivant",
+								iconId: stepForm.isLast
+									? "ri-check-line"
+									: "ri-arrow-right-line",
+								type: "submit",
+								priority: "primary",
+								iconPosition: "right",
+								disabled: stepForm.isLast
+									? stepForm.form.state.isSubmitting
+									: stepForm.form.state.isSubmitting ||
+										stepForm.form.state.isValidating,
+							},
+						]}
+						alignment="right"
+						buttonsEquisized
+						inlineLayoutWhen="always"
+					/>
+				</form>
+			</stepForm.form.AppForm>
+		</div>
 	);
 }

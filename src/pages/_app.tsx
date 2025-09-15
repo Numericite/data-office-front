@@ -15,6 +15,7 @@ import "~/styles/globals.css";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { authClient } from "~/utils/auth-client";
 import Head from "next/head";
+import { Toaster } from "sonner";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -135,6 +136,7 @@ function App({ Component, pageProps }: AppProps) {
 			<Head>
 				<title>Data Office - Data Contracts</title>
 			</Head>
+			<Toaster position="top-center" richColors />
 			<div
 				style={{
 					minHeight: "100vh",

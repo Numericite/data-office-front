@@ -103,6 +103,7 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		paddingTop: fr.spacing("2w"),
 		display: "grid",
 		gridTemplateColumns: "repeat(3, 1fr)",
+		gap: fr.spacing("4w"),
 	},
 	loadMoreWrapper: {
 		marginTop: fr.spacing("4w"),

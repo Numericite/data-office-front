@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ZGetListParams } from "../defaultZodParams";
+import { referenceSchema } from "~/utils/forms/reference/schema";
 
 export const referenceRouter = createTRPCRouter({
 	getByInfiniteQuery: protectedProcedure
@@ -124,5 +125,25 @@ export const referenceRouter = createTRPCRouter({
 				});
 
 			return reference;
+		}),
+
+	upsert: protectedProcedure
+		.input(referenceSchema.omit({ needPersonalData: true }))
+		.mutation(async ({ ctx, input }) => {
+			// biome-ignore lint/correctness/noUnusedVariables: remove personalData for now
+			const { id, personalData, ...data } = input;
+
+			if (id) {
+				// Update existing reference
+				await ctx.db.referenceData.update({
+					where: { id },
+					data,
+				});
+			} else {
+				// Create new reference
+				await ctx.db.referenceData.create({
+					data,
+				});
+			}
 		}),
 });
