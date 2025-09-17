@@ -110,3 +110,23 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
 		},
 	});
 });
+
+export const superadminProcedure = protectedProcedure.use(
+	async ({ ctx, next }) => {
+		const session = ctx.session;
+
+		if (session.user.role !== "superadmin") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "You must be an admin to access this resource.",
+			});
+		}
+
+		return next({
+			ctx: {
+				...ctx,
+				session,
+			},
+		});
+	},
+);

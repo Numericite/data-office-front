@@ -62,6 +62,15 @@ const adminNavigationItems: MainNavigationProps.Item[] = [
 	},
 ];
 
+const superAdminNavigationItems: MainNavigationProps.Item[] = [
+	...adminNavigationItems,
+	{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
+	{
+		text: "Data-marketplace",
+		linkProps: { href: "/dashboard/admin/data-marketplace" },
+	},
+];
+
 function App({ Component, pageProps }: AppProps) {
 	const router = useRouter();
 
@@ -81,17 +90,17 @@ function App({ Component, pageProps }: AppProps) {
 
 		const userRole = session.data?.user?.role as UserRole;
 
-		const items =
-			userRole === "instructor" ? userNavigationItems : adminNavigationItems;
+		let items = [] as MainNavigationProps.Item[];
 
-		if (userRole === "superadmin") {
-			items.push(
-				{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
-				{
-					text: "Data-marketplace",
-					linkProps: { href: "/dashboard/admin/data-marketplace" },
-				},
-			);
+		switch (userRole) {
+			case "superadmin":
+				items = superAdminNavigationItems;
+				break;
+			case "instructor":
+				items = userNavigationItems;
+				break;
+			default:
+				items = adminNavigationItems;
 		}
 
 		return items.map((item) => ({

@@ -24,7 +24,9 @@ export default function AdminHome() {
 	const [userToDelete, setUserToDelete] = useState<UserForTable | null>(null);
 
 	const { data: session } = authClient.useSession();
+	const sessionUserId = Number.parseInt(session?.user?.id ?? "");
 
+	const { mutateAsync: updateUsers } = api.user.update.useMutation();
 	const { mutateAsync: deleteUsers } = api.user.delete.useMutation();
 
 	const { data: totalCount } = api.user.getCount.useQuery(undefined, {
@@ -35,6 +37,11 @@ export default function AdminHome() {
 		page: currentPage,
 		numberPerPage,
 	});
+
+	const handleUpdate = async (id: number, role: User["role"]) => {
+		await updateUsers([{ id, role }]);
+		refetch();
+	};
 
 	const handleDelete = async (id: number) => {
 		await deleteUsers([id]);
@@ -58,7 +65,18 @@ export default function AdminHome() {
 		columnHelper.accessor("role", {
 			header: "Rôle",
 			cell: (info) => (
-				<Select label="" nativeSelectProps={{ value: info.getValue() }}>
+				<Select
+					label=""
+					nativeSelectProps={{
+						value: info.getValue(),
+						onChange: (e) =>
+							handleUpdate(
+								info.row.original.id,
+								e.target.value as User["role"],
+							),
+					}}
+					disabled={info.row.original.id === sessionUserId}
+				>
 					<option value="superadmin">Super Administrateur</option>
 					<option value="admin">Administrateur</option>
 					<option value="dpo">DPO</option>
@@ -72,8 +90,7 @@ export default function AdminHome() {
 			id: "Actions",
 			header: "Actions",
 			cell: (info) =>
-				session?.user?.id &&
-				info.row.original.id !== Number.parseInt(session.user.id) && (
+				info.row.original.id !== sessionUserId ? (
 					<Button
 						iconId="fr-icon-delete-bin-fill"
 						onClick={() => {
@@ -84,6 +101,8 @@ export default function AdminHome() {
 						priority="tertiary"
 						title="Supprimer"
 					/>
+				) : (
+					"-"
 				),
 		}),
 	];
