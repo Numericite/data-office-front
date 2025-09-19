@@ -147,7 +147,7 @@ function App({ Component, pageProps }: AppProps) {
 	return (
 		<>
 			<Head>
-				<title>Data Office - Data Contracts</title>
+				<title>EDS - Espace de Données Sociales</title>
 			</Head>
 			<Toaster position="top-center" richColors />
 			<div
@@ -176,8 +176,7 @@ function App({ Component, pageProps }: AppProps) {
 					}}
 					navigation={navigationItems}
 					quickAccessItems={quickAccessItems}
-					serviceTitle="Data Office"
-					serviceTagline="Data Contracts"
+					serviceTitle="Espace de Données Sociales"
 				/>
 				<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
 					<Component {...pageProps} />

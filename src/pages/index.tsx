@@ -18,6 +18,7 @@ export default function Home() {
 		Cookies.set("oauth_state", urlParams.get("state") ?? "");
 		Cookies.set("oauth_nonce", urlParams.get("nonce") ?? "");
 	};
+
 	return (
 		<div className={classes.main}>
 			<div className={classes.imageHome}>
@@ -30,12 +31,11 @@ export default function Home() {
 				/>
 			</div>
 			<div className={classes.heroSection}>
-				<h1>Bienvenue sur le Data Office - Data Contracts</h1>
+				<h1>Connectez-vous pour accéder à l'interface</h1>
 				<p>
-					Le Data Office a pour mission de faciliter l'accès et l'utilisation
-					des données au sein de l'administration.
+					L'Espace de Données Sociales a pour mission de faciliter l'accès et
+					l'utilisation des données au sein des ministères sociaux.
 				</p>
-				<h3>Pour accéder à l'espace</h3>
 				<ProConnectButton onClick={signIn} />
 			</div>
 		</div>
