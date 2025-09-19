@@ -1,5 +1,5 @@
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
-import type { RequestStatus } from "@prisma/client";
+import type { RequestStatus, UserRole } from "@prisma/client";
 
 export function getRequestStatus(status: RequestStatus) {
 	let severity: AlertProps.Severity | undefined;
@@ -8,7 +8,7 @@ export function getRequestStatus(status: RequestStatus) {
 	switch (status) {
 		case "pending":
 			severity = "info";
-			text = "En attente";
+			text = "À traiter";
 			break;
 		case "under_instruction":
 			severity = "info";
@@ -29,4 +29,21 @@ export function getRequestStatus(status: RequestStatus) {
 	}
 
 	return { severity, text };
+}
+
+export function getUserRoleLabel(role: UserRole) {
+	switch (role) {
+		case "instructor":
+			return "Utilisateur";
+		case "admin":
+			return "Administrateur";
+		case "superadmin":
+			return "Super administrateur";
+		case "daj":
+			return "DAJ";
+		case "dpo":
+			return "DPO";
+		case "rssi":
+			return "RSSI";
+	}
 }

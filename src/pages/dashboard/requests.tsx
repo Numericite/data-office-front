@@ -1,106 +1,96 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
-import Download from "@codegouvfr/react-dsfr/Download";
 import { createColumnHelper } from "@tanstack/react-table";
-import { type Request, RequestStatus } from "@prisma/client";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
-import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import type { RequestsWithUser } from "~/utils/prisma-augmented";
 import { useState } from "react";
-import { tss } from "tss-react";
-import Button from "@codegouvfr/react-dsfr/Button";
-import { authClient } from "~/utils/auth-client";
 import { getRequestStatus } from "~/utils/tools";
-import z from "zod";
-import { Badge } from "@mui/material";
+import { authClient } from "~/utils/auth-client";
+import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
+import Button from "@codegouvfr/react-dsfr/Button";
+import { tss } from "tss-react";
 
-type RequestForTable = Omit<Request, "formData">;
+const columnHelper = createColumnHelper<RequestsWithUser>();
 
-const columnHelper = createColumnHelper<RequestForTable>();
-
-const columns = [
-	columnHelper.accessor("id", {
-		header: "ID",
-		cell: (info) => info.getValue(),
-	}),
-	columnHelper.accessor("yamlFile", {
-		header: "Fichier YAML",
-		cell: (info) => {
-			const fileName = info.getValue().split("/").pop();
-			return (
-				<Download
-					details={false}
-					label={fileName}
-					className={fr.cx("fr-m-0", "fr-p-0")}
-					linkProps={{
-						href: info.getValue(),
-					}}
-				/>
-			);
-		},
-	}),
-	columnHelper.accessor("reviewStatus", {
-		header: "Statut de révision",
-		cell: (info) => {
-			const reviewStatus = info.getValue();
-
-			if (!reviewStatus) return "-";
-
-			return <Badge>{reviewStatus}</Badge>;
-		},
-	}),
-	columnHelper.accessor("id", {
-		header: "Actions",
-		cell: (info) => (
-			<Link href={`/dashboard/requests/${info.getValue()}/v1`}>Voir</Link>
-		),
-	}),
-];
-
-const fallbackData: RequestForTable[] = [];
 const numberPerPage = 10;
 
 export default function DashboardRequests() {
 	const { classes, cx } = useStyles();
-
 	const { data: session } = authClient.useSession();
 
-	const [selectedTabId, setSelectedTabId] = useState("pending");
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const tabs: { label: string; tabId: RequestStatus }[] = z
-		.enum(RequestStatus)
-		.options.map((status) => ({
-			tabId: status,
-			label: getRequestStatus(status).text,
-		}));
+	const { data: totalCount } = api.request.getCount.useQuery(undefined, {
+		initialData: 0,
+	});
 
-	const queries = api.useQueries((t) =>
-		tabs.map(({ tabId }, index) =>
-			t.request.getByUserId(
-				{
-					numberPerPage,
-					page: currentPage === index ? currentPage : 1,
-					status: tabId,
-				},
-				{ enabled: !!session?.user.id },
-			),
-		),
+	const { data } = api.request.getByUserId.useQuery(
+		{
+			page: currentPage,
+			numberPerPage,
+		},
+		{ enabled: !!session?.user.role },
 	);
 
-	const requests_status = tabs.map((tabKind, index) => {
-		const { data, refetch, isLoading, isRefetching } = queries[index] ?? {};
-		return {
-			...tabKind,
-			data: data || [],
-			refetch,
-			isLoading: isLoading || isRefetching,
-		} as const;
-	});
+	const columns = [
+		columnHelper.accessor("formData", {
+			header: "Nom du projet",
+			cell: (info) => {
+				const formData = info.getValue();
+				const { data } = dataContractSchema.safeParse(formData);
+
+				const projectName = data?.dataProduct.name;
+
+				return projectName;
+			},
+		}),
+		columnHelper.accessor("status", {
+			header: "Statut",
+			cell: (info) => {
+				const status = info.getValue();
+				const { text, severity } = getRequestStatus(status);
+
+				return (
+					<Badge severity={severity} noIcon>
+						{text}
+					</Badge>
+				);
+			},
+		}),
+		columnHelper.accessor("reviewStatus", {
+			header: "Statut de révision",
+			cell: (info) => {
+				const status = info.getValue();
+				if (!status) return <span>-</span>;
+				return (
+					<Badge severity="info" noIcon>
+						{status}
+					</Badge>
+				);
+			},
+		}),
+		columnHelper.accessor("user", {
+			header: "Utilisateur",
+			cell: (info) => info.getValue()?.email || "Utilisateur supprimé",
+		}),
+		columnHelper.accessor("id", {
+			header: "Actions",
+			cell: (info) => (
+				<Link
+					href={`/dashboard/requests/${info.getValue()}/v1`}
+					target="_blank"
+				>
+					Voir
+				</Link>
+			),
+		}),
+	];
 
 	return (
 		<>
-			<div className={cx(classes.headerWrapper, fr.cx("fr-mt-4w"))}>
+			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
 				<h1>Liste des demandes</h1>
 				<Button
 					className={classes.buttonNew}
@@ -111,29 +101,16 @@ export default function DashboardRequests() {
 					Nouvelle demande
 				</Button>
 			</div>
-			<Tabs
-				selectedTabId={selectedTabId}
-				tabs={tabs}
-				onTabChange={setSelectedTabId}
-				className={classes.tabsWrapper}
-			>
-				<DsfrTable<RequestForTable>
-					data={
-						requests_status.find((tab) => tab.tabId === selectedTabId)?.data ??
-						fallbackData
-					}
-					columns={columns}
-					totalCount={
-						requests_status.find((tab) => tab.tabId === selectedTabId)?.data
-							.length ?? 0
-					}
-					pagination={{
-						numberPerPage,
-						currentPage,
-						setCurrentPage,
-					}}
-				/>
-			</Tabs>
+			<DsfrTable
+				data={data ?? []}
+				columns={columns}
+				totalCount={totalCount}
+				pagination={{
+					numberPerPage,
+					currentPage,
+					setCurrentPage,
+				}}
+			/>
 		</>
 	);
 }
@@ -142,6 +119,7 @@ const useStyles = tss.withName(DashboardRequests.name).create(() => ({
 	headerWrapper: {
 		display: "flex",
 		justifyContent: "space-between",
+		alignItems: "center",
 	},
 	buttonNew: {
 		alignSelf: "center",

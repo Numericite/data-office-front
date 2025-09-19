@@ -157,8 +157,8 @@ export const requestRouter = createTRPCRouter({
 		.query(async ({ ctx, input: { status } }) => {
 			const requests = await ctx.db.request.findMany({
 				where: { userId: Number.parseInt(ctx.session.user.id), status },
-				omit: {
-					formData: true,
+				include: {
+					user: true,
 				},
 			});
 
@@ -194,4 +194,26 @@ export const requestRouter = createTRPCRouter({
 		const count = await ctx.db.request.count();
 		return count;
 	}),
+
+	updateStatus: protectedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				status: z.enum(RequestStatus).optional(),
+				reviewStatus: z.enum(RequestReviewStatus).optional(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { id, status, reviewStatus } = input;
+
+			const updatedRequest = await ctx.db.request.update({
+				where: { id },
+				data: {
+					status,
+					reviewStatus,
+				},
+			});
+
+			return updatedRequest;
+		}),
 });

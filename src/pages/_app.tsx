@@ -17,6 +17,7 @@ import { authClient } from "~/utils/auth-client";
 import Head from "next/head";
 import { Toaster } from "sonner";
 import type { UserRole } from "@prisma/client";
+import { getUserRoleLabel } from "~/utils/tools";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -119,26 +120,25 @@ function App({ Component, pageProps }: AppProps) {
 		const items = [] as HeaderProps.QuickAccessItem[];
 		if (session.isPending) return [];
 
-		const userRole = session.data?.user?.role;
+		const userRole = session.data?.user?.role as UserRole;
 
 		if (isAuthenticated) {
-			items.push({
-				iconId: "ri-logout-box-line",
-				text: "Se déconnecter",
-				linkProps: {
-					href: "/",
-					onClick: logout,
-					style: { color: fr.colors.decisions.text.default.error.default },
+			items.push(
+				{
+					iconId: "ri-user-fill",
+					text: getUserRoleLabel(userRole),
+					linkProps: { href: "" },
 				},
-			});
-
-			if (userRole?.endsWith("admin")) {
-				items.push({
-					iconId: "ri-admin-fill",
-					text: "Administration",
-					linkProps: { href: "/admin/requests" },
-				});
-			}
+				{
+					iconId: "ri-logout-box-line",
+					text: "Se déconnecter",
+					linkProps: {
+						href: "/",
+						onClick: logout,
+						style: { color: fr.colors.decisions.text.default.error.default },
+					},
+				},
+			);
 		}
 
 		return items;
@@ -171,8 +171,7 @@ function App({ Component, pageProps }: AppProps) {
 							: session?.data?.user.role === "USER"
 								? "/dashboard/requests"
 								: "/dashboard/admin/requests",
-						title:
-							"Accueil - Nom de l’entité (ministère, secrétariat d'état, gouvernement)",
+						title: "Accueil EDS - Espace de Données Sociales",
 					}}
 					navigation={navigationItems}
 					quickAccessItems={quickAccessItems}
