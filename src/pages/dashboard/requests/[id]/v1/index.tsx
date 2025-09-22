@@ -21,12 +21,15 @@ import {
 } from "~/utils/forms/data-contract/v1/stepMaps";
 import { useStepDataContractForm } from "~/utils/forms/data-contract/v1/useStepForm";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
+import { authClient } from "~/utils/auth-client";
 
 if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
 }
 
 export default function ProcedureForm() {
+	const { data: session } = authClient.useSession();
+
 	const router = useRouter();
 	const { id: request_id } = router.query as { id: string | "new" };
 
@@ -110,7 +113,10 @@ export default function ProcedureForm() {
 					{
 						label: "Demandes",
 						linkProps: {
-							href: "/dashboard/requests",
+							href:
+								session?.user.role === "superadmin"
+									? "/dashboard/admin/requests"
+									: "/dashboard/requests",
 						},
 					},
 				]}

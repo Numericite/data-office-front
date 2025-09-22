@@ -17,7 +17,10 @@ export async function middleware(request: NextRequest) {
 			case "rssi":
 			case "dpo":
 			case "daj":
-				if (!pathname.startsWith("/dashboard/admin")) {
+				if (
+					!pathname.startsWith("/dashboard/admin") &&
+					!pathname.startsWith("/dashboard/requests")
+				) {
 					return NextResponse.redirect(
 						new URL("/dashboard/admin/requests", request.url),
 					);

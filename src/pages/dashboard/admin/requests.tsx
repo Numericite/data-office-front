@@ -17,27 +17,33 @@ import {
 	type RequestReviewStatus,
 	RequestStatus,
 } from "@prisma/client";
+import Loader from "~/components/Loader";
 
 const columnHelper = createColumnHelper<Request>();
 
 const numberPerPage = 10;
 
-export default function DashboardRequests() {
-	const utils = api.useUtils();
-	const { classes, cx } = useStyles();
+type DashboardRequestsAdminProps = {
+	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
+	handleUpdateRequestStatus: (
+		id: number,
+		status: RequestStatus,
+	) => Promise<void>;
+	handleUpdateRequestReviewStatus: (
+		id: number,
+		reviewStatus: RequestReviewStatus,
+	) => Promise<void>;
+};
 
-	const { data: session } = authClient.useSession();
+const DashboardRequestsAdmin = ({
+	handleUpdateRequestStatus,
+	handleUpdateRequestReviewStatus,
+	session,
+}: DashboardRequestsAdminProps) => {
+	const { classes } = useStyles();
 
 	const [selectedTabId, setSelectedTabId] = useState("pending");
 	const [currentPage, setCurrentPage] = useState(1);
-
-	const { mutateAsync: updateRequestStatus } =
-		api.request.updateStatus.useMutation({
-			onSuccess: ({ status }) => {
-				utils.request.getList.invalidate({ status });
-				toast.success("Statut mis à jour avec succès");
-			},
-		});
 
 	const tabs: { label: string; tabId: RequestStatus }[] = z
 		.enum(RequestStatus)
@@ -54,7 +60,7 @@ export default function DashboardRequests() {
 					page: currentPage === index ? currentPage : 1,
 					status: tabId,
 				},
-				{ enabled: !!session?.user.id },
+				{ enabled: !!session?.user.id && session.user.role.endsWith("admin") },
 			),
 		),
 	);
@@ -68,22 +74,6 @@ export default function DashboardRequests() {
 			isLoading: isLoading || isRefetching,
 		} as const;
 	});
-
-	const handleUpdateRequestStatus = async (
-		id: number,
-		status: RequestStatus,
-		originalStatus: RequestStatus,
-	) => {
-		await updateRequestStatus({ id, status });
-		requests_status.find((tab) => tab.tabId === originalStatus)?.refetch?.();
-	};
-
-	const handleUpdateRequestReviewStatus = async (
-		id: number,
-		reviewStatus: RequestReviewStatus,
-	) => {
-		await updateRequestStatus({ id, reviewStatus });
-	};
 
 	const columns = [
 		columnHelper.accessor("id", {
@@ -112,13 +102,12 @@ export default function DashboardRequests() {
 							handleUpdateRequestStatus(
 								info.row.original.id,
 								e.target.value as RequestStatus,
-								info.row.original.status,
 							),
 					}}
 				>
-					{tabs.map((tab) => (
-						<option key={tab.tabId} value={tab.tabId}>
-							{tab.label}
+					{z.enum(RequestStatus).options.map((tab) => (
+						<option key={tab} value={tab}>
+							{getRequestStatus(tab).text}
 						</option>
 					))}
 				</Select>
@@ -164,33 +153,141 @@ export default function DashboardRequests() {
 	];
 
 	return (
+		<Tabs
+			selectedTabId={selectedTabId}
+			tabs={tabs}
+			onTabChange={setSelectedTabId}
+			className={classes.tabsWrapper}
+		>
+			<DsfrTable<Request>
+				data={
+					requests_status.find((tab) => tab.tabId === selectedTabId)?.data ?? []
+				}
+				columns={columns}
+				totalCount={
+					requests_status.find((tab) => tab.tabId === selectedTabId)?.data
+						.length ?? 0
+				}
+				pagination={{
+					numberPerPage,
+					currentPage,
+					setCurrentPage,
+				}}
+			/>
+		</Tabs>
+	);
+};
+
+const DashboardRequestsReviewer = ({
+	session,
+}: {
+	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
+}) => {
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const { data } = api.request.getList.useQuery(
+		{
+			numberPerPage: 100,
+			page: 1,
+			reviewStatus: session.user.role as RequestReviewStatus,
+		},
+		{ enabled: !!session?.user.id },
+	);
+
+	const totalCount = data?.length ?? 0;
+
+	const columns = [
+		columnHelper.accessor("id", {
+			header: "ID",
+			cell: (info) => info.getValue(),
+		}),
+		columnHelper.accessor("formData", {
+			header: "Nom du projet",
+			cell: (info) => {
+				const formData = info.getValue();
+				const { data } = dataContractSchema.safeParse(formData);
+
+				const projectName = data?.dataProduct.name;
+
+				return projectName;
+			},
+		}),
+		columnHelper.accessor("id", {
+			header: "Actions",
+			cell: (info) => (
+				<Link
+					href={`/dashboard/requests/${info.getValue()}/v1`}
+					target="_blank"
+				>
+					Voir
+				</Link>
+			),
+		}),
+	];
+
+	return (
+		<DsfrTable<Request>
+			data={data ?? []}
+			columns={columns}
+			totalCount={totalCount}
+			pagination={{
+				numberPerPage,
+				currentPage,
+				setCurrentPage,
+			}}
+		/>
+	);
+};
+
+export default function DashboardRequests() {
+	const utils = api.useUtils();
+	const { classes, cx } = useStyles();
+
+	const { data: session, isPending } = authClient.useSession();
+
+	const { mutateAsync: updateRequestStatus } =
+		api.request.updateStatus.useMutation({
+			onSuccess: ({ original, updated }) => {
+				utils.request.getList.invalidate({ status: original.status });
+				utils.request.getList.invalidate({ status: updated.status });
+				toast.success("Statut mis à jour avec succès");
+			},
+		});
+
+	const handleUpdateRequestStatus = async (
+		id: number,
+		status: RequestStatus,
+	) => {
+		await updateRequestStatus({ id, status });
+	};
+
+	const handleUpdateRequestReviewStatus = async (
+		id: number,
+		reviewStatus: RequestReviewStatus,
+	) => {
+		await updateRequestStatus({ id, reviewStatus });
+	};
+
+	return (
 		<>
 			<div className={cx(classes.headerWrapper, fr.cx("fr-mt-4w"))}>
-				<h1>Liste des demandes</h1>
+				<h1>
+					{session?.user.role.endsWith("admin")
+						? "Liste des demandes"
+						: "Demandes en attente de votre revue"}
+				</h1>
 			</div>
-			<Tabs
-				selectedTabId={selectedTabId}
-				tabs={tabs}
-				onTabChange={setSelectedTabId}
-				className={classes.tabsWrapper}
-			>
-				<DsfrTable<Request>
-					data={
-						requests_status.find((tab) => tab.tabId === selectedTabId)?.data ??
-						[]
-					}
-					columns={columns}
-					totalCount={
-						requests_status.find((tab) => tab.tabId === selectedTabId)?.data
-							.length ?? 0
-					}
-					pagination={{
-						numberPerPage,
-						currentPage,
-						setCurrentPage,
-					}}
+			{isPending || !session ? (
+				<Loader />
+			) : session?.user.role.endsWith("admin") ? (
+				<DashboardRequestsAdmin
+					session={session}
+					handleUpdateRequestStatus={handleUpdateRequestStatus}
+					handleUpdateRequestReviewStatus={handleUpdateRequestReviewStatus}
 				/>
-			</Tabs>
+			) : (
+				<DashboardRequestsReviewer session={session} />
+			)}
 		</>
 	);
 }

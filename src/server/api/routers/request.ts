@@ -190,10 +190,19 @@ export const requestRouter = createTRPCRouter({
 			return requests;
 		}),
 
-	getCount: protectedProcedure.query(async ({ ctx }) => {
-		const count = await ctx.db.request.count();
-		return count;
-	}),
+	getCount: protectedProcedure
+		.input(z.object({ byCurrentUser: z.boolean().optional() }))
+		.query(async ({ ctx, input }) => {
+			const { byCurrentUser } = input;
+
+			const count = await ctx.db.request.count({
+				where: byCurrentUser
+					? { userId: Number.parseInt(ctx.session.user.id) }
+					: undefined,
+			});
+
+			return count;
+		}),
 
 	updateStatus: protectedProcedure
 		.input(
@@ -206,6 +215,18 @@ export const requestRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const { id, status, reviewStatus } = input;
 
+			const original = await ctx.db.request.findUnique({
+				where: { id },
+				select: { status: true, reviewStatus: true },
+			});
+
+			if (!original) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Request with id ${id} not found`,
+				});
+			}
+
 			const updatedRequest = await ctx.db.request.update({
 				where: { id },
 				data: {
@@ -214,6 +235,6 @@ export const requestRouter = createTRPCRouter({
 				},
 			});
 
-			return updatedRequest;
+			return { original, updated: updatedRequest };
 		}),
 });

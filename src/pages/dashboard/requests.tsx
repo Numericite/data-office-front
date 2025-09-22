@@ -22,9 +22,10 @@ export default function DashboardRequests() {
 
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const { data: totalCount } = api.request.getCount.useQuery(undefined, {
-		initialData: 0,
-	});
+	const { data: totalCount } = api.request.getCount.useQuery(
+		{ byCurrentUser: true },
+		{ initialData: 0 },
+	);
 
 	const { data } = api.request.getByUserId.useQuery(
 		{
