@@ -116,9 +116,7 @@ const DashboardRequestsAdmin = ({
 		columnHelper.accessor("reviewStatus", {
 			header: "Statut de révision",
 			cell: (info) => {
-				const reviewStatus = info.getValue();
-
-				if (!reviewStatus) return "-";
+				const reviewStatus = info.getValue() ?? undefined;
 
 				return (
 					<Select
@@ -132,6 +130,9 @@ const DashboardRequestsAdmin = ({
 								),
 						}}
 					>
+						<option value="" selected disabled hidden>
+							Selectionnez une option
+						</option>
 						<option value="rssi">rssi</option>
 						<option value="dpo">dpo</option>
 						<option value="daj">daj</option>
