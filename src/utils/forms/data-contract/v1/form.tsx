@@ -107,12 +107,6 @@ export const BaseDataContractForm = withForm({
 									)}
 								/>
 								<form.AppField
-									name="dataProduct.additionalDocuments"
-									children={(field) => (
-										<field.TextField label="Documents complémentaires (maquette, note de service, etc)" />
-									)}
-								/>
-								<form.AppField
 									name="dataProduct.developmentResponsible"
 									children={(field) => (
 										<field.TextField label="Responsable du développement du produit" />
@@ -138,20 +132,18 @@ export const BaseDataContractForm = withForm({
 									children={(kindAccessData) => {
 										if (kindAccessData === "api") {
 											return (
-												<div key={kindAccessData}>
-													<form.AppField
-														name="dataProduct.apiInfo.nbOfRequestsPerDay"
-														children={(field) => (
-															<field.NumberField label="Nombre de requêtes par jour" />
-														)}
-													/>
-												</div>
+												<form.AppField
+													name="dataProduct.apiInfo.nbOfRequestsPerDay"
+													children={(field) => (
+														<field.NumberField label="Nombre de requêtes par jour" />
+													)}
+												/>
 											);
 										}
 
 										if (kindAccessData === "extract") {
 											return (
-												<div key={kindAccessData}>
+												<>
 													<form.AppField
 														name="dataProduct.extractInfo.format"
 														children={(field) => (
@@ -170,11 +162,17 @@ export const BaseDataContractForm = withForm({
 															/>
 														)}
 													/>
-												</div>
+												</>
 											);
 										}
 										return null;
 									}}
+								/>
+								<form.AppField
+									name="dataProduct.additionalDocuments"
+									children={(field) => (
+										<field.UploadField label="Documents complémentaires (maquette, note de service, etc)" />
+									)}
 								/>
 							</Accordion>
 						</div>

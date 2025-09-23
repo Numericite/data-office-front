@@ -8,6 +8,7 @@ import { SelectField } from "~/components/form/SelectField";
 import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
 import { TextField } from "~/components/form/TextField";
+import { UploadField } from "~/components/form/UploadField";
 
 const { useAppForm, withForm } = createFormHook({
 	fieldContext,
@@ -19,6 +20,7 @@ const { useAppForm, withForm } = createFormHook({
 		DateField,
 		CheckboxField,
 		NumberField,
+		UploadField,
 	},
 	formComponents: {
 		SubscribeButton,

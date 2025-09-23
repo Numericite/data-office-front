@@ -38,7 +38,6 @@ export const dataContractSchema = z.object({
 			expectedProductionDate: z.iso.date("yyyy-MM-dd").min(1, {
 				message: "Date de mise en production prévisionnelle requise",
 			}),
-			additionalDocuments: z.string().optional(),
 			developmentResponsible: z.string().min(1, {
 				message: "Responsable du développement du produit data requis",
 			}),
@@ -64,6 +63,7 @@ export const dataContractSchema = z.object({
 					}),
 				})
 				.optional(),
+			additionalDocuments: z.array(z.string()).optional(),
 		}),
 		0,
 	),
