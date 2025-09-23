@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
 			case "daj":
 				if (
 					!pathname.startsWith("/dashboard/admin") &&
-					!pathname.startsWith("/dashboard/requests")
+					!pathname.startsWith("/dashboard/requests/")
 				) {
 					return NextResponse.redirect(
 						new URL("/dashboard/admin/requests", request.url),
