@@ -15,7 +15,11 @@ export function SelectField({ label, options, readOnly }: SelectFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				{label}: {field.state.value}
+				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span>
+					{options.find((option) => option.value === field.state.value)
+						?.label || "-"}
+				</span>
 			</div>
 		);
 	}

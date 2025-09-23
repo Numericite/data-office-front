@@ -14,7 +14,8 @@ export function TextAreaField({
 	if (readOnly) {
 		return (
 			<div>
-				{label}: {field.state.value}
+				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span>{field.state.value}</span>
 			</div>
 		);
 	}
