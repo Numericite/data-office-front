@@ -133,7 +133,7 @@ export default function RequestForm() {
 				{request_id !== "new" && (
 					<Button
 						className={classes.buttonEdit}
-						iconId="fr-icon-edit-line"
+						iconId="fr-icon-save-fill"
 						iconPosition="right"
 						onClick={stepForm.form.handleSubmit}
 					>

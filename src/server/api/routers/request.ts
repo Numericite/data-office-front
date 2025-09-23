@@ -132,12 +132,7 @@ export const requestRouter = createTRPCRouter({
 		.query(async ({ ctx, input: id }) => {
 			const request = await ctx.db.request.findUnique({
 				where: { id },
-				select: {
-					id: true,
-					status: true,
-					yamlFile: true,
-					formData: true,
-				},
+				include: RequestAugmentedInclude,
 			});
 
 			if (!request)

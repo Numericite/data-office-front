@@ -11,7 +11,6 @@ import { getRequestStatus } from "~/utils/tools";
 import z from "zod";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import { Button } from "@codegouvfr/react-dsfr/Button";
 import { toast } from "sonner";
 import { RequestReviewStatus, RequestStatus } from "@prisma/client";
 import Loader from "~/components/Loader";
@@ -170,9 +169,19 @@ const DashboardRequestsAdmin = ({
 							? "fr-icon-check-line"
 							: "fr-icon-time-line";
 
+					const iconColor = !currentReview
+						? fr.colors.options.error._425_625.default
+						: currentReview.state === "closed"
+							? fr.colors.options.success._425_625.default
+							: fr.colors.options.orangeTerreBattue.main645.default;
+
 					return (
-						<Tooltip key={status} kind="hover" title={status}>
-							<span className={fr.cx(icon)} aria-hidden={true} />
+						<Tooltip key={status} kind="hover" title={status.toUpperCase()}>
+							<span
+								className={fr.cx(icon)}
+								style={{ color: iconColor }}
+								aria-hidden={true}
+							/>
 						</Tooltip>
 					);
 				});
@@ -222,12 +231,9 @@ const DashboardRequestsAdmin = ({
 
 const DashboardRequestsReviewer = ({
 	session,
-	handleUpdateRequestReview,
 }: {
 	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
-	handleUpdateRequestReview: (id: number) => Promise<void>;
 }) => {
-	const { classes } = useStyles();
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data } = api.request.getList.useQuery(
@@ -258,33 +264,24 @@ const DashboardRequestsReviewer = ({
 			},
 		}),
 		columnHelper.accessor("reviews", {
-			header: "Statut de la revue",
+			header: "Actions",
 			cell: (info) => {
-				const reviews = info.getValue() ?? undefined;
+				const reviews = info.getValue();
 
-				const reviewOpen = reviews
-					?.filter((r) => r.state === "open")
-					.find((r) => r.status === session.user.role);
+				const currentRequestReviewId = reviews.filter(
+					(r) => r.state === "open" && r.status === session.user.role,
+				)[0]?.id;
 
-				if (!reviewOpen) return "Aucune revue en cours";
+				if (!currentRequestReviewId) return <span>-</span>;
 
 				return (
-					<Button
-						className={classes.buttonNew}
-						iconId="ri-check-line"
-						iconPosition="right"
-						onClick={() => handleUpdateRequestReview(reviewOpen.id)}
+					<Link
+						href={`/dashboard/requests/${info.row.original.id}/v1/post?request_review_id=${currentRequestReviewId}`}
 					>
-						Approuver
-					</Button>
+						Voir
+					</Link>
 				);
 			},
-		}),
-		columnHelper.accessor("id", {
-			header: "Actions",
-			cell: (info) => (
-				<Link href={`/dashboard/requests/${info.getValue()}/v1`}>Voir</Link>
-			),
 		}),
 	];
 
@@ -325,16 +322,6 @@ export default function DashboardRequests() {
 			},
 		});
 
-	const { mutateAsync: updateRequestReview } =
-		api.request.updateReview.useMutation({
-			onSuccess: () => {
-				utils.request.getList.invalidate({
-					reviewStatus: session?.user.role as RequestReviewStatus,
-				});
-				toast.success("Revue mise à jour avec succès");
-			},
-		});
-
 	const handleUpdateRequestStatus = async (
 		id: number,
 		status: RequestStatus,
@@ -350,10 +337,6 @@ export default function DashboardRequests() {
 			request_id: id,
 			status,
 		});
-	};
-
-	const handleUpdateRequestReview = async (id: number) => {
-		await updateRequestReview(id);
 	};
 
 	return (
@@ -374,10 +357,7 @@ export default function DashboardRequests() {
 					handleCreateRequestReview={handleCreateRequestReview}
 				/>
 			) : (
-				<DashboardRequestsReviewer
-					session={session}
-					handleUpdateRequestReview={handleUpdateRequestReview}
-				/>
+				<DashboardRequestsReviewer session={session} />
 			)}
 		</>
 	);
