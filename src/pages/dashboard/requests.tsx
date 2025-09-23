@@ -78,14 +78,25 @@ export default function DashboardRequests() {
 		}),
 		columnHelper.accessor("id", {
 			header: "Actions",
-			cell: (info) => (
-				<Link
-					href={`/dashboard/requests/${info.getValue()}/v1`}
-					target="_blank"
-				>
-					Voir
-				</Link>
-			),
+			cell: (info) => {
+				const originalRow = info.row.original;
+				const isDownloadable =
+					originalRow.status === "instructed" ||
+					originalRow.status === "validated";
+				return (
+					<div className={classes.buttonsWrapper}>
+						{isDownloadable && (
+							<Link href={originalRow.yamlFile}>Télécharger</Link>
+						)}
+						<Link
+							href={`/dashboard/requests/${info.getValue()}/v1`}
+							target="_blank"
+						>
+							Voir
+						</Link>
+					</div>
+				);
+			},
 		}),
 	];
 
@@ -121,6 +132,10 @@ const useStyles = tss.withName(DashboardRequests.name).create(() => ({
 		display: "flex",
 		justifyContent: "space-between",
 		alignItems: "center",
+	},
+	buttonsWrapper: {
+		display: "flex",
+		gap: fr.spacing("2w"),
 	},
 	buttonNew: {
 		alignSelf: "center",
