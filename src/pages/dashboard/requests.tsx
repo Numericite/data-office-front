@@ -72,10 +72,6 @@ export default function DashboardRequests() {
 				);
 			},
 		}),
-		columnHelper.accessor("user", {
-			header: "Utilisateur",
-			cell: (info) => info.getValue()?.email || "Utilisateur supprimé",
-		}),
 		columnHelper.accessor("id", {
 			header: "Actions",
 			cell: (info) => {
