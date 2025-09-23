@@ -65,7 +65,9 @@ export default function DashboardDataMarketplace() {
 				<div className={fr.cx("fr-mt-4w", "fr-mb-4w")}>Chargement...</div>
 			) : (
 				<>
-					<div className={cx(classes.grid, fr.cx("fr-mt-2w"))}>
+					<div
+						className={cx(classes.grid, fr.cx("fr-mt-2w"), fr.cx("fr-mb-4w"))}
+					>
 						{flattenedData.length === 0 ? (
 							<div>Aucune référence trouvée</div>
 						) : (
