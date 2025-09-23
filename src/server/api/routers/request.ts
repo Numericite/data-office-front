@@ -11,6 +11,7 @@ import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
 import { RequestReviewStatus, RequestStatus } from "@prisma/client";
+import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
 
 type UploadRequestYamlToS3Props = {
 	yamlString: string;
@@ -157,9 +158,7 @@ export const requestRouter = createTRPCRouter({
 		.query(async ({ ctx, input: { status } }) => {
 			const requests = await ctx.db.request.findMany({
 				where: { userId: Number.parseInt(ctx.session.user.id), status },
-				include: {
-					user: true,
-				},
+				include: RequestAugmentedInclude,
 			});
 
 			return requests;
@@ -180,11 +179,13 @@ export const requestRouter = createTRPCRouter({
 				skip: (page - 1) * numberPerPage,
 				where: {
 					status: status ? { equals: status } : undefined,
-					reviewStatus: reviewStatus ? { equals: reviewStatus } : undefined,
+					reviews: reviewStatus
+						? {
+								some: { status: { equals: reviewStatus }, state: "open" },
+							}
+						: undefined,
 				},
-				include: {
-					user: true,
-				},
+				include: RequestAugmentedInclude,
 			});
 
 			return requests;
@@ -209,15 +210,14 @@ export const requestRouter = createTRPCRouter({
 			z.object({
 				id: z.number(),
 				status: z.enum(RequestStatus).optional(),
-				reviewStatus: z.enum(RequestReviewStatus).optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const { id, status, reviewStatus } = input;
+			const { id, status } = input;
 
 			const original = await ctx.db.request.findUnique({
 				where: { id },
-				select: { status: true, reviewStatus: true },
+				select: { status: true },
 			});
 
 			if (!original) {
@@ -231,10 +231,39 @@ export const requestRouter = createTRPCRouter({
 				where: { id },
 				data: {
 					status,
-					reviewStatus,
 				},
 			});
 
 			return { original, updated: updatedRequest };
+		}),
+
+	createReview: protectedProcedure
+		.input(
+			z.object({
+				request_id: z.number(),
+				status: z.enum(RequestReviewStatus),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const { request_id, status } = input;
+
+			const review = await ctx.db.requestReview.create({
+				data: { status, requestId: request_id },
+			});
+
+			return review;
+		}),
+
+	updateReview: protectedProcedure
+		.input(z.number())
+		.mutation(async ({ ctx, input: id }) => {
+			const currentUserId = Number.parseInt(ctx.session.user.id);
+
+			const review = await ctx.db.requestReview.update({
+				where: { id },
+				data: { reviewerId: currentUserId, state: "closed" },
+			});
+
+			return review;
 		}),
 });

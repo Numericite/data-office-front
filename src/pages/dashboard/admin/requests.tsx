@@ -11,15 +11,14 @@ import { getRequestStatus } from "~/utils/tools";
 import z from "zod";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { Button } from "@codegouvfr/react-dsfr/Button";
 import { toast } from "sonner";
-import {
-	type Request,
-	type RequestReviewStatus,
-	RequestStatus,
-} from "@prisma/client";
+import { RequestReviewStatus, RequestStatus } from "@prisma/client";
 import Loader from "~/components/Loader";
+import type { RequestAugmented } from "~/utils/prisma-augmented";
+import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 
-const columnHelper = createColumnHelper<Request>();
+const columnHelper = createColumnHelper<RequestAugmented>();
 
 const numberPerPage = 10;
 
@@ -29,15 +28,15 @@ type DashboardRequestsAdminProps = {
 		id: number,
 		status: RequestStatus,
 	) => Promise<void>;
-	handleUpdateRequestReviewStatus: (
+	handleCreateRequestReview: (
 		id: number,
-		reviewStatus: RequestReviewStatus,
+		status: RequestReviewStatus,
 	) => Promise<void>;
 };
 
 const DashboardRequestsAdmin = ({
 	handleUpdateRequestStatus,
-	handleUpdateRequestReviewStatus,
+	handleCreateRequestReview,
 	session,
 }: DashboardRequestsAdminProps) => {
 	const { classes } = useStyles();
@@ -113,31 +112,70 @@ const DashboardRequestsAdmin = ({
 				</Select>
 			),
 		}),
-		columnHelper.accessor("reviewStatus", {
-			header: "Statut de révision",
+		columnHelper.accessor("reviews", {
+			header: "Changer le statut de révision",
 			cell: (info) => {
-				const reviewStatus = info.getValue() ?? undefined;
+				const reviews = info.getValue() ?? undefined;
+
+				const latestReviewOpen = reviews
+					?.filter((r) => r.state === "open")
+					.sort((a, b) => b.reviewedAt.getTime() - a.reviewedAt.getTime())[0];
+
+				const closedStatuses = reviews
+					.filter((s) => s.state === "closed")
+					.map((r) => r.status);
+
+				const options = z
+					.enum(RequestReviewStatus)
+					.options.filter((status) => !closedStatuses.includes(status));
 
 				return (
 					<Select
 						label=""
 						nativeSelectProps={{
-							value: reviewStatus,
+							value: latestReviewOpen?.status ?? "",
 							onChange: (e) =>
-								handleUpdateRequestReviewStatus(
+								handleCreateRequestReview(
 									info.row.original.id,
 									e.target.value as RequestReviewStatus,
 								),
 						}}
+						disabled={!!latestReviewOpen || options.length === 0}
 					>
 						<option value="" selected disabled hidden>
 							Selectionnez une option
 						</option>
-						<option value="rssi">rssi</option>
-						<option value="dpo">dpo</option>
-						<option value="daj">daj</option>
+						{options.map((status) => (
+							<option key={status} value={status}>
+								{status}
+							</option>
+						))}
 					</Select>
 				);
+			},
+		}),
+
+		columnHelper.accessor("reviews", {
+			header: "État des revues",
+			cell: (info) => {
+				const reviews = info.getValue() ?? [];
+
+				const options = z.enum(RequestReviewStatus).options;
+
+				return options.map((status) => {
+					const currentReview = reviews.find((r) => r.status === status);
+					const icon = !currentReview
+						? "fr-icon-close-line"
+						: currentReview.state === "closed"
+							? "fr-icon-check-line"
+							: "fr-icon-time-line";
+
+					return (
+						<Tooltip key={status} kind="hover" title={status}>
+							<span className={fr.cx(icon)} aria-hidden={true} />
+						</Tooltip>
+					);
+				});
 			},
 		}),
 		columnHelper.accessor("id", {
@@ -163,7 +201,7 @@ const DashboardRequestsAdmin = ({
 			onTabChange={setSelectedTabId}
 			className={classes.tabsWrapper}
 		>
-			<DsfrTable<Request>
+			<DsfrTable
 				data={
 					requests_status.find((tab) => tab.tabId === selectedTabId)?.data ?? []
 				}
@@ -184,9 +222,12 @@ const DashboardRequestsAdmin = ({
 
 const DashboardRequestsReviewer = ({
 	session,
+	handleUpdateRequestReview,
 }: {
 	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
+	handleUpdateRequestReview: (id: number) => Promise<void>;
 }) => {
+	const { classes } = useStyles();
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data } = api.request.getList.useQuery(
@@ -216,6 +257,29 @@ const DashboardRequestsReviewer = ({
 				return projectName;
 			},
 		}),
+		columnHelper.accessor("reviews", {
+			header: "Statut de la revue",
+			cell: (info) => {
+				const reviews = info.getValue() ?? undefined;
+
+				const reviewOpen = reviews
+					?.filter((r) => r.state === "open")
+					.find((r) => r.status === session.user.role);
+
+				if (!reviewOpen) return "Aucune revue en cours";
+
+				return (
+					<Button
+						className={classes.buttonNew}
+						iconId="ri-check-line"
+						iconPosition="right"
+						onClick={() => handleUpdateRequestReview(reviewOpen.id)}
+					>
+						Approuver
+					</Button>
+				);
+			},
+		}),
 		columnHelper.accessor("id", {
 			header: "Actions",
 			cell: (info) => (
@@ -225,7 +289,7 @@ const DashboardRequestsReviewer = ({
 	];
 
 	return (
-		<DsfrTable<Request>
+		<DsfrTable
 			data={data ?? []}
 			columns={columns}
 			totalCount={totalCount}
@@ -253,6 +317,24 @@ export default function DashboardRequests() {
 			},
 		});
 
+	const { mutateAsync: createRequestReview } =
+		api.request.createReview.useMutation({
+			onSuccess: () => {
+				utils.request.getList.invalidate();
+				toast.success("Statut de revue créé avec succès");
+			},
+		});
+
+	const { mutateAsync: updateRequestReview } =
+		api.request.updateReview.useMutation({
+			onSuccess: () => {
+				utils.request.getList.invalidate({
+					reviewStatus: session?.user.role as RequestReviewStatus,
+				});
+				toast.success("Revue mise à jour avec succès");
+			},
+		});
+
 	const handleUpdateRequestStatus = async (
 		id: number,
 		status: RequestStatus,
@@ -260,11 +342,18 @@ export default function DashboardRequests() {
 		await updateRequestStatus({ id, status });
 	};
 
-	const handleUpdateRequestReviewStatus = async (
+	const handleCreateRequestReview = async (
 		id: number,
-		reviewStatus: RequestReviewStatus,
+		status: RequestReviewStatus,
 	) => {
-		await updateRequestStatus({ id, reviewStatus });
+		await createRequestReview({
+			request_id: id,
+			status,
+		});
+	};
+
+	const handleUpdateRequestReview = async (id: number) => {
+		await updateRequestReview(id);
 	};
 
 	return (
@@ -282,10 +371,13 @@ export default function DashboardRequests() {
 				<DashboardRequestsAdmin
 					session={session}
 					handleUpdateRequestStatus={handleUpdateRequestStatus}
-					handleUpdateRequestReviewStatus={handleUpdateRequestReviewStatus}
+					handleCreateRequestReview={handleCreateRequestReview}
 				/>
 			) : (
-				<DashboardRequestsReviewer session={session} />
+				<DashboardRequestsReviewer
+					session={session}
+					handleUpdateRequestReview={handleUpdateRequestReview}
+				/>
 			)}
 		</>
 	);
@@ -298,6 +390,7 @@ const useStyles = tss.withName(DashboardRequests.name).create(() => ({
 	},
 	buttonsWrapper: {
 		display: "flex",
+		alignItems: "center",
 		gap: fr.spacing("2w"),
 	},
 	buttonNew: {

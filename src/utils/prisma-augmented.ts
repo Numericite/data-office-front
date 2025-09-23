@@ -1,11 +1,14 @@
 import { Prisma } from "@prisma/client";
 
-const RequestsWithUser = Prisma.validator<Prisma.RequestDefaultArgs>()({
+const RequestAugmented = Prisma.validator<Prisma.RequestDefaultArgs>()({
 	include: {
 		user: true,
+		reviews: true,
 	},
 });
 
-export type RequestsWithUser = Prisma.RequestGetPayload<
-	typeof RequestsWithUser
+export type RequestAugmented = Prisma.RequestGetPayload<
+	typeof RequestAugmented
 >;
+
+export const RequestAugmentedInclude = RequestAugmented.include;

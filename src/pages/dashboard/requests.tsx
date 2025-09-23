@@ -4,7 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
-import type { RequestsWithUser } from "~/utils/prisma-augmented";
+import type { RequestAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
 import { getRequestStatus } from "~/utils/tools";
 import { authClient } from "~/utils/auth-client";
@@ -12,7 +12,7 @@ import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { tss } from "tss-react";
 
-const columnHelper = createColumnHelper<RequestsWithUser>();
+const columnHelper = createColumnHelper<RequestAugmented>();
 
 const numberPerPage = 10;
 
@@ -60,14 +60,22 @@ export default function DashboardRequests() {
 				);
 			},
 		}),
-		columnHelper.accessor("reviewStatus", {
+		columnHelper.accessor("reviews", {
 			header: "Statut de révision",
 			cell: (info) => {
 				const status = info.getValue();
-				if (!status) return <span>-</span>;
+				const latestReviewOpen = status
+					?.filter((review) => review.state === "open")
+					.sort(
+						(a, b) =>
+							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+					)[0]?.status;
+
+				if (!latestReviewOpen) return <span>-</span>;
+
 				return (
 					<Badge severity="info" noIcon>
-						{status}
+						{latestReviewOpen}
 					</Badge>
 				);
 			},

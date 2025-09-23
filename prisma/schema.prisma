@@ -21,19 +21,42 @@ enum RequestReviewStatus {
   daj
 }
 
+enum RequestReviewState {
+  open
+  closed
+}
+
 model Request {
   id            Int                  @id @default(autoincrement())
   status        RequestStatus        @default(pending)
-  reviewStatus  RequestReviewStatus?
   formData      Json
   yamlFile      String
   referenceData ReferenceData[]      @relation("RequestReferenceData")
   userId        Int
   user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews       RequestReview[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
   @@index([status])
+}
+
+model RequestReview {
+  id         Int                 @id @default(autoincrement())
+  status     RequestReviewStatus
+  state      RequestReviewState  @default(open)
+  content    String?
+  reviewedAt DateTime            @default(now())
+  requestId  Int
+  request    Request             @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  reviewerId Int?
+  reviewer   User?               @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([status])
+  @@index([requestId])
+  @@index([reviewerId])
 }
 
 model ReferenceData {
@@ -88,6 +111,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   requests      Request[]
+  reviews       RequestReview[]
 
   @@unique([email])
   @@map("user")
