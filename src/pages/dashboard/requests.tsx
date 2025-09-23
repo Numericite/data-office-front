@@ -99,14 +99,14 @@ export default function DashboardRequests() {
 	return (
 		<>
 			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
-				<h1>Liste des demandes</h1>
+				<h1>Liste des produits</h1>
 				<Button
 					className={classes.buttonNew}
 					iconId="fr-icon-add-circle-line"
 					iconPosition="right"
 					linkProps={{ href: "/dashboard/requests/new/v1" }}
 				>
-					Nouvelle demande
+					Nouveau produit
 				</Button>
 			</div>
 			<DsfrTable

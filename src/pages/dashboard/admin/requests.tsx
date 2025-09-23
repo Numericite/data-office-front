@@ -279,8 +279,8 @@ export default function DashboardRequests() {
 			<div className={cx(classes.headerWrapper, fr.cx("fr-mt-4w"))}>
 				<h1>
 					{session?.user.role.endsWith("admin")
-						? "Liste des demandes"
-						: "Demandes en attente de votre revue"}
+						? "Liste des produits"
+						: "Produits en attente de votre revue"}
 				</h1>
 			</div>
 			{isPending || !session ? (

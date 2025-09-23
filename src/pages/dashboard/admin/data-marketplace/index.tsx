@@ -30,7 +30,7 @@ const columns = [
 		cell: (info) => info.getValue().toLocaleDateString(),
 	}),
 	columnHelper.accessor("requestCount", {
-		header: "Nombre de demandes",
+		header: "Nombre de produits",
 		cell: (info) => info.getValue(),
 	}),
 	columnHelper.accessor("id", {

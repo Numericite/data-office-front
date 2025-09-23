@@ -56,7 +56,7 @@ export default function ProcedureForm() {
 			}
 
 			toast.success(
-				`Votre demande a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
+				`Votre produit a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
 			);
 
 			stepForm.setStep(0);
@@ -106,12 +106,12 @@ export default function ProcedureForm() {
 		<div className={fr.cx("fr-mb-8w")}>
 			<Breadcrumb
 				currentPageLabel={
-					request_id !== "new" ? `#${request_id}` : "Nouvelle demande"
+					request_id !== "new" ? `#${request_id}` : "Nouveau produit"
 				}
 				className="fr-mb-0"
 				segments={[
 					{
-						label: "Demandes",
+						label: "Produits",
 						linkProps: {
 							href:
 								session?.user.role === "superadmin"
@@ -121,7 +121,7 @@ export default function ProcedureForm() {
 					},
 				]}
 			/>
-			<h1>Formulaire de demande</h1>
+			<h1>Formulaire de produit</h1>
 			<Stepper
 				currentStep={stepForm.step + 1}
 				stepCount={DATA_CONTRACT_STEPS}

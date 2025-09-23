@@ -49,7 +49,7 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 const userNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Demandes", linkProps: { href: "/dashboard/requests" } },
+	{ text: "Produits", linkProps: { href: "/dashboard/requests" } },
 	{
 		text: "Data-marketplace",
 		linkProps: { href: "/dashboard/data-marketplace" },
@@ -58,7 +58,7 @@ const userNavigationItems: MainNavigationProps.Item[] = [
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
 	{
-		text: "Gestion des demandes en cours",
+		text: "Gestion des produits en cours",
 		linkProps: { href: "/dashboard/admin/requests" },
 	},
 ];
