@@ -147,10 +147,7 @@ const DashboardRequestsAdmin = ({
 				return (
 					<div className={classes.buttonsWrapper}>
 						<Link href={originalRow.yamlFile}>Télécharger</Link>
-						<Link
-							href={`/dashboard/requests/${info.getValue()}/v1/post/voir`}
-							target="_blank"
-						>
+						<Link href={`/dashboard/requests/${info.getValue()}/v1/post`}>
 							Voir
 						</Link>
 					</div>
@@ -222,12 +219,7 @@ const DashboardRequestsReviewer = ({
 		columnHelper.accessor("id", {
 			header: "Actions",
 			cell: (info) => (
-				<Link
-					href={`/dashboard/requests/${info.getValue()}/v1`}
-					target="_blank"
-				>
-					Voir
-				</Link>
+				<Link href={`/dashboard/requests/${info.getValue()}/v1`}>Voir</Link>
 			),
 		}),
 	];

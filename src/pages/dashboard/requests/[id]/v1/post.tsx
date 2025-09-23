@@ -42,7 +42,7 @@ export default function RequestPost() {
 	return (
 		<div className={fr.cx("fr-mb-8w")}>
 			<Breadcrumb
-				currentPageLabel={`#${request_id}`}
+				currentPageLabel="Détails du produit"
 				className="fr-mb-0"
 				segments={[
 					{
@@ -54,16 +54,18 @@ export default function RequestPost() {
 									: "/dashboard/requests",
 						},
 					},
+					{
+						label: `#${request_id}`,
+						linkProps: { href: `/dashboard/requests/${request_id}/v1` },
+					},
 				]}
 			/>
 			<div className={classes.headerWrapper}>
-				<h1>
+				<h1 style={{ marginBottom: 0 }}>
 					Informations sur le produit "{requestFormData?.dataProduct.name}"
 				</h1>
 				<Button
 					className={classes.buttonEdit}
-					iconId="fr-icon-add-circle-line"
-					iconPosition="right"
 					linkProps={{ href: `/dashboard/requests/${request_id}/v1` }}
 				>
 					Modifier
@@ -92,8 +94,10 @@ export default function RequestPost() {
 const useStyles = tss.withName(RequestPost.name).create({
 	headerWrapper: {
 		display: "flex",
+		alignItems: "center",
 		justifyContent: "space-between",
 		gap: fr.spacing("10w"),
+		paddingBottom: fr.spacing("2w"),
 	},
 	buttonEdit: {
 		alignSelf: "center",

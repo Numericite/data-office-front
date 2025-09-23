@@ -22,12 +22,15 @@ import {
 import { useStepDataContractForm } from "~/utils/forms/data-contract/v1/useStepForm";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
+import { tss } from "tss-react";
 
 if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
 }
 
 export default function RequestForm() {
+	const { classes } = useStyles();
+
 	const { data: session } = authClient.useSession();
 
 	const router = useRouter();
@@ -61,7 +64,11 @@ export default function RequestForm() {
 
 			stepForm.setStep(0);
 			stepForm.form.reset();
-			router.push("/dashboard/requests");
+			router.push(
+				session?.user.role === "instructor"
+					? "/dashboard/requests"
+					: "/dashboard/admin/requests",
+			);
 		},
 	});
 
@@ -121,7 +128,19 @@ export default function RequestForm() {
 					},
 				]}
 			/>
-			<h1>Formulaire de produit</h1>
+			<div className={classes.headerWrapper}>
+				<h1 style={{ marginBottom: 0 }}>Formulaire de produit</h1>
+				{request_id !== "new" && (
+					<Button
+						className={classes.buttonEdit}
+						iconId="fr-icon-edit-line"
+						iconPosition="right"
+						onClick={stepForm.form.handleSubmit}
+					>
+						Enregistrer
+					</Button>
+				)}
+			</div>
 			<Stepper
 				currentStep={stepForm.step + 1}
 				stepCount={DATA_CONTRACT_STEPS}
@@ -188,3 +207,16 @@ export default function RequestForm() {
 		</div>
 	);
 }
+
+const useStyles = tss.withName(RequestForm.name).create({
+	headerWrapper: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "space-between",
+		gap: fr.spacing("10w"),
+	},
+	buttonEdit: {
+		alignSelf: "center",
+		height: "fit-content",
+	},
+});
