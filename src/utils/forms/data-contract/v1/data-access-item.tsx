@@ -15,8 +15,9 @@ export const DataAccessItem = withForm({
 	props: {
 		itemIndex: 0,
 		onRemove: () => {},
+		readOnly: false,
 	},
-	render: function Render({ form, itemIndex, onRemove }) {
+	render: function Render({ form, itemIndex, onRemove, readOnly }) {
 		const parentField = form.store.state.values.dataAccesses;
 		const { classes, cx } = useStyles();
 
@@ -59,67 +60,76 @@ export const DataAccessItem = withForm({
 				defaultExpanded
 				className={classes.accordionContent}
 			>
-				<div>
-					<form.AppField
-						name={`dataAccesses[${itemIndex}].referenceId`}
-						children={(field) => (
-							<div>
-								<CustomAutocomplete
-									className={"fr-input"}
-									id={`reference-autocomplete-${itemIndex}`}
-									placeholder="Rechercher une référence"
-									options={referenceOptions}
-									type="search"
-									setSearch={setSearchValue}
-									onSelect={(id) => {
-										onSelectDataAccess(id);
-										field.handleChange(id);
-									}}
-									isLoading={
-										searchValue !== debouncedSearchValue || isLoadingReferences
-									}
-									disabled={isNewReference}
-								/>
-								<Checkbox
-									className={cx(
-										fr.cx("fr-mb-0", "fr-mt-2w"),
-										classes.checkboxLeft,
-									)}
-									options={[
-										{
-											label: "Créer une nouvelle référence",
-											nativeInputProps: {
-												name: `new-reference-${itemIndex}`,
-												value: "new-reference",
-												checked: isNewReference,
-												onChange: () => setIsNewReference((prev) => !prev),
+				{!readOnly && (
+					<div className={fr.cx("fr-mb-2w")}>
+						<form.AppField
+							name={`dataAccesses[${itemIndex}].referenceId`}
+							children={(field) => (
+								<div>
+									<CustomAutocomplete
+										className={"fr-input"}
+										id={`reference-autocomplete-${itemIndex}`}
+										placeholder="Rechercher une référence"
+										options={referenceOptions}
+										type="search"
+										setSearch={setSearchValue}
+										onSelect={(id) => {
+											onSelectDataAccess(id);
+											field.handleChange(id);
+										}}
+										isLoading={
+											searchValue !== debouncedSearchValue ||
+											isLoadingReferences
+										}
+										disabled={isNewReference}
+									/>
+									<Checkbox
+										className={cx(
+											fr.cx("fr-mb-0", "fr-mt-2w"),
+											classes.checkboxLeft,
+										)}
+										options={[
+											{
+												label: "Créer une nouvelle référence",
+												nativeInputProps: {
+													name: `new-reference-${itemIndex}`,
+													value: "new-reference",
+													checked: isNewReference,
+													onChange: () => setIsNewReference((prev) => !prev),
+												},
 											},
-										},
-									]}
-									disabled={!!field.state.value}
-								/>
-							</div>
-						)}
-					/>
-				</div>
+										]}
+										disabled={!!field.state.value}
+									/>
+								</div>
+							)}
+						/>
+					</div>
+				)}
 				<form.Subscribe
 					selector={(state) =>
 						state.values.dataAccesses[itemIndex]?.referenceId
 					}
 					children={(referenceId) =>
 						(referenceId || isNewReference) && (
-							<div className={fr.cx("fr-mt-2w")}>
+							<div>
 								<form.AppField
 									name={`dataAccesses[${itemIndex}].explanationDescription`}
 									children={(field) => (
-										<field.TextAreaField label="À quoi vont servir ces données ?" />
+										<field.TextAreaField
+											label="À quoi vont servir ces données ?"
+											readOnly={readOnly}
+										/>
 									)}
 								/>
 								{isNewReference && (
 									<form.AppField
 										name={`dataAccesses[${itemIndex}].description`}
 										children={(field) => (
-											<field.TextAreaField label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?" />
+											<field.TextAreaField
+												label="A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?"
+												readOnly={readOnly}
+											/>
 										)}
 									/>
 								)}

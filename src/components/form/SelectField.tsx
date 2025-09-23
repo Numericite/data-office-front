@@ -1,29 +1,38 @@
 import { useFieldContext } from "~/utils/form";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
+import type { FieldDefaultProps } from "~/utils/forms";
 
-type SelectFieldProps = {
-  label: string;
-  options: Array<{
-    label: string;
-    value: string;
-  }>;
-};
+interface SelectFieldProps extends FieldDefaultProps {
+	options: Array<{
+		label: string;
+		value: string;
+	}>;
+}
 
-export function SelectField({ label, options }: SelectFieldProps) {
-  const field = useFieldContext<string>();
-  return (
-    <Select
-      label={label}
-      nativeSelectProps={{
-        name: field.name,
-        value: field.state.value,
-        onChange: (e) => field.setValue(e.target.value),
-      }}
-      options={options}
-      state={field.state.meta.errors.length > 0 ? "error" : "default"}
-      stateRelatedMessage={
-        field.state.meta.errors.map((error) => error.message).join(",") ?? ""
-      }
-    />
-  );
+export function SelectField({ label, options, readOnly }: SelectFieldProps) {
+	const field = useFieldContext<string>();
+
+	if (readOnly) {
+		return (
+			<div>
+				{label}: {field.state.value}
+			</div>
+		);
+	}
+
+	return (
+		<Select
+			label={label}
+			nativeSelectProps={{
+				name: field.name,
+				value: field.state.value,
+				onChange: (e) => field.setValue(e.target.value),
+			}}
+			options={options}
+			state={field.state.meta.errors.length > 0 ? "error" : "default"}
+			stateRelatedMessage={
+				field.state.meta.errors.map((error) => error.message).join(",") ?? ""
+			}
+		/>
+	);
 }

@@ -27,4 +27,10 @@ const { useAppForm, withForm } = createFormHook({
 	},
 });
 
+export type FieldDefaultProps = {
+	label: string;
+	readOnly?: boolean;
+	disabled?: boolean;
+};
+
 export { useAppForm, withForm };

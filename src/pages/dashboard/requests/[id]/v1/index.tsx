@@ -27,7 +27,7 @@ if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
 }
 
-export default function ProcedureForm() {
+export default function RequestForm() {
 	const { data: session } = authClient.useSession();
 
 	const router = useRouter();
@@ -151,6 +151,7 @@ export default function ProcedureForm() {
 						form={stepForm.form}
 						visibleSections={visible}
 						formId="dcf"
+						readOnly={false}
 					/>
 					<ButtonsGroup
 						className={fr.cx("fr-mt-4w")}

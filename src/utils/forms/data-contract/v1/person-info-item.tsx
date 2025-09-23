@@ -13,8 +13,9 @@ export const PersonInfoItem = withForm({
 			| "businessContact"
 			| "technicalContact"
 			| "legalContact",
+		readOnly: false,
 	},
-	render: function Render({ form, accordionLabel, pathPrefix }) {
+	render: function Render({ form, accordionLabel, pathPrefix, readOnly }) {
 		const { classes, cx } = useStyles();
 
 		return (
@@ -30,13 +31,17 @@ export const PersonInfoItem = withForm({
 						<div className={fr.cx("fr-col-6")}>
 							<form.AppField
 								name={`${pathPrefix}.firstName`}
-								children={(field) => <field.TextField label="Prénom" />}
+								children={(field) => (
+									<field.TextField label="Prénom" readOnly={readOnly} />
+								)}
 							/>
 						</div>
 						<div className={fr.cx("fr-col-6")}>
 							<form.AppField
 								name={`${pathPrefix}.lastName`}
-								children={(field) => <field.TextField label="Nom" />}
+								children={(field) => (
+									<field.TextField label="Nom" readOnly={readOnly} />
+								)}
 							/>
 						</div>
 					</div>
@@ -45,7 +50,11 @@ export const PersonInfoItem = withForm({
 							<form.AppField
 								name={`${pathPrefix}.emailPro`}
 								children={(field) => (
-									<field.TextField label="Email profesionnel" kind="email" />
+									<field.TextField
+										label="Email profesionnel"
+										kind="email"
+										readOnly={readOnly}
+									/>
 								)}
 							/>
 						</div>
@@ -53,7 +62,11 @@ export const PersonInfoItem = withForm({
 							<form.AppField
 								name={`${pathPrefix}.phone`}
 								children={(field) => (
-									<field.TextField label="Numéro de téléphone pro" kind="tel" />
+									<field.TextField
+										label="Numéro de téléphone pro"
+										kind="tel"
+										readOnly={readOnly}
+									/>
 								)}
 							/>
 						</div>
@@ -63,14 +76,19 @@ export const PersonInfoItem = withForm({
 							<form.AppField
 								name={`${pathPrefix}.structureName`}
 								children={(field) => (
-									<field.TextField label="Nom de l'administration" />
+									<field.TextField
+										label="Nom de l'administration"
+										readOnly={readOnly}
+									/>
 								)}
 							/>
 						</div>
 						<div className={fr.cx("fr-col-6")}>
 							<form.AppField
 								name={`${pathPrefix}.role`}
-								children={(field) => <field.TextField label="Rôle" />}
+								children={(field) => (
+									<field.TextField label="Rôle" readOnly={readOnly} />
+								)}
 							/>
 						</div>
 					</div>

@@ -85,7 +85,7 @@ export default function DashboardRequests() {
 							<Link href={originalRow.yamlFile}>Télécharger</Link>
 						)}
 						<Link
-							href={`/dashboard/requests/${info.getValue()}/v1`}
+							href={`/dashboard/requests/${info.getValue()}/v1/post`}
 							target="_blank"
 						>
 							Voir
