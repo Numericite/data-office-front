@@ -59,6 +59,11 @@ export const requestRouter = createTRPCRouter({
 					userId: Number.parseInt(ctx.session.user.id),
 					formData: data,
 					yamlFile: "",
+					referenceData: {
+						connect: data.dataAccesses
+							.filter((dataAccess) => dataAccess.referenceId)
+							.map((dataAccess) => ({ id: dataAccess.referenceId })),
+					},
 				},
 			});
 
