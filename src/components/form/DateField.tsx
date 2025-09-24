@@ -13,7 +13,8 @@ export function DateField({ label, min, max, readOnly }: DateFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
 				<span>{field.state.value}</span>
 			</div>
 		);

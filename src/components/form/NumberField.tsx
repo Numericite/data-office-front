@@ -10,7 +10,8 @@ export function NumberField({ label, readOnly }: NumberFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
 				<span>{field.state.value}</span>
 			</div>
 		);

@@ -15,7 +15,8 @@ export function SelectField({ label, options, readOnly }: SelectFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
 				<span>
 					{options.find((option) => option.value === field.state.value)
 						?.label || "-"}

@@ -13,7 +13,8 @@ export function TextField({ kind, label, disabled, readOnly }: TextFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				<span style={{ fontWeight: "bold" }}>{label} :</span>{" "}
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
 				<span>{field.state.value}</span>
 			</div>
 		);

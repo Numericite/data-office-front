@@ -1,13 +1,15 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import { createColumnHelper } from "@tanstack/react-table";
-import type { User } from "@prisma/client";
+import { UserRole, type User } from "@prisma/client";
 import DsfrTable from "~/components/DsfrTable";
 import { useState } from "react";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { authClient } from "~/utils/auth-client";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import z from "zod";
+import { getUserRoleLabel } from "~/utils/tools";
 
 type UserForTable = Pick<User, "id" | "email" | "name" | "role">;
 
@@ -77,12 +79,11 @@ export default function AdminHome() {
 					}}
 					disabled={info.row.original.id === sessionUserId}
 				>
-					<option value="superadmin">Super Administrateur</option>
-					<option value="admin">Administrateur</option>
-					<option value="dpo">DPO</option>
-					<option value="rssi">RSSI</option>
-					<option value="daj">DAJ</option>
-					<option value="instructor">Instructeur</option>
+					{z.enum(UserRole).options.map((role) => (
+						<option key={role} value={role}>
+							{getUserRoleLabel(role)}
+						</option>
+					))}
 				</Select>
 			),
 		}),

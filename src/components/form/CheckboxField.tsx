@@ -11,7 +11,8 @@ export function CheckboxField({ label, readOnly }: CheckboxFieldProps) {
 	if (readOnly) {
 		return (
 			<div>
-				<span style={{ fontWeight: "bold" }}>{label} :</span>
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
 				<span>{field.state.value ? "Oui" : "Non"}</span>
 			</div>
 		);

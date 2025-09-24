@@ -36,7 +36,7 @@ export function getUserRoleLabel(role: UserRole) {
 		case "instructor":
 			return "Utilisateur";
 		case "admin":
-			return "Administrateur";
+			return "Instructeur";
 		case "superadmin":
 			return "Super administrateur";
 		case "daj":
