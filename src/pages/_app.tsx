@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: d */
 import { fr } from "@codegouvfr/react-dsfr";
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
@@ -10,14 +9,13 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 import { api } from "~/utils/api";
-
 import "~/styles/globals.css";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { authClient } from "~/utils/auth-client";
 import Head from "next/head";
 import { Toaster } from "sonner";
 import type { UserRole } from "@prisma/client";
-import { getUserRoleLabel } from "~/utils/tools";
+import { tss } from "tss-react";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -49,10 +47,18 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 const userNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Produits", linkProps: { href: "/dashboard/requests" } },
 	{
 		text: "Data-marketplace",
 		linkProps: { href: "/dashboard/data-marketplace" },
+	},
+	{
+		text: "Créer une demande",
+		linkProps: { href: "/dashboard/requests/new/v1" },
+	},
+	{ text: "Mes demandes", linkProps: { href: "/dashboard/requests" } },
+	{
+		text: "Mes DataContracts",
+		linkProps: { href: "/dashboard/data-contracts" },
 	},
 ];
 
@@ -74,6 +80,7 @@ const superAdminNavigationItems: MainNavigationProps.Item[] = [
 
 function App({ Component, pageProps }: AppProps) {
 	const router = useRouter();
+	const { classes } = useStyles();
 
 	const session = authClient.useSession();
 
@@ -120,13 +127,11 @@ function App({ Component, pageProps }: AppProps) {
 		const items = [] as HeaderProps.QuickAccessItem[];
 		if (session.isPending) return [];
 
-		const userRole = session.data?.user?.role as UserRole;
-
 		if (isAuthenticated) {
 			items.push(
 				{
 					iconId: "ri-user-fill",
-					text: getUserRoleLabel(userRole),
+					text: session.data?.user?.name,
 					linkProps: { href: "" },
 				},
 				{
@@ -158,6 +163,7 @@ function App({ Component, pageProps }: AppProps) {
 				}}
 			>
 				<Header
+					className={classes.quickAccesItemsWrapper}
 					brandTop={
 						<>
 							RÉPUBLIQUE
@@ -188,5 +194,17 @@ function App({ Component, pageProps }: AppProps) {
 		</>
 	);
 }
+
+const useStyles = tss.withName(App.name).create(() => ({
+	quickAccesItemsWrapper: {
+		filter: "none",
+		"& > .fr-header__menu": {
+			boxShadow: "inset 0 -1px 0 0 var(--border-default-grey)",
+		},
+		".fr-header__body-row": {
+			paddingBottom: "1rem",
+		},
+	},
+}));
 
 export default withDsfr(api.withTRPC(withAppEmotionCache(App)));

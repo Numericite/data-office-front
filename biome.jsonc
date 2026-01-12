@@ -21,7 +21,8 @@
 				}
 			},
 			"correctness": {
-				"noChildrenProp": "off"
+				"noChildrenProp": "off",
+				"useExhaustiveDependencies": "off"
 			},
 			"suspicious": {
 				"noArrayIndexKey": "off"
