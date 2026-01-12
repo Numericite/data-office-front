@@ -9,6 +9,7 @@ import { SubscribeButton } from "~/components/form/SubmitButton";
 import { TextAreaField } from "~/components/form/TextAreaField";
 import { TextField } from "~/components/form/TextField";
 import { UploadField } from "~/components/form/UploadField";
+import { RadioField } from "~/components/form/RadioField";
 
 const { useAppForm, withForm } = createFormHook({
 	fieldContext,
@@ -21,6 +22,7 @@ const { useAppForm, withForm } = createFormHook({
 		CheckboxField,
 		NumberField,
 		UploadField,
+		RadioField,
 	},
 	formComponents: {
 		SubscribeButton,

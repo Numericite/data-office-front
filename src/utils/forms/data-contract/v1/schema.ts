@@ -1,20 +1,51 @@
+import { formOptions } from "@tanstack/react-form";
 import { z } from "zod";
-import { withStep } from "~/utils/zod/stepper";
 
 export const personInfoSchema = z.object({
-	firstName: z.string().min(1, { message: "Prénom requis" }),
-	lastName: z.string().min(1, { message: "Nom requis" }),
-	phone: z
-		.string()
-		.regex(/^\+?[0-9]{10,15}$/, { message: "Numéro de téléphone invalide" }),
-	emailPro: z.email({ message: "Email invalide" }),
-	structureName: z.string().min(1, {
-		message: "Nom de l'administration requis",
+	personInfo: z.object({
+		firstName: z.string().min(1, { message: "Prénom requis" }),
+		lastName: z.string().min(1, { message: "Nom requis" }),
+		emailPro: z.email({ message: "Email invalide" }),
+		role: z.string().min(1, { message: "Rôle requis" }),
+		ministry: z.string().min(1, {
+			message: "Nom de l'administration requis",
+		}),
+		department: z.string().min(1, {
+			message: "Nom de la direction requis",
+		}),
 	}),
-	role: z.string().min(1, { message: "Rôle requis" }),
 });
 
 export type PersonInfoSchema = z.infer<typeof personInfoSchema>;
+
+export const dataProductSchema = z.object({
+	dataProduct: z.object({
+		subject: z.string().min(1, {
+			message: "Sujet du besoin requis",
+		}),
+		description: z.string().min(1, {
+			message: "Description du besoin requise",
+		}),
+		kind: z.enum(["IA", "Dashboard", "Fichier", "API", "Cartographie"], {
+			message: "Type de produit requis",
+		}),
+		productDevelopmentManagement: z.string().min(1, {
+			message: "Responsable du développement du produit data requis",
+		}),
+		dataUpdateFrequency: z.enum(["1 semaine", "1 mois", "3 mois", "12 mois"], {
+			message: "Fréquence de mise à jour des données requis",
+		}),
+		expectedProductionDate: z.iso.date("yyyy-MM-dd").min(1, {
+			message: "Date de mise en production prévisionnelle requise",
+		}),
+		personalData: z.enum(["Oui", "Non", "Je ne sais pas"], {
+			message: "Traitement implique des données personnelles requis",
+		}),
+		additionalFiles: z.array(z.string()).optional(),
+	}),
+});
+
+export type DataProductSchema = z.infer<typeof dataProductSchema>;
 
 export const dataContractSchema = z.object({
 	id: z.string().min(1, {
@@ -22,102 +53,60 @@ export const dataContractSchema = z.object({
 	}),
 	version: z.number(),
 	templateVersion: z.number(),
-	applicantInfo: withStep(personInfoSchema, 0),
-	dataProduct: withStep(
-		z.object({
-			name: z.string().min(1, { message: "Nom du projet requis" }),
-			description: z.string().min(1, {
-				message: "Description et objectif du projet requise",
-			}),
-			targetAudience: z.enum([
-				"internes",
-				"externes",
-				"partenaires référencés",
-				"public",
-			]),
-			expectedProductionDate: z.iso.date("yyyy-MM-dd").min(1, {
-				message: "Date de mise en production prévisionnelle requise",
-			}),
-			developmentResponsible: z.string().min(1, {
-				message: "Responsable du développement du produit data requis",
-			}),
-			kindAccessData: z.enum(["api", "extract"], {
-				error: "Type d'accès requis",
-			}),
-			apiInfo: z
-				.object({
-					nbOfRequestsPerDay: z
-						.number()
-						.min(1, { message: "Nombre de requêtes par jour requis" })
-						.multipleOf(1)
-						.max(10000),
-				})
-				.optional(),
-			extractInfo: z
-				.object({
-					format: z.enum(["csv", "json"], {
-						error: "Format requis",
-					}),
-					frequency: z.enum(["daily", "weekly", "monthly"], {
-						error: "Fréquence requise",
-					}),
-				})
-				.optional(),
-			additionalDocuments: z.array(z.string()).optional(),
-		}),
-		0,
-	),
-	dataAccesses: withStep(
-		z.array(
-			z.object({
-				referenceId: z.number().optional(),
-				description: z.string().min(1, {
-					message:
-						"A quelles données souhaitez vous accéder (le plus précis possible, tables connues, champs requis) ?",
-				}),
-				explanationDescription: z.string().min(1, {
-					message: "Explication requise",
-				}),
-			}),
-		),
-		1,
-	),
-	businessContact: withStep(personInfoSchema, 2),
-	technicalContact: withStep(personInfoSchema, 2),
-	legalContact: withStep(personInfoSchema, 2),
+	section: z.enum(["personInfo", "dataProduct"]),
+	...personInfoSchema.shape,
+	...dataProductSchema.shape,
 });
 
 export type DataContractSchema = z.input<typeof dataContractSchema>;
 
-export const defaultDataAccess: DataContractSchema["dataAccesses"][number] = {
-	description: "",
-	explanationDescription: "",
+const personInfoDefaultValues: PersonInfoSchema = {
+	personInfo: {
+		firstName: "",
+		lastName: "",
+		emailPro: "",
+		role: "",
+		ministry: "",
+		department: "",
+	},
 };
 
-const defaultPersonInfo: PersonInfoSchema = {
-	firstName: "",
-	lastName: "",
-	phone: "",
-	emailPro: "",
-	structureName: "",
-	role: "",
+const dataProductDefaultValues: DataProductSchema = {
+	dataProduct: {
+		subject: "",
+		description: "",
+		kind: "API",
+		productDevelopmentManagement: "",
+		dataUpdateFrequency: "1 semaine",
+		expectedProductionDate: "",
+		personalData: "Oui",
+		additionalFiles: [],
+	},
 };
 
-export const dataContractFormDefaultValues: DataContractSchema = {
+const dataContractFormDefaultValues: DataContractSchema = {
 	id: "data-contract:request",
 	version: 1,
 	templateVersion: 1,
-	applicantInfo: defaultPersonInfo,
-	dataProduct: {
-		name: "",
-		description: "",
-		targetAudience: "internes",
-		developmentResponsible: "",
-		expectedProductionDate: "",
-		kindAccessData: "api",
-	},
-	dataAccesses: [defaultDataAccess],
-	businessContact: defaultPersonInfo,
-	technicalContact: defaultPersonInfo,
-	legalContact: defaultPersonInfo,
+	section: "personInfo",
+	...personInfoDefaultValues,
+	...dataProductDefaultValues,
 };
+
+export const dataContractFormOptions = formOptions({
+	defaultValues: dataContractFormDefaultValues,
+	validators: {
+		onSubmit: ({ value, formApi }) => {
+			if (value.section === "personInfo") {
+				return formApi.parseValuesWithSchema(
+					personInfoSchema as typeof dataContractSchema,
+				);
+			}
+			if (value.section === "dataProduct") {
+				return formApi.parseValuesWithSchema(
+					dataProductSchema as typeof dataContractSchema,
+				);
+			}
+		},
+	},
+});

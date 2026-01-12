@@ -1,28 +1,24 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
-import { ButtonsGroup } from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
 import { fakerFR as faker } from "@faker-js/faker";
 import { useRouter } from "next/router";
 import { toast } from "sonner";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
-import { BaseDataContractForm } from "~/utils/forms/data-contract/v1/form";
 import {
-	type DataContractSchema,
-	type PersonInfoSchema,
-	dataContractFormDefaultValues,
+	dataContractFormOptions,
 	dataContractSchema,
 } from "~/utils/forms/data-contract/v1/schema";
-import {
-	DATA_CONTRACT_STEPS,
-	DATA_CONTRACT_STEP_LABELS,
-	DATA_CONTRACT_STEP_MAP,
-} from "~/utils/forms/data-contract/v1/stepMaps";
-import { useStepDataContractForm } from "~/utils/forms/data-contract/v1/useStepForm";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
+import { useAppForm } from "~/utils/forms";
+import { useStore } from "@tanstack/react-form";
+import {
+	DataProductStep,
+	PersonInfoStep,
+} from "~/utils/forms/data-contract/v1/forms";
 
 if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
@@ -43,94 +39,78 @@ export default function RequestForm() {
 		{ enabled: !!request_id && request_id !== "new" },
 	);
 
-	const stepForm = useStepDataContractForm({
-		defaultValues:
-			request_id !== "new" && requestData
-				? (requestData.formData as DataContractSchema)
-				: dataContractFormDefaultValues,
-		onFinalSubmit: async (values) => {
-			if (request_id === "new") {
-				await createRequest({ data: values });
-			} else {
-				await updateRequest({
-					id: Number(request_id),
-					data: values,
-				});
+	const steps = dataContractSchema.shape.section.options;
+
+	const form = useAppForm({
+		...dataContractFormOptions,
+		// defaultValues:
+		// 	request_id !== "new" && requestData
+		// 		? (requestData.formData as DataContractSchema)
+		// 		: dataContractFormDefaultValues,
+		onSubmit: async ({ value, formApi }) => {
+			if (value.section === "personInfo") {
+				formApi.setFieldValue("section", "dataProduct");
 			}
+			if (value.section === "dataProduct") {
+				if (request_id === "new") {
+					await createRequest({ data: value });
+				} else {
+					await updateRequest({
+						id: Number(request_id),
+						data: value,
+					});
+				}
 
-			toast.success(
-				`Votre produit a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
-			);
+				toast.success(
+					`Votre produit a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
+				);
 
-			stepForm.setStep(0);
-			stepForm.form.reset();
-			router.push(
-				session?.user.role === "instructor"
-					? "/dashboard/requests"
-					: "/dashboard/admin/requests",
-			);
+				router.push(
+					session?.user.role === "instructor"
+						? "/dashboard/requests"
+						: "/dashboard/admin/requests",
+				);
+			}
 		},
 	});
 
-	const generateFakeData = () => {
-		const makeFakerPersonInfo = (): PersonInfoSchema => ({
-			firstName: faker.person.firstName(),
-			lastName: faker.person.lastName(),
-			emailPro: faker.internet.email(),
-			phone: faker.phone.number({ style: "international" }),
-			structureName: faker.company.name(),
-			role: faker.person.jobTitle(),
-		});
+	const section = useStore(form.store, (state) => state.values.section);
 
-		const fakerData = fake(dataContractSchema);
-		if (stepForm.step === 0) {
-			stepForm.form.setFieldValue("dataProduct", {
-				...fakerData.dataProduct,
-				expectedProductionDate:
-					new Date(faker.date.future({ years: 1 }).getTime())
-						.toISOString()
-						.split("T")[0] ?? "",
-			});
-			stepForm.form.setFieldValue("applicantInfo", makeFakerPersonInfo());
-		} else if (stepForm.step === 1) {
-			stepForm.form.setFieldValue("dataAccesses[0]", {
-				// biome-ignore lint/style/noNonNullAssertion: faker data is always defined
-				...fakerData.dataAccesses[0]!,
-				referenceId: undefined,
-			});
-		} else if (stepForm.step === 2) {
-			stepForm.form.setFieldValue("businessContact", makeFakerPersonInfo());
-			stepForm.form.setFieldValue("technicalContact", makeFakerPersonInfo());
-			stepForm.form.setFieldValue("legalContact", makeFakerPersonInfo());
+	const generateFakeData = () => {
+		const { personInfo, dataProduct } = fake(dataContractSchema);
+		if (section === "personInfo") {
+			form.setFieldValue("personInfo", personInfo);
+		} else if (section === "dataProduct") {
+			form.setFieldValue("dataProduct", dataProduct);
 		}
 	};
 
-	const visible = DATA_CONTRACT_STEP_MAP[stepForm.step] as Array<
-		keyof typeof dataContractSchema.shape
-	>;
-
 	return (
-		<div className={fr.cx("fr-mb-8w")}>
-			<Breadcrumb
-				currentPageLabel={
-					request_id !== "new" ? `#${request_id}` : "Nouveau produit"
-				}
-				className="fr-mb-0"
-				segments={[
-					{
-						label: "Produits",
-						linkProps: {
-							href:
-								session?.user.role === "superadmin"
-									? "/dashboard/admin/requests"
-									: "/dashboard/requests",
+		<div className={fr.cx("fr-mb-8w", "fr-mt-4w")}>
+			{request_id !== "new" && (
+				<Breadcrumb
+					currentPageLabel={`#${request_id}`}
+					className="fr-mb-0"
+					segments={[
+						{
+							label: "Produits",
+							linkProps: {
+								href:
+									session?.user.role === "superadmin"
+										? "/dashboard/admin/requests"
+										: "/dashboard/requests",
+							},
 						},
-					},
-				]}
-			/>
+					]}
+				/>
+			)}
 			<div className={classes.headerWrapper}>
-				<h1 style={{ marginBottom: 0 }}>Formulaire de produit</h1>
-				{request_id !== "new" && (
+				<h1 style={{ marginBottom: fr.spacing("3w") }}>
+					{request_id !== "new"
+						? `Demande d'accès au produit #${request_id}`
+						: "Créer une demande de produit"}
+				</h1>
+				{/* {request_id !== "new" && (
 					<Button
 						className={classes.buttonEdit}
 						iconId="fr-icon-save-fill"
@@ -139,13 +119,19 @@ export default function RequestForm() {
 					>
 						Enregistrer
 					</Button>
-				)}
+				)} */}
 			</div>
 			<Stepper
-				currentStep={stepForm.step + 1}
-				stepCount={DATA_CONTRACT_STEPS}
-				title={DATA_CONTRACT_STEP_LABELS[stepForm.step]}
-				nextTitle={DATA_CONTRACT_STEP_LABELS[stepForm.step + 1] ?? undefined}
+				currentStep={steps.indexOf(section) + 1}
+				stepCount={steps.length}
+				title={
+					section === "personInfo"
+						? "Informations personnelles"
+						: "Description du besoin"
+				}
+				nextTitle={
+					section === "personInfo" ? "Description du besoin" : undefined
+				}
 				className={fr.cx("fr-mb-4w")}
 			/>
 			{process.env.NODE_ENV === "development" && (
@@ -158,52 +144,20 @@ export default function RequestForm() {
 					</Button>
 				</div>
 			)}
-			<stepForm.form.AppForm>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						stepForm.isLast ? stepForm.form.handleSubmit() : stepForm.next();
-					}}
-				>
-					<BaseDataContractForm
-						form={stepForm.form}
-						visibleSections={visible}
-						formId="dcf"
-						readOnly={false}
-					/>
-					<ButtonsGroup
-						className={fr.cx("fr-mt-4w")}
-						buttons={[
-							{
-								children: "Précédent",
-								iconId: "ri-arrow-left-line",
-								onClick: stepForm.previous,
-								priority: "tertiary",
-								iconPosition: "left",
-								type: "button",
-								disabled: stepForm.step === 0,
-							},
-							{
-								children: stepForm.isLast ? "Soumettre" : "Suivant",
-								iconId: stepForm.isLast
-									? "ri-check-line"
-									: "ri-arrow-right-line",
-								type: "submit",
-								priority: "primary",
-								iconPosition: "right",
-								disabled: stepForm.isLast
-									? stepForm.form.state.isSubmitting
-									: stepForm.form.state.isSubmitting ||
-										stepForm.form.state.isValidating,
-							},
-						]}
-						alignment="right"
-						buttonsEquisized
-						inlineLayoutWhen="always"
-					/>
-				</form>
-			</stepForm.form.AppForm>
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
+				}}
+			>
+				{section === "personInfo" && (
+					<PersonInfoStep form={form} readOnly={false} />
+				)}
+				{section === "dataProduct" && (
+					<DataProductStep form={form} readOnly={false} />
+				)}
+			</form>
 		</div>
 	);
 }
