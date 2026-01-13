@@ -7,6 +7,10 @@ import { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
+import { kindProductOptions } from "~/utils/forms/data-contract/v1/schema";
+import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
+import Tag from "@codegouvfr/react-dsfr/Tag";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 
 export default function DashboardDataMarketplace() {
 	const { classes, cx } = useStyles();
@@ -38,27 +42,49 @@ export default function DashboardDataMarketplace() {
 
 	return (
 		<div className={fr.cx("fr-mt-4w")}>
-			<h2>Data Marketplace</h2>
+			<h1>Data Marketplace</h1>
 			<div className={classes.headerWrapper}>
 				<div className={classes.headerSidebar}>
-					<h3>Affiner la recherche</h3>
+					<h2>Affiner la recherche</h2>
 					<Accordion
 						label="Type de produit"
 						className={classes.accordionWrapper}
+						defaultExpanded
+					>
+						<Checkbox
+							options={kindProductOptions.map(({ label }) => ({
+								label,
+								nativeInputProps: {
+									checked: false,
+									onChange: () => {},
+								},
+							}))}
+							className={fr.cx("fr-mb-0")}
+						/>
+					</Accordion>
+					<Accordion
+						label="Domaines"
+						className={classes.accordionWrapper}
+						defaultExpanded
 					>
 						Content of the Accordion 1
 					</Accordion>
-					<Accordion label="Domaines" className={classes.accordionWrapper}>
+					<Accordion
+						label="Producteurs"
+						className={classes.accordionWrapper}
+						defaultExpanded
+					>
 						Content of the Accordion 1
 					</Accordion>
-					<Accordion label="Producteurs" className={classes.accordionWrapper}>
-						Content of the Accordion 1
-					</Accordion>
-					<Accordion label="Type d'accès" className={classes.accordionWrapper}>
+					<Accordion
+						label="Type d'accès"
+						className={classes.accordionWrapper}
+						defaultExpanded
+					>
 						Content of the Accordion 1
 					</Accordion>
 				</div>
-				<div className={classes.headerData}>
+				<div className={classes.headerMain}>
 					<SearchBar
 						big
 						renderInput={({ className, id, type }) => (
@@ -101,14 +127,59 @@ export default function DashboardDataMarketplace() {
 										<Card
 											key={item.id}
 											background
-											shadow
+											border
 											title={item.name}
 											titleAs="h2"
-											linkProps={{
-												href: `/dashboard/data-marketplace/${item.id}/sheet`,
+											classes={{
+												desc: classes.cardDescription,
+												end: cx(fr.cx("fr-mt-0")),
 											}}
+											size="medium"
 											desc={item.description}
-											enlargeLink
+											detail={
+												<div className={classes.cardHeader}>
+													<ul className="fr-badges-group">
+														<li>
+															<Tag small>Badge</Tag>
+														</li>
+													</ul>
+													<span>
+														INSEE | Mis à jour :{" "}
+														{new Intl.DateTimeFormat("fr-FR").format(
+															item.updatedAt,
+														)}
+													</span>
+												</div>
+											}
+											end={
+												<Badge
+													severity="success"
+													noIcon
+													small
+													className={classes.cardBadgeAccessKind}
+												>
+													<i
+														className={fr.cx(
+															"fr-icon-lock-unlock-fill",
+															"fr-icon--xs",
+														)}
+													/>{" "}
+													Ouvert
+												</Badge>
+											}
+											footer={
+												<Button
+													priority="tertiary no outline"
+													iconId="fr-icon-arrow-right-line"
+													iconPosition="right"
+													linkProps={{
+														href: `/dashboard/data-marketplace/${item.id}/sheet`,
+													}}
+													className={classes.cardButtonCTA}
+												>
+													Voir le produit
+												</Button>
+											}
 										/>
 									))
 								)}
@@ -132,21 +203,28 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 	grid: {
 		paddingTop: fr.spacing("2w"),
 		display: "grid",
-		gridTemplateColumns: "repeat(3, 1fr)",
+		gridTemplateColumns: "repeat(2, 1fr)",
 		gap: fr.spacing("4w"),
 	},
 	headerWrapper: {
 		display: "grid",
-		gridTemplateColumns: "repeat(4, 1fr)",
+		gridTemplateColumns: "repeat(9, 1fr)",
 		gap: fr.spacing("3w"),
 	},
 	headerSidebar: {
-		gridColumn: "span 1",
-	},
-	headerData: {
 		gridColumn: "span 3",
 	},
+	headerMain: {
+		gridColumn: "span 6",
+	},
 	accordionWrapper: {
+		".fr-accordion__btn": {
+			backgroundColor: "transparent",
+			borderLeft: "2px solid var( --background-flat-blue-france)",
+		},
+		"> .fr-collapse": {
+			padding: `${fr.spacing("4v")} ${fr.spacing("1v")}`,
+		},
 		"&::before": {
 			content: "none",
 		},
@@ -155,5 +233,26 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		marginTop: fr.spacing("4w"),
 		display: "flex",
 		justifyContent: "center",
+	},
+	cardHeader: {
+		display: "flex",
+		flexDirection: "column",
+		gap: fr.spacing("1v"),
+	},
+	cardDescription: {
+		minHeight: "72px",
+		maxHeight: "72px",
+		overflow: "hidden",
+	},
+	cardButtonCTA: {
+		padding: 0,
+		minHeight: "auto",
+		borderBottom: "1px solid var( --background-flat-blue-france)",
+	},
+	cardBadgeAccessKind: {
+		display: "flex",
+		alignItems: "center",
+		gap: fr.spacing("1v"),
+		lineHeight: "1.5rem",
 	},
 });

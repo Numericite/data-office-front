@@ -46,7 +46,7 @@ const uploadRequestYamlToS3 = async ({
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
-		.input(z.object({ data: dataContractSchema }))
+		.input(z.object({ data: dataContractSchema.omit({ section: true }) }))
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
 
@@ -81,7 +81,12 @@ export const requestRouter = createTRPCRouter({
 		}),
 
 	update: protectedProcedure
-		.input(z.object({ id: z.number(), data: dataContractSchema }))
+		.input(
+			z.object({
+				id: z.number(),
+				data: dataContractSchema.omit({ section: true }),
+			}),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
 

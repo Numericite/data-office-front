@@ -1,7 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { withForm } from "~/utils/forms";
-import { dataContractFormOptions, dataProductSchema } from "./schema";
+import {
+	dataContractFormOptions,
+	dataUpdateFrequencyOptions,
+	kindProductOptions,
+	personalDataOptions,
+} from "./schema";
 import Button from "@codegouvfr/react-dsfr/Button";
 
 export const PersonInfoStep = withForm({
@@ -73,28 +78,6 @@ export const DataProductStep = withForm({
 	},
 	render: function Render({ form, readOnly }) {
 		const { classes } = useStyles();
-
-		const kindProductOptions =
-			dataProductSchema.shape.dataProduct.shape.kind.options.map((option) => ({
-				value: option,
-				label: option,
-			}));
-
-		const dataUpdateFrequencyOptions =
-			dataProductSchema.shape.dataProduct.shape.dataUpdateFrequency.options.map(
-				(option) => ({
-					value: option,
-					label: option,
-				}),
-			);
-
-		const personalDataOptions =
-			dataProductSchema.shape.dataProduct.shape.personalData.options.map(
-				(option) => ({
-					value: option,
-					label: option,
-				}),
-			);
 
 		return (
 			<div>

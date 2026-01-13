@@ -110,3 +110,25 @@ export const dataContractFormOptions = formOptions({
 		},
 	},
 });
+
+export const kindProductOptions =
+	dataProductSchema.shape.dataProduct.shape.kind.options.map((option) => ({
+		value: option,
+		label: option,
+	}));
+
+export const dataUpdateFrequencyOptions =
+	dataProductSchema.shape.dataProduct.shape.dataUpdateFrequency.options.map(
+		(option) => ({
+			value: option,
+			label: option,
+		}),
+	);
+
+export const personalDataOptions =
+	dataProductSchema.shape.dataProduct.shape.personalData.options.map(
+		(option) => ({
+			value: option,
+			label: option,
+		}),
+	);

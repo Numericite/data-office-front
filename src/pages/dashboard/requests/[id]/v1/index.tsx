@@ -9,6 +9,7 @@ import { api } from "~/utils/api";
 import {
 	dataContractFormOptions,
 	dataContractSchema,
+	type DataContractSchema,
 } from "~/utils/forms/data-contract/v1/schema";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
@@ -43,21 +44,26 @@ export default function RequestForm() {
 
 	const form = useAppForm({
 		...dataContractFormOptions,
-		// defaultValues:
-		// 	request_id !== "new" && requestData
-		// 		? (requestData.formData as DataContractSchema)
-		// 		: dataContractFormDefaultValues,
+		defaultValues:
+			request_id !== "new" && requestData
+				? ({
+						...(requestData.formData as Record<string, unknown>),
+						section: "personInfo",
+					} as DataContractSchema)
+				: dataContractFormOptions.defaultValues,
 		onSubmit: async ({ value, formApi }) => {
 			if (value.section === "personInfo") {
 				formApi.setFieldValue("section", "dataProduct");
 			}
 			if (value.section === "dataProduct") {
+				const { section: _, ...data } = value;
+
 				if (request_id === "new") {
-					await createRequest({ data: value });
+					await createRequest({ data });
 				} else {
 					await updateRequest({
 						id: Number(request_id),
-						data: value,
+						data,
 					});
 				}
 
