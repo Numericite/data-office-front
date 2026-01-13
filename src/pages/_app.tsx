@@ -171,8 +171,8 @@ function App({ Component, pageProps }: AppProps) {
 					homeLinkProps={{
 						href: !isAuthenticated
 							? "/"
-							: session?.data?.user.role === "USER"
-								? "/dashboard/requests"
+							: session?.data?.user.role === "instructor"
+								? "/dashboard/data-marketplace"
 								: "/dashboard/admin/requests",
 						title: "Accueil EDS - Espace de Données Sociales",
 					}}
@@ -180,6 +180,7 @@ function App({ Component, pageProps }: AppProps) {
 					quickAccessItems={quickAccessItems}
 					serviceTitle="Espace de Données Sociales"
 				/>
+
 				<main className={cx(fr.cx("fr-container"), classes.container)}>
 					<Component {...pageProps} />
 				</main>
