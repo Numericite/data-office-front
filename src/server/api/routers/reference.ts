@@ -18,7 +18,7 @@ export const referenceRouter = createTRPCRouter({
 			const limit = input.limit ?? 10;
 			const { search, cursor } = input || {};
 
-			const where: Prisma.ReferenceDataWhereInput = {};
+			const where: Prisma.ReferenceWhereInput = {};
 
 			if (search) {
 				where.name = {
@@ -28,7 +28,7 @@ export const referenceRouter = createTRPCRouter({
 			}
 
 			const newLocal = 10 + 1;
-			const references = await ctx.db.referenceData.findMany({
+			const references = await ctx.db.reference.findMany({
 				take: newLocal,
 				where,
 				cursor: cursor ? { id: cursor } : undefined,
@@ -67,7 +67,7 @@ export const referenceRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const { page, numberPerPage, search } = input || {};
 
-			const where: Prisma.ReferenceDataWhereInput = {};
+			const where: Prisma.ReferenceWhereInput = {};
 
 			if (search) {
 				where.name = {
@@ -76,7 +76,7 @@ export const referenceRouter = createTRPCRouter({
 				};
 			}
 
-			const references = await ctx.db.referenceData.findMany({
+			const references = await ctx.db.reference.findMany({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				where,
@@ -98,14 +98,14 @@ export const referenceRouter = createTRPCRouter({
 		}),
 
 	getCount: protectedProcedure.query(async ({ ctx }) => {
-		const totalCount = await ctx.db.referenceData.count();
+		const totalCount = await ctx.db.reference.count();
 		return totalCount;
 	}),
 
 	getById: protectedProcedure
 		.input(z.number())
 		.query(async ({ ctx, input: id }) => {
-			const reference = await ctx.db.referenceData.findUnique({
+			const reference = await ctx.db.reference.findUnique({
 				where: {
 					id,
 				},
@@ -135,15 +135,15 @@ export const referenceRouter = createTRPCRouter({
 
 			if (id) {
 				// Update existing reference
-				await ctx.db.referenceData.update({
+				await ctx.db.reference.update({
 					where: { id },
 					data,
 				});
 			} else {
 				// Create new reference
-				await ctx.db.referenceData.create({
-					data,
-				});
+				// await ctx.db.reference.create({
+				// 	data,
+				// });
 			}
 		}),
 });
