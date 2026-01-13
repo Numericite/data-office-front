@@ -110,10 +110,19 @@ export const referenceRouter = createTRPCRouter({
 			return tmpReferences;
 		}),
 
-	getCount: protectedProcedure.query(async ({ ctx }) => {
-		const totalCount = await ctx.db.reference.count();
-		return totalCount;
-	}),
+	getCount: protectedProcedure
+		.input(z.object({ byCurrentUser: z.boolean().optional() }))
+		.query(async ({ ctx, input }) => {
+			const { byCurrentUser } = input;
+
+			const count = await ctx.db.reference.count({
+				where: byCurrentUser
+					? { userId: Number.parseInt(ctx.session.user.id) }
+					: undefined,
+			});
+
+			return count;
+		}),
 
 	getById: protectedProcedure
 		.input(z.number())
@@ -138,6 +147,21 @@ export const referenceRouter = createTRPCRouter({
 				});
 
 			return reference;
+		}),
+
+	getByUserId: protectedProcedure
+		.input(ZGetListParams)
+		.query(async ({ ctx, input }) => {
+			const { page, numberPerPage } = input || {};
+
+			const requests = await ctx.db.reference.findMany({
+				where: { userId: Number.parseInt(ctx.session.user.id) },
+				include: ReferenceAugmentedInclude,
+				take: numberPerPage,
+				skip: (page - 1) * numberPerPage,
+			});
+
+			return requests;
 		}),
 
 	upsert: protectedProcedure

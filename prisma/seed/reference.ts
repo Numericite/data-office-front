@@ -8,6 +8,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Lorem ipsum",
 		kindProduct: "IA",
 		supplierId: 1,
+		userId: 1,
 	},
 	{
 		name: "Anativ",
@@ -16,6 +17,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Lorem ipsum",
 		kindProduct: "Dashboard",
 		supplierId: 2,
+		userId: 1,
 	},
 	{
 		name: "Matsvinnsbutik",
@@ -24,6 +26,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Performance",
 		kindProduct: "API",
 		supplierId: 3,
+		userId: 1,
 	},
 	{
 		name: "Filodiktisk",
@@ -31,6 +34,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Labor Market",
 		kindProduct: "Cartographie",
 		supplierId: 6,
+		userId: 1,
 	},
 	{
 		name: "Infocentre PME",
@@ -39,6 +43,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Business Support",
 		kindProduct: "Dashboard",
 		supplierId: 5,
+		userId: 1,
 	},
 	{
 		name: "DataGouv",
@@ -47,6 +52,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		domain: "Public Data",
 		kindProduct: "API",
 		supplierId: 8,
+		userId: 1,
 	},
 ];
 

@@ -1,0 +1,97 @@
+import { fr } from "@codegouvfr/react-dsfr";
+import { api } from "~/utils/api";
+import { createColumnHelper } from "@tanstack/react-table";
+import Link from "next/link";
+import DsfrTable from "~/components/DsfrTable";
+import type { ReferenceAugmented } from "~/utils/prisma-augmented";
+import { useState } from "react";
+import { authClient } from "~/utils/auth-client";
+import { tss } from "tss-react";
+
+const columnHelper = createColumnHelper<ReferenceAugmented>();
+
+const numberPerPage = 10;
+
+export default function DashboardDataContracts() {
+	const { classes, cx } = useStyles();
+	const { data: session } = authClient.useSession();
+
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const { data: totalCount } = api.reference.getCount.useQuery(
+		{ byCurrentUser: true },
+		{ initialData: 0 },
+	);
+
+	const { data } = api.reference.getByUserId.useQuery(
+		{
+			page: currentPage,
+			numberPerPage,
+		},
+		{ enabled: !!session?.user.role },
+	);
+
+	const columns = [
+		columnHelper.accessor("id", {
+			header: "ID",
+			cell: (info) => <span>#{info.getValue()}</span>,
+		}),
+		columnHelper.accessor("name", {
+			id: "name",
+			header: "Nom de la référence",
+			cell: (info) => <span>{info.getValue()}</span>,
+		}),
+		columnHelper.accessor("kindProduct", {
+			id: "kindProduct",
+			header: "Type du produit",
+			cell: (info) => <span>{info.getValue()}</span>,
+		}),
+		columnHelper.accessor("createdAt", {
+			header: "Date de création",
+			cell: (info) => (
+				<span>
+					{new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue()))}
+				</span>
+			),
+		}),
+		columnHelper.accessor("id", {
+			id: "actions",
+			header: "Actions",
+			cell: (info) => (
+				<Link href={`/dashboard/data-marketplace/${info.getValue()}/sheet`}>
+					Voir
+				</Link>
+			),
+		}),
+	];
+
+	return (
+		<>
+			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
+				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes DataContracts</h1>
+			</div>
+			<DsfrTable
+				data={data ?? []}
+				columns={columns}
+				totalCount={totalCount}
+				pagination={{
+					numberPerPage,
+					currentPage,
+					setCurrentPage,
+				}}
+			/>
+		</>
+	);
+}
+
+const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
+	headerWrapper: {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	buttonsWrapper: {
+		display: "flex",
+		gap: fr.spacing("2w"),
+	},
+}));

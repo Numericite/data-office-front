@@ -72,9 +72,11 @@ model Reference {
   name        String
   description String
   kindProduct ProductKind
-  supplier    Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   supplierId  Int         @unique
+  supplier    Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   domain      String
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   request     Request[]   @relation("RequestReference")
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -110,6 +112,7 @@ model User {
   accounts      Account[]
   requests      Request[]
   reviews       RequestReview[]
+  references    Reference[]
 
   @@unique([email])
   @@map("user")
