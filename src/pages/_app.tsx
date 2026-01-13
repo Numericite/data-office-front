@@ -48,7 +48,7 @@ export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 const userNavigationItems: MainNavigationProps.Item[] = [
 	{
-		text: "Data-marketplace",
+		text: "Data Marketplace",
 		linkProps: { href: "/dashboard/data-marketplace" },
 	},
 	{
@@ -80,7 +80,7 @@ const superAdminNavigationItems: MainNavigationProps.Item[] = [
 
 function App({ Component, pageProps }: AppProps) {
 	const router = useRouter();
-	const { classes } = useStyles();
+	const { classes, cx } = useStyles();
 
 	const session = authClient.useSession();
 
@@ -183,7 +183,10 @@ function App({ Component, pageProps }: AppProps) {
 					quickAccessItems={quickAccessItems}
 					serviceTitle="Espace de Données Sociales"
 				/>
-				<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
+				<main
+					className={cx(fr.cx("fr-container"), classes.container)}
+					style={{ flex: 1 }}
+				>
 					<Component {...pageProps} />
 				</main>
 				<Footer
@@ -203,6 +206,11 @@ const useStyles = tss.withName(App.name).create(() => ({
 		},
 		".fr-header__body-row": {
 			paddingBottom: "1rem",
+		},
+	},
+	container: {
+		"& > div": {
+			marginTop: `${fr.spacing("4w")}!important`,
 		},
 	},
 }));

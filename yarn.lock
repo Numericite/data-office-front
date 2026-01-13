@@ -2220,7 +2220,7 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-hoist-non-react-statics@^3.3.1:
+hoist-non-react-statics@^3.3.1, hoist-non-react-statics@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz#ece0acaf71d62c2969c2ec59feff42a4b1a85b45"
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
@@ -2792,6 +2792,13 @@ stylis@4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.2.0.tgz#79daee0208964c8fe695a42fcffcac633a211a51"
   integrity sha512-Orov6g6BB1sDfYgzWfTHDOxamtX1bE/zo104Dh9e6fqJ3PooipYyfJ0pUmrZO2wAvO8YbEyeFrkV91XTsGMSrw==
+
+superjson-next@0.8.3:
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/superjson-next/-/superjson-next-0.8.3.tgz#5f1029b37cd441451c381feb78314e8786599e78"
+  integrity sha512-k33f9fcme0AFvGcLcYkUWZmJFn2oRQsyg0n/9HtULRcmLSKoJln8eJuPL5kczY4NAiuYNlravtVc8Lj68a9TuQ==
+  dependencies:
+    hoist-non-react-statics "^3.3.2"
 
 superjson@^2.2.1:
   version "2.2.2"

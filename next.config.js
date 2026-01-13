@@ -28,6 +28,9 @@ const config = {
 		"@codegouvfr/react-dsfr",
 		"tss-react", // This is for MUI or if you use htts://tss-react.dev
 	],
+	experimental: {
+		swcPlugins: [["superjson-next", { excluded: [] }]],
+	},
 };
 
 export default config;

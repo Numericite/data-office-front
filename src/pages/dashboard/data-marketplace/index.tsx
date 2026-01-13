@@ -9,10 +9,19 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
 import { kindProductOptions } from "~/utils/forms/data-contract/v1/schema";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
-import Tag from "@codegouvfr/react-dsfr/Tag";
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import type {
+	GetServerSideProps,
+	InferGetServerSidePropsType,
+	Redirect,
+} from "next";
+import { db } from "~/server/db";
+import type { Supplier } from "@prisma/client";
+import { TagsGroup } from "@codegouvfr/react-dsfr/TagsGroup";
 
-export default function DashboardDataMarketplace() {
+export default function DashboardDataMarketplace({
+	suppliers,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	const { classes, cx } = useStyles();
 
 	const [searchTerm, setSearchTerm] = useState("");
@@ -27,13 +36,8 @@ export default function DashboardDataMarketplace() {
 		fetchNextPage,
 		hasNextPage,
 	} = api.reference.getByInfiniteQuery.useInfiniteQuery(
-		{
-			search: debouncedSearchTerm,
-			limit: 9,
-		},
-		{
-			getNextPageParam: (lastPage) => lastPage.nextCursor,
-		},
+		{ search: debouncedSearchTerm, limit: 9 },
+		{ getNextPageParam: (lastPage) => lastPage.nextCursor },
 	);
 
 	const flattenedData = data?.pages.flatMap((page) => page.items) || [];
@@ -67,21 +71,30 @@ export default function DashboardDataMarketplace() {
 						className={classes.accordionWrapper}
 						defaultExpanded
 					>
-						Content of the Accordion 1
+						<div />
 					</Accordion>
 					<Accordion
 						label="Producteurs"
 						className={classes.accordionWrapper}
 						defaultExpanded
 					>
-						Content of the Accordion 1
+						<Checkbox
+							options={suppliers.map(({ name }) => ({
+								label: name,
+								nativeInputProps: {
+									checked: false,
+									onChange: () => {},
+								},
+							}))}
+							className={fr.cx("fr-mb-0")}
+						/>
 					</Accordion>
 					<Accordion
 						label="Type d'accès"
 						className={classes.accordionWrapper}
 						defaultExpanded
 					>
-						Content of the Accordion 1
+						<div />
 					</Accordion>
 				</div>
 				<div className={classes.headerMain}>
@@ -137,14 +150,17 @@ export default function DashboardDataMarketplace() {
 											size="medium"
 											desc={item.description}
 											detail={
-												<div className={classes.cardHeader}>
-													<ul className="fr-badges-group">
-														<li>
-															<Tag small>Badge</Tag>
-														</li>
-													</ul>
+												<div>
+													<TagsGroup
+														smallTags
+														className={fr.cx("fr-mb-0")}
+														tags={[
+															{ children: item.kindProduct },
+															{ children: item.domain },
+														]}
+													/>
 													<span>
-														INSEE | Mis à jour :{" "}
+														{item.supplier.name} | Mis à jour :{" "}
 														{new Intl.DateTimeFormat("fr-FR").format(
 															item.updatedAt,
 														)}
@@ -234,11 +250,6 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		display: "flex",
 		justifyContent: "center",
 	},
-	cardHeader: {
-		display: "flex",
-		flexDirection: "column",
-		gap: fr.spacing("1v"),
-	},
 	cardDescription: {
 		minHeight: "72px",
 		maxHeight: "72px",
@@ -256,3 +267,23 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		lineHeight: "1.5rem",
 	},
 });
+
+export const getServerSideProps = (async (_) => {
+	const redirect: Redirect = {
+		destination: "/",
+		permanent: false,
+	};
+
+	const prisma = db;
+
+	try {
+		const suppliers = await prisma.supplier.findMany({
+			take: 100,
+		});
+		return { props: { suppliers } };
+	} catch (error) {
+		console.error("Error fetching suppliers:", error);
+
+		return { redirect };
+	}
+}) satisfies GetServerSideProps<{ suppliers: Supplier[] }>;

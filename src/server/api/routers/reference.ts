@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ZGetListParams } from "../defaultZodParams";
 import { referenceSchema } from "~/utils/forms/reference/schema";
+import { ReferenceAugmentedInclude } from "~/utils/prisma-augmented";
 
 export const referenceRouter = createTRPCRouter({
 	getByInfiniteQuery: protectedProcedure
@@ -35,13 +36,7 @@ export const referenceRouter = createTRPCRouter({
 				orderBy: {
 					id: "asc",
 				},
-				include: {
-					request: {
-						select: {
-							id: true,
-						},
-					},
-				},
+				include: ReferenceAugmentedInclude,
 			});
 
 			const tmpReferences = references.map((reference) => ({
