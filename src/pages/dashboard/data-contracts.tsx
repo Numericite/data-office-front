@@ -13,7 +13,7 @@ const columnHelper = createColumnHelper<ReferenceAugmented>();
 const numberPerPage = 10;
 
 export default function DashboardDataContracts() {
-	const { classes, cx } = useStyles();
+	const { classes } = useStyles();
 	const { data: session } = authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -72,10 +72,8 @@ export default function DashboardDataContracts() {
 	];
 
 	return (
-		<>
-			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
-				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes DataContracts</h1>
-			</div>
+		<div>
+			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes DataContracts</h1>
 			<DsfrTable
 				data={data ?? []}
 				columns={columns}
@@ -86,7 +84,7 @@ export default function DashboardDataContracts() {
 					setCurrentPage,
 				}}
 			/>
-		</>
+		</div>
 	);
 }
 
@@ -95,9 +93,5 @@ const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
 		display: "flex",
 		justifyContent: "space-between",
 		alignItems: "center",
-	},
-	buttonsWrapper: {
-		display: "flex",
-		gap: fr.spacing("2w"),
 	},
 }));

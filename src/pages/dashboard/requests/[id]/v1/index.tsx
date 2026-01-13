@@ -99,7 +99,7 @@ export default function RequestForm() {
 	};
 
 	return (
-		<div className={fr.cx("fr-mb-8w", "fr-mt-4w")}>
+		<div className={fr.cx("fr-mb-8w")}>
 			{request_id !== "new" && (
 				<Breadcrumb
 					currentPageLabel={`#${request_id}`}
@@ -124,9 +124,10 @@ export default function RequestForm() {
 						: "Créer une demande de produit"}
 				</h1>
 				{process.env.NODE_ENV === "development" && (
-					<div className={fr.cx("fr-mb-4w")}>
+					<div>
 						<Button
-							className={fr.cx("fr-btn", "fr-btn--secondary")}
+							size="small"
+							priority="secondary"
 							onClick={generateFakeData}
 						>
 							Générer des données factices
@@ -195,9 +196,7 @@ export default function RequestForm() {
 const useStyles = tss.withName(RequestForm.name).create({
 	headerWrapper: {
 		display: "flex",
-		alignItems: "center",
 		justifyContent: "space-between",
-		gap: fr.spacing("10w"),
 	},
 	buttonEdit: {
 		alignSelf: "center",

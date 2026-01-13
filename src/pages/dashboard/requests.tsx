@@ -9,7 +9,6 @@ import { useState } from "react";
 import { getRequestStatus } from "~/utils/tools";
 import { authClient } from "~/utils/auth-client";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { tss } from "tss-react";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
@@ -17,7 +16,7 @@ const columnHelper = createColumnHelper<RequestAugmented>();
 const numberPerPage = 10;
 
 export default function DashboardRequests() {
-	const { classes, cx } = useStyles();
+	const { classes } = useStyles();
 	const { data: session } = authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -149,20 +148,10 @@ export default function DashboardRequests() {
 	];
 
 	return (
-		<>
-			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
-				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
-					Mes demandes de produits de données
-				</h1>
-				<Button
-					className={classes.buttonNew}
-					iconId="fr-icon-add-circle-line"
-					iconPosition="right"
-					linkProps={{ href: "/dashboard/requests/new/v1" }}
-				>
-					Nouvelle demande
-				</Button>
-			</div>
+		<div>
+			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
+				Mes demandes de produits de données
+			</h1>
 			<DsfrTable
 				data={data ?? []}
 				columns={columns}
@@ -173,7 +162,7 @@ export default function DashboardRequests() {
 					setCurrentPage,
 				}}
 			/>
-		</>
+		</div>
 	);
 }
 
