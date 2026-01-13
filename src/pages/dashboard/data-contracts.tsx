@@ -5,7 +5,6 @@ import DsfrTable from "~/components/DsfrTable";
 import type { ReferenceAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
 import { authClient } from "~/utils/auth-client";
-import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
 
 const columnHelper = createColumnHelper<ReferenceAugmented>();
@@ -13,7 +12,6 @@ const columnHelper = createColumnHelper<ReferenceAugmented>();
 const numberPerPage = 10;
 
 export default function DashboardDataContracts() {
-	const { classes } = useStyles();
 	const { data: session } = authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -87,11 +85,3 @@ export default function DashboardDataContracts() {
 		</div>
 	);
 }
-
-const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
-	headerWrapper: {
-		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-}));
