@@ -49,7 +49,7 @@ export default function DashboardDataMarketplace({
 					},
 				]}
 			/>
-			<h1>{reference?.name}</h1>
+			<h1 className={fr.cx("fr-h3")}>{reference?.name}</h1>
 			<div className={classes.gridWrapper}>
 				<div className={classes.gridItemName}>Description</div>
 				<div className={classes.gridItemValue}>

@@ -1,7 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
-import { Card } from "@codegouvfr/react-dsfr/Card";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -9,20 +8,30 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
 import { kindProductOptions } from "~/utils/forms/data-contract/v1/schema";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import type {
 	GetServerSideProps,
 	InferGetServerSidePropsType,
 	Redirect,
 } from "next";
 import { db } from "~/server/db";
-import type { Supplier } from "@prisma/client";
-import { TagsGroup } from "@codegouvfr/react-dsfr/TagsGroup";
+import type { ProductKind, Supplier } from "@prisma/client";
+import Loader from "~/components/Loader";
+import DataMarketplaceCard from "~/components/data-marketplace/Card";
+
+type Filters = {
+	kindProducts: ProductKind[];
+	suppliers: string[];
+};
 
 export default function DashboardDataMarketplace({
 	suppliers,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	const { classes, cx } = useStyles();
+
+	const [filters, setFilters] = useState<Filters>({
+		kindProducts: [],
+		suppliers: [],
+	});
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [debouncedSearchTerm] = useDebounceValue(searchTerm, 300);
@@ -36,7 +45,7 @@ export default function DashboardDataMarketplace({
 		fetchNextPage,
 		hasNextPage,
 	} = api.reference.getByInfiniteQuery.useInfiniteQuery(
-		{ search: debouncedSearchTerm, limit: 9 },
+		{ search: debouncedSearchTerm, limit: 6, filters },
 		{ getNextPageParam: (lastPage) => lastPage.nextCursor },
 	);
 
@@ -46,10 +55,10 @@ export default function DashboardDataMarketplace({
 
 	return (
 		<div className={fr.cx("fr-mt-4w")}>
-			<h1>Data Marketplace</h1>
+			<h1 className={fr.cx("fr-h4")}>Data Marketplace</h1>
 			<div className={classes.headerWrapper}>
 				<div className={classes.headerSidebar}>
-					<h2>Affiner la recherche</h2>
+					<h2 className={fr.cx("fr-h5")}>Affiner la recherche</h2>
 					<Accordion
 						label="Type de produit"
 						className={classes.accordionWrapper}
@@ -59,8 +68,16 @@ export default function DashboardDataMarketplace({
 							options={kindProductOptions.map(({ label }) => ({
 								label,
 								nativeInputProps: {
-									checked: false,
-									onChange: () => {},
+									checked: filters.kindProducts.includes(label),
+									onChange: () =>
+										setFilters((prevFilters) => ({
+											...prevFilters,
+											kindProducts: filters.kindProducts.includes(label)
+												? prevFilters.kindProducts.filter(
+														(kind) => kind !== label,
+													)
+												: [...prevFilters.kindProducts, label],
+										})),
 								},
 							}))}
 							className={fr.cx("fr-mb-0")}
@@ -82,8 +99,16 @@ export default function DashboardDataMarketplace({
 							options={suppliers.map(({ name }) => ({
 								label: name,
 								nativeInputProps: {
-									checked: false,
-									onChange: () => {},
+									checked: filters.suppliers.includes(name),
+									onChange: () =>
+										setFilters((prevFilters) => ({
+											...prevFilters,
+											suppliers: filters.suppliers.includes(name)
+												? prevFilters.suppliers.filter(
+														(supplier) => supplier !== name,
+													)
+												: [...prevFilters.suppliers, name],
+										})),
 								},
 							}))}
 							className={fr.cx("fr-mb-0")}
@@ -108,11 +133,7 @@ export default function DashboardDataMarketplace({
 								placeholder="Recherche un produit"
 								type={type}
 								value={searchTerm}
-								// Note: The default behavior for an input of type 'text' is to clear the input value when the escape key is pressed.
-								// However, due to a bug in @gouvfr/dsfr the escape key event is not propagated to the input element.
-								// As a result this onChange is not called when the escape key is pressed.
 								onChange={(event) => setSearchTerm(event.currentTarget.value)}
-								// Same goes for the keydown event so this is useless but we hope the bug will be fixed soon.
 								onKeyDown={(event) => {
 									if (event.key === "Escape") {
 										// assert(inputElement !== null);
@@ -123,7 +144,7 @@ export default function DashboardDataMarketplace({
 						)}
 					/>
 					{isLoading ? (
-						<div className={fr.cx("fr-mt-4w", "fr-mb-4w")}>Chargement...</div>
+						<Loader />
 					) : (
 						<>
 							<div
@@ -136,66 +157,10 @@ export default function DashboardDataMarketplace({
 								{flattenedData.length === 0 ? (
 									<div>Aucune référence trouvée</div>
 								) : (
-									flattenedData.map((item) => (
-										<Card
-											key={item.id}
-											background
-											border
-											title={item.name}
-											titleAs="h2"
-											classes={{
-												desc: classes.cardDescription,
-												end: cx(fr.cx("fr-mt-0")),
-											}}
-											size="medium"
-											desc={item.description}
-											detail={
-												<div>
-													<TagsGroup
-														smallTags
-														className={fr.cx("fr-mb-0")}
-														tags={[
-															{ children: item.kindProduct },
-															{ children: item.domain },
-														]}
-													/>
-													<span>
-														{item.supplier.name} | Mis à jour :{" "}
-														{new Intl.DateTimeFormat("fr-FR").format(
-															item.updatedAt,
-														)}
-													</span>
-												</div>
-											}
-											end={
-												<Badge
-													severity="success"
-													noIcon
-													small
-													className={classes.cardBadgeAccessKind}
-												>
-													<i
-														className={fr.cx(
-															"fr-icon-lock-unlock-fill",
-															"fr-icon--xs",
-														)}
-													/>{" "}
-													Ouvert
-												</Badge>
-											}
-											footer={
-												<Button
-													priority="tertiary no outline"
-													iconId="fr-icon-arrow-right-line"
-													iconPosition="right"
-													linkProps={{
-														href: `/dashboard/data-marketplace/${item.id}/sheet`,
-													}}
-													className={classes.cardButtonCTA}
-												>
-													Voir le produit
-												</Button>
-											}
+									flattenedData.map((reference) => (
+										<DataMarketplaceCard
+											key={reference.id}
+											reference={reference}
 										/>
 									))
 								)}
@@ -220,18 +185,18 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		paddingTop: fr.spacing("2w"),
 		display: "grid",
 		gridTemplateColumns: "repeat(2, 1fr)",
-		gap: fr.spacing("4w"),
+		gap: fr.spacing("3w"),
 	},
 	headerWrapper: {
 		display: "grid",
-		gridTemplateColumns: "repeat(9, 1fr)",
+		gridTemplateColumns: "repeat(12, 1fr)",
 		gap: fr.spacing("3w"),
 	},
 	headerSidebar: {
 		gridColumn: "span 3",
 	},
 	headerMain: {
-		gridColumn: "span 6",
+		gridColumn: "span 9",
 	},
 	accordionWrapper: {
 		".fr-accordion__btn": {
@@ -249,22 +214,6 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		marginTop: fr.spacing("4w"),
 		display: "flex",
 		justifyContent: "center",
-	},
-	cardDescription: {
-		minHeight: "72px",
-		maxHeight: "72px",
-		overflow: "hidden",
-	},
-	cardButtonCTA: {
-		padding: 0,
-		minHeight: "auto",
-		borderBottom: "1px solid var( --background-flat-blue-france)",
-	},
-	cardBadgeAccessKind: {
-		display: "flex",
-		alignItems: "center",
-		gap: fr.spacing("1v"),
-		lineHeight: "1.5rem",
 	},
 });
 

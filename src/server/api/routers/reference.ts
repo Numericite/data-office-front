@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import { ProductKind, type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -13,11 +13,17 @@ export const referenceRouter = createTRPCRouter({
 				search: z.string().optional(),
 				limit: z.number().min(1).max(100).optional(),
 				cursor: z.number().optional(),
+				filters: z
+					.object({
+						kindProducts: z.array(z.enum(ProductKind)).optional(),
+						suppliers: z.array(z.string()).optional(),
+					})
+					.optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const limit = input.limit ?? 10;
-			const { search, cursor } = input || {};
+			const { search, cursor, filters } = input || {};
 
 			const where: Prisma.ReferenceWhereInput = {};
 
@@ -28,14 +34,26 @@ export const referenceRouter = createTRPCRouter({
 				};
 			}
 
-			const newLocal = 10 + 1;
+			if (filters?.kindProducts && filters.kindProducts.length > 0) {
+				where.kindProduct = {
+					in: filters.kindProducts,
+				};
+			}
+
+			if (filters?.suppliers && filters.suppliers.length > 0) {
+				where.supplier = {
+					name: {
+						in: filters.suppliers,
+					},
+				};
+			}
+
+			const newLocal = limit + 1;
 			const references = await ctx.db.reference.findMany({
 				take: newLocal,
 				where,
 				cursor: cursor ? { id: cursor } : undefined,
-				orderBy: {
-					id: "asc",
-				},
+				orderBy: { id: "asc" },
 				include: ReferenceAugmentedInclude,
 			});
 

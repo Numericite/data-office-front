@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { auth } from "~/utils/auth";
 import { seedSupplier } from "./supplier";
+import { seedReference } from "./reference";
 
 const prisma = new PrismaClient();
 
@@ -44,6 +45,7 @@ async function main() {
 	}
 
 	await seedSupplier(prisma);
+	await seedReference(prisma);
 }
 main()
 	.then(async () => {
