@@ -36,25 +36,71 @@ export default function DashboardRequests() {
 	);
 
 	const columns = [
+		columnHelper.accessor("id", {
+			header: "ID",
+			cell: (info) => <span>#{info.getValue()}</span>,
+		}),
 		columnHelper.accessor("formData", {
-			header: "Nom du projet",
+			id: "subject",
+			header: "Sujet de la demande",
 			cell: (info) => {
 				const formData = info.getValue();
-				const { data } = dataContractSchema.safeParse(formData);
+				const { data } = dataContractSchema
+					.omit({ section: true })
+					.safeParse(formData);
 
-				const projectName = data?.dataProduct.name;
+				const projectName = data?.dataProduct?.subject || "N/A";
 
-				return projectName;
+				return (
+					<span
+						style={{
+							display: "block",
+							maxWidth: "300px",
+							whiteSpace: "nowrap",
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+						}}
+					>
+						{projectName}
+					</span>
+				);
 			},
 		}),
+		columnHelper.accessor("formData", {
+			id: "productName",
+			header: "Nom du produit",
+			cell: () => <span>N/A</span>,
+		}),
+		columnHelper.accessor("formData", {
+			id: "kindProduct",
+			header: "Type de produit",
+			cell: (info) => {
+				const formData = info.getValue();
+				const { data } = dataContractSchema
+					.omit({ section: true })
+					.safeParse(formData);
+
+				const kindProduct = data?.dataProduct?.kind || "N/A";
+
+				return kindProduct;
+			},
+		}),
+		columnHelper.accessor("createdAt", {
+			header: "Date de création",
+			cell: (info) => (
+				<span>
+					{new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue()))}
+				</span>
+			),
+		}),
 		columnHelper.accessor("status", {
-			header: "Statut",
+			header: "Statuts",
 			cell: (info) => {
 				const status = info.getValue();
 				const { text, severity } = getRequestStatus(status);
 
 				return (
-					<Badge severity={severity} noIcon>
+					<Badge severity={severity} small>
 						{text}
 					</Badge>
 				);
@@ -74,13 +120,14 @@ export default function DashboardRequests() {
 				if (!latestReviewOpen) return <span>-</span>;
 
 				return (
-					<Badge severity="info" noIcon>
+					<Badge severity="info" noIcon small>
 						{latestReviewOpen}
 					</Badge>
 				);
 			},
 		}),
 		columnHelper.accessor("id", {
+			id: "actions",
 			header: "Actions",
 			cell: (info) => {
 				const originalRow = info.row.original;
@@ -104,14 +151,16 @@ export default function DashboardRequests() {
 	return (
 		<>
 			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
-				<h1>Liste des produits</h1>
+				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
+					Mes demandes de produits de données
+				</h1>
 				<Button
 					className={classes.buttonNew}
 					iconId="fr-icon-add-circle-line"
 					iconPosition="right"
 					linkProps={{ href: "/dashboard/requests/new/v1" }}
 				>
-					Nouveau produit
+					Nouvelle demande
 				</Button>
 			</div>
 			<DsfrTable

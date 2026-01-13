@@ -40,10 +40,24 @@ export interface DsfrTableProps<TData> {
 const useStyles = tss.withName("DsfrTable").create(() => ({
 	tableWrapper: {
 		overflowX: "auto",
-		boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+		boxShadow: "none",
 	},
 	table: {
 		display: "inline-table!important",
+		minWidth: "100%",
+		borderCollapse: "collapse",
+		thead: {
+			borderBottom: `2px solid ${fr.colors.decisions.border.plain.grey.default}`,
+		},
+		"thead::after, tbody::after": {
+			backgroundImage: "none!important",
+		},
+		"tr, th, td": {
+			backgroundColor: fr.colors.decisions.background.alt.grey.default,
+		},
+		tr: {
+			borderBottom: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
+		},
 	},
 	paginationWrapper: {
 		display: "flex",

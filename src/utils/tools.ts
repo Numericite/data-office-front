@@ -7,12 +7,12 @@ export function getRequestStatus(status: RequestStatus) {
 
 	switch (status) {
 		case "pending":
-			severity = "info";
-			text = "À traiter";
+			severity = "warning";
+			text = "En cours";
 			break;
 		case "under_instruction":
 			severity = "info";
-			text = "En cours d'instruction";
+			text = "En cours";
 			break;
 		case "instructed":
 			severity = "info";
@@ -24,7 +24,7 @@ export function getRequestStatus(status: RequestStatus) {
 			break;
 		case "closed":
 			severity = "error";
-			text = "Rejeté";
+			text = "Rejetée";
 			break;
 	}
 

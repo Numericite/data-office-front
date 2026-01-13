@@ -111,11 +111,21 @@ export default function RequestForm() {
 				/>
 			)}
 			<div className={classes.headerWrapper}>
-				<h1 style={{ marginBottom: fr.spacing("3w") }}>
+				<h1 className={fr.cx("fr-h4")}>
 					{request_id !== "new"
 						? `Demande d'accès au produit #${request_id}`
 						: "Créer une demande de produit"}
 				</h1>
+				{process.env.NODE_ENV === "development" && (
+					<div className={fr.cx("fr-mb-4w")}>
+						<Button
+							className={fr.cx("fr-btn", "fr-btn--secondary")}
+							onClick={generateFakeData}
+						>
+							Générer des données factices
+						</Button>
+					</div>
+				)}
 				{/* {request_id !== "new" && (
 					<Button
 						className={classes.buttonEdit}
@@ -140,16 +150,6 @@ export default function RequestForm() {
 				}
 				className={fr.cx("fr-mb-4w")}
 			/>
-			{process.env.NODE_ENV === "development" && (
-				<div className={fr.cx("fr-mb-4w")}>
-					<Button
-						className={fr.cx("fr-btn", "fr-btn--secondary")}
-						onClick={generateFakeData}
-					>
-						Générer des données factices
-					</Button>
-				</div>
-			)}
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();

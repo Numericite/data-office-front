@@ -16,6 +16,7 @@ import Head from "next/head";
 import { Toaster } from "sonner";
 import type { UserRole } from "@prisma/client";
 import { tss } from "tss-react";
+import type { Url } from "next/dist/shared/lib/router/router";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -91,6 +92,14 @@ function App({ Component, pageProps }: AppProps) {
 		router.push("/");
 	};
 
+	const isActive = (currentPath: string, itemLink: Url | undefined) => {
+		if (currentPath.includes("data-marketplace")) {
+			return currentPath.startsWith(itemLink?.toString() ?? "");
+		}
+
+		return currentPath === itemLink;
+	};
+
 	const navigationItems = useMemo(() => {
 		if (session.isPending) return [];
 
@@ -113,13 +122,7 @@ function App({ Component, pageProps }: AppProps) {
 
 		return items.map((item) => ({
 			...item,
-			isActive:
-				router.asPath === item?.linkProps?.href ||
-				router.asPath.startsWith(
-					typeof item?.linkProps?.href === "string"
-						? item?.linkProps?.href
-						: "",
-				),
+			isActive: isActive(router.asPath, item?.linkProps?.href),
 		}));
 	}, [session.isPending, session.data?.user, router.asPath, isAuthenticated]);
 
@@ -155,13 +158,7 @@ function App({ Component, pageProps }: AppProps) {
 				<title>EDS - Espace de Données Sociales</title>
 			</Head>
 			<Toaster position="top-center" richColors />
-			<div
-				style={{
-					minHeight: "100vh",
-					display: "flex",
-					flexDirection: "column",
-				}}
-			>
+			<div className={classes.wrapper}>
 				<Header
 					className={classes.quickAccesItemsWrapper}
 					brandTop={
@@ -183,10 +180,7 @@ function App({ Component, pageProps }: AppProps) {
 					quickAccessItems={quickAccessItems}
 					serviceTitle="Espace de Données Sociales"
 				/>
-				<main
-					className={cx(fr.cx("fr-container"), classes.container)}
-					style={{ flex: 1 }}
-				>
+				<main className={cx(fr.cx("fr-container"), classes.container)}>
 					<Component {...pageProps} />
 				</main>
 				<Footer
@@ -199,6 +193,11 @@ function App({ Component, pageProps }: AppProps) {
 }
 
 const useStyles = tss.withName(App.name).create(() => ({
+	wrapper: {
+		minHeight: "100vh",
+		display: "flex",
+		flexDirection: "column",
+	},
 	quickAccesItemsWrapper: {
 		filter: "none",
 		"& > .fr-header__menu": {
@@ -209,6 +208,7 @@ const useStyles = tss.withName(App.name).create(() => ({
 		},
 	},
 	container: {
+		flex: 1,
 		"& > div": {
 			marginTop: `${fr.spacing("4w")}!important`,
 		},

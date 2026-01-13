@@ -155,7 +155,7 @@ export const DataProductStep = withForm({
 							Précedent
 						</Button>
 						<form.SubscribeButton
-							label="Suivant"
+							label="Envoyer ma demande"
 							iconId="fr-icon-arrow-right-line"
 							iconPosition="right"
 						/>

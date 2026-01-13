@@ -24,7 +24,6 @@ export function SubscribeButton({
 					<Button
 						iconId={iconId}
 						iconPosition={iconPosition}
-						className={classes.button}
 						disabled={isSubmitting || !canSubmit}
 						type="submit"
 					>
@@ -40,8 +39,5 @@ const useStyles = tss.withName(SubscribeButton.name).create(() => ({
 	buttonWrapper: {
 		display: "flex",
 		justifyContent: "end",
-	},
-	button: {
-		alignItems: "end",
 	},
 }));
