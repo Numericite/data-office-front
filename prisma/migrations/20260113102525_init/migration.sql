@@ -61,7 +61,7 @@ CREATE TABLE "public"."Reference" (
 -- CreateTable
 CREATE TABLE "public"."Supplier" (
     "id" SERIAL NOT NULL,
-    "name" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

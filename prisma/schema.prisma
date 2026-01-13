@@ -82,7 +82,7 @@ model Reference {
 
 model Supplier {
   id         Int         @id @default(autoincrement())
-  name       Int
+  name       String
   references Reference[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
