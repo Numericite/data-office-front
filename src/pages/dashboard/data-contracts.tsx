@@ -1,12 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import { createColumnHelper } from "@tanstack/react-table";
-import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
 import type { ReferenceAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
 import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
+import Button from "@codegouvfr/react-dsfr/Button";
 
 const columnHelper = createColumnHelper<ReferenceAugmented>();
 
@@ -38,7 +38,7 @@ export default function DashboardDataContracts() {
 		}),
 		columnHelper.accessor("name", {
 			id: "name",
-			header: "Nom de la référence",
+			header: "Nom",
 			cell: (info) => <span>{info.getValue()}</span>,
 		}),
 		columnHelper.accessor("kindProduct", {
@@ -58,9 +58,15 @@ export default function DashboardDataContracts() {
 			id: "actions",
 			header: "Actions",
 			cell: (info) => (
-				<Link href={`/dashboard/data-marketplace/${info.getValue()}/sheet`}>
-					Voir
-				</Link>
+				<Button
+					size="small"
+					priority="secondary"
+					linkProps={{
+						href: `/dashboard/data-marketplace/${info.getValue()}/sheet`,
+					}}
+				>
+					Voir le DataContract
+				</Button>
 			),
 		}),
 	];

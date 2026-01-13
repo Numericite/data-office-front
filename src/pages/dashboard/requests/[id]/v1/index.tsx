@@ -3,7 +3,6 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
 import { fakerFR as faker } from "@faker-js/faker";
 import { useRouter } from "next/router";
-import { toast } from "sonner";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
 import {
@@ -20,13 +19,29 @@ import {
 	DataProductStep,
 	PersonInfoStep,
 } from "~/utils/forms/data-contract/v1/forms";
+import { createModal } from "@codegouvfr/react-dsfr/Modal";
+import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 
 if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
 }
 
+const requestSubmittedModal = createModal({
+	id: "request-submitted-modal",
+	isOpenedByDefault: false,
+});
+
 export default function RequestForm() {
 	const { classes } = useStyles();
+
+	useIsModalOpen(requestSubmittedModal, {
+		onConceal: () =>
+			void router.push(
+				session?.user.role === "superadmin"
+					? "/dashboard/admin/requests"
+					: "/dashboard/requests",
+			),
+	});
 
 	const { data: session } = authClient.useSession();
 
@@ -67,15 +82,7 @@ export default function RequestForm() {
 					});
 				}
 
-				toast.success(
-					`Votre produit a bien été ${request_id !== "new" ? "mise à jour" : "envoyée"}.`,
-				);
-
-				router.push(
-					session?.user.role === "instructor"
-						? "/dashboard/requests"
-						: "/dashboard/admin/requests",
-				);
+				requestSubmittedModal.open();
 			}
 		},
 	});
@@ -164,6 +171,23 @@ export default function RequestForm() {
 					<DataProductStep form={form} readOnly={false} />
 				)}
 			</form>
+			<requestSubmittedModal.Component
+				title="Demande envoyée"
+				iconId="ri-arrow-right-line"
+			>
+				<p>
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nisl, duis ac
+					egestas donec tincidunt lorem. Sodales risus amet nisl sed. Vitae
+					bibendum et penatibus a eget ipsum mattis pharetra. Diam molestie
+					vitae, diam, sed tincidunt facilisi. Arcu faucibus mattis varius
+					pretium. Duis ullamcorper malesuada massa ipsum sit. Ornare donec sit
+					lobortis nullam dictum ullamcorper ac.
+					{""}
+					Arcu, nisl, massa eu, a nulla fusce egestas vitae. Mi tortor,
+					penatibus auctor in nisl enim velit pellentesque. Consectetur urna,
+					eleifend non congue dolor adipiscing nec.
+				</p>
+			</requestSubmittedModal.Component>
 		</div>
 	);
 }

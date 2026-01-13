@@ -138,7 +138,7 @@ function App({ Component, pageProps }: AppProps) {
 					linkProps: { href: "" },
 				},
 				{
-					iconId: "ri-logout-box-line",
+					iconId: "ri-lock-fill",
 					text: "Se déconnecter",
 					linkProps: {
 						href: "/",
