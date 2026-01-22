@@ -3,6 +3,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import {
+	dataContractFormOptions,
 	type DataContractSchema,
 	dataContractSchema,
 } from "~/utils/forms/data-contract/v1/schema";
@@ -13,6 +14,11 @@ import { tss } from "tss-react";
 import { toast } from "sonner";
 import { RequestReviewStatus } from "@prisma/client";
 import z from "zod";
+import { useAppForm } from "~/utils/forms";
+import {
+	DataProductStep,
+	PersonInfoStep,
+} from "~/utils/forms/data-contract/v1/forms";
 
 export default function RequestPost() {
 	const { classes } = useStyles();
@@ -42,18 +48,21 @@ export default function RequestPost() {
 		return data;
 	}, [requestData]);
 
-	const stepForm = useStepDataContractForm({
-		defaultValues:
-			request_id !== "new" && requestData
-				? (requestData.formData as DataContractSchema)
-				: dataContractFormDefaultValues,
-		onFinalSubmit: async () => {},
-	});
-
 	const handleUpdateRequestStatus = async () => {
 		if (!request_review_id) return;
 		await updateRequestReview(Number.parseInt(request_review_id));
 	};
+
+	const form = useAppForm({
+		...dataContractFormOptions,
+		defaultValues:
+			request_id !== "new" && requestData
+				? ({
+						...(requestData.formData as Record<string, unknown>),
+						section: "personInfo",
+					} as DataContractSchema)
+				: dataContractFormOptions.defaultValues,
+	});
 
 	return (
 		<div className={fr.cx("fr-mb-8w")}>
@@ -78,7 +87,7 @@ export default function RequestPost() {
 			/>
 			<div className={classes.headerWrapper}>
 				<h1 style={{ marginBottom: 0 }}>
-					Informations sur le produit "{requestFormData?.dataProduct.name}"
+					Informations sur le produit "{requestFormData?.dataProduct.subject}"
 				</h1>
 				<div className={classes.buttonsWrapper}>
 					{request_review_id &&
@@ -104,22 +113,17 @@ export default function RequestPost() {
 					</Button>
 				</div>
 			</div>
-			<stepForm.form.AppForm>
+			<form.AppForm>
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
-						stepForm.isLast ? stepForm.form.handleSubmit() : stepForm.next();
 					}}
 				>
-					<BaseDataContractForm
-						form={stepForm.form}
-						visibleSections={["all"]}
-						formId="dcf"
-						readOnly
-					/>
+					<PersonInfoStep form={form} readOnly />
+					<DataProductStep form={form} readOnly />
 				</form>
-			</stepForm.form.AppForm>
+			</form.AppForm>
 		</div>
 	);
 }

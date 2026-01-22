@@ -84,7 +84,7 @@ const DashboardRequestsAdmin = ({
 				const formData = info.getValue();
 				const { data } = dataContractSchema.safeParse(formData);
 
-				const projectName = data?.dataProduct.name;
+				const projectName = data?.dataProduct.subject;
 
 				return projectName;
 			},
@@ -258,7 +258,7 @@ const DashboardRequestsReviewer = ({
 				const formData = info.getValue();
 				const { data } = dataContractSchema.safeParse(formData);
 
-				const projectName = data?.dataProduct.name;
+				const projectName = data?.dataProduct.subject;
 
 				return projectName;
 			},

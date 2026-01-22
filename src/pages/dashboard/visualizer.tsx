@@ -10,7 +10,7 @@ import {
 	type DataContractSchema,
 	dataContractSchema,
 } from "~/utils/forms/data-contract/v1/schema";
-import { dataContractFormDefaultValues } from "~/utils/forms/data-contract/v1/schema";
+import { dataContractFormOptions } from "~/utils/forms/data-contract/v1/schema";
 
 export default function Visualizer() {
 	const { classes, cx } = useStyles();
@@ -18,7 +18,9 @@ export default function Visualizer() {
 	const [yamlFile, setYamlFile] = useState<File | null>(null);
 	const [validYamlFile, setValidYamlFile] = useState<boolean>(false);
 	const [errors, setErrors] = useState<ZodError>();
-	const [formData, setFormData] = useState(dataContractFormDefaultValues);
+	const [formData, setFormData] = useState(
+		dataContractFormOptions.defaultValues,
+	);
 
 	const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];

@@ -111,12 +111,10 @@ export const referenceRouter = createTRPCRouter({
 		}),
 
 	getCount: protectedProcedure
-		.input(z.object({ byCurrentUser: z.boolean().optional() }))
+		.input(z.object({ byCurrentUser: z.boolean().optional() }).optional())
 		.query(async ({ ctx, input }) => {
-			const { byCurrentUser } = input;
-
 			const count = await ctx.db.reference.count({
-				where: byCurrentUser
+				where: input?.byCurrentUser
 					? { userId: Number.parseInt(ctx.session.user.id) }
 					: undefined,
 			});

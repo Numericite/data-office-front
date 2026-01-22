@@ -49,9 +49,12 @@ export default function AdminDataMarketplace() {
 	const { cx, classes } = useStyles();
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const { data: totalCount } = api.reference.getCount.useQuery(undefined, {
-		initialData: 0,
-	});
+	const { data: totalCount } = api.reference.getCount.useQuery(
+		{},
+		{
+			initialData: 0,
+		},
+	);
 
 	const { data } = api.reference.getList.useQuery({
 		page: currentPage,
