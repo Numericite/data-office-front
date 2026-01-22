@@ -59,9 +59,9 @@ export async function seedReference(prisma: PrismaClient) {
 	const suppliers = await prisma.supplier.findMany();
 
 	await prisma.reference.createMany({
-		data: defaultReference.map((reference) => ({
+		data: defaultReference.map((reference, index) => ({
 			...reference,
-			supplierId: suppliers[Math.floor(Math.random() * suppliers.length)]!.id,
+			supplierId: suppliers[index % suppliers.length]!.id,
 		})),
 	});
 }
