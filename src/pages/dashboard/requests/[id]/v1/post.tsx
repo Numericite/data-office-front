@@ -2,13 +2,10 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
-import { BaseDataContractForm } from "~/utils/forms/data-contract/v1/form";
 import {
 	type DataContractSchema,
-	dataContractFormDefaultValues,
 	dataContractSchema,
 } from "~/utils/forms/data-contract/v1/schema";
-import { useStepDataContractForm } from "~/utils/forms/data-contract/v1/useStepForm";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
 import { useMemo } from "react";

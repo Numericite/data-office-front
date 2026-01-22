@@ -9,7 +9,6 @@ import { useState } from "react";
 import { getRequestStatus } from "~/utils/tools";
 import { authClient } from "~/utils/auth-client";
 import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { tss } from "tss-react";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
@@ -17,7 +16,7 @@ const columnHelper = createColumnHelper<RequestAugmented>();
 const numberPerPage = 10;
 
 export default function DashboardRequests() {
-	const { classes, cx } = useStyles();
+	const { classes } = useStyles();
 	const { data: session } = authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -36,25 +35,71 @@ export default function DashboardRequests() {
 	);
 
 	const columns = [
+		columnHelper.accessor("id", {
+			header: "ID",
+			cell: (info) => <span>#{info.getValue()}</span>,
+		}),
 		columnHelper.accessor("formData", {
-			header: "Nom du projet",
+			id: "subject",
+			header: "Sujet de la demande",
 			cell: (info) => {
 				const formData = info.getValue();
-				const { data } = dataContractSchema.safeParse(formData);
+				const { data } = dataContractSchema
+					.omit({ section: true })
+					.safeParse(formData);
 
-				const projectName = data?.dataProduct.name;
+				const projectName = data?.dataProduct?.subject || "N/A";
 
-				return projectName;
+				return (
+					<span
+						style={{
+							display: "block",
+							maxWidth: "300px",
+							whiteSpace: "nowrap",
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+						}}
+					>
+						{projectName}
+					</span>
+				);
 			},
 		}),
+		columnHelper.accessor("formData", {
+			id: "productName",
+			header: "Nom du produit",
+			cell: () => <span>N/A</span>,
+		}),
+		columnHelper.accessor("formData", {
+			id: "kindProduct",
+			header: "Type de produit",
+			cell: (info) => {
+				const formData = info.getValue();
+				const { data } = dataContractSchema
+					.omit({ section: true })
+					.safeParse(formData);
+
+				const kindProduct = data?.dataProduct?.kind || "N/A";
+
+				return kindProduct;
+			},
+		}),
+		columnHelper.accessor("createdAt", {
+			header: "Date de création",
+			cell: (info) => (
+				<span>
+					{new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue()))}
+				</span>
+			),
+		}),
 		columnHelper.accessor("status", {
-			header: "Statut",
+			header: "Statuts",
 			cell: (info) => {
 				const status = info.getValue();
 				const { text, severity } = getRequestStatus(status);
 
 				return (
-					<Badge severity={severity} noIcon>
+					<Badge severity={severity} small>
 						{text}
 					</Badge>
 				);
@@ -74,13 +119,14 @@ export default function DashboardRequests() {
 				if (!latestReviewOpen) return <span>-</span>;
 
 				return (
-					<Badge severity="info" noIcon>
+					<Badge severity="info" noIcon small>
 						{latestReviewOpen}
 					</Badge>
 				);
 			},
 		}),
 		columnHelper.accessor("id", {
+			id: "actions",
 			header: "Actions",
 			cell: (info) => {
 				const originalRow = info.row.original;
@@ -102,18 +148,10 @@ export default function DashboardRequests() {
 	];
 
 	return (
-		<>
-			<div className={cx(fr.cx("fr-mt-4w"), classes.headerWrapper)}>
-				<h1>Liste des produits</h1>
-				<Button
-					className={classes.buttonNew}
-					iconId="fr-icon-add-circle-line"
-					iconPosition="right"
-					linkProps={{ href: "/dashboard/requests/new/v1" }}
-				>
-					Nouveau produit
-				</Button>
-			</div>
+		<div>
+			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
+				Mes demandes de produits de données
+			</h1>
 			<DsfrTable
 				data={data ?? []}
 				columns={columns}
@@ -124,7 +162,7 @@ export default function DashboardRequests() {
 					setCurrentPage,
 				}}
 			/>
-		</>
+		</div>
 	);
 }
 

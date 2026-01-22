@@ -1,9 +1,10 @@
-import type { Prisma } from "@prisma/client";
+import { ProductKind, type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ZGetListParams } from "../defaultZodParams";
 import { referenceSchema } from "~/utils/forms/reference/schema";
+import { ReferenceAugmentedInclude } from "~/utils/prisma-augmented";
 
 export const referenceRouter = createTRPCRouter({
 	getByInfiniteQuery: protectedProcedure
@@ -12,13 +13,19 @@ export const referenceRouter = createTRPCRouter({
 				search: z.string().optional(),
 				limit: z.number().min(1).max(100).optional(),
 				cursor: z.number().optional(),
+				filters: z
+					.object({
+						kindProducts: z.array(z.enum(ProductKind)).optional(),
+						suppliers: z.array(z.string()).optional(),
+					})
+					.optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const limit = input.limit ?? 10;
-			const { search, cursor } = input || {};
+			const { search, cursor, filters } = input || {};
 
-			const where: Prisma.ReferenceDataWhereInput = {};
+			const where: Prisma.ReferenceWhereInput = {};
 
 			if (search) {
 				where.name = {
@@ -27,21 +34,27 @@ export const referenceRouter = createTRPCRouter({
 				};
 			}
 
-			const newLocal = 10 + 1;
-			const references = await ctx.db.referenceData.findMany({
+			if (filters?.kindProducts && filters.kindProducts.length > 0) {
+				where.kindProduct = {
+					in: filters.kindProducts,
+				};
+			}
+
+			if (filters?.suppliers && filters.suppliers.length > 0) {
+				where.supplier = {
+					name: {
+						in: filters.suppliers,
+					},
+				};
+			}
+
+			const newLocal = limit + 1;
+			const references = await ctx.db.reference.findMany({
 				take: newLocal,
 				where,
 				cursor: cursor ? { id: cursor } : undefined,
-				orderBy: {
-					id: "asc",
-				},
-				include: {
-					request: {
-						select: {
-							id: true,
-						},
-					},
-				},
+				orderBy: { id: "asc" },
+				include: ReferenceAugmentedInclude,
 			});
 
 			const tmpReferences = references.map((reference) => ({
@@ -67,7 +80,7 @@ export const referenceRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const { page, numberPerPage, search } = input || {};
 
-			const where: Prisma.ReferenceDataWhereInput = {};
+			const where: Prisma.ReferenceWhereInput = {};
 
 			if (search) {
 				where.name = {
@@ -76,7 +89,7 @@ export const referenceRouter = createTRPCRouter({
 				};
 			}
 
-			const references = await ctx.db.referenceData.findMany({
+			const references = await ctx.db.reference.findMany({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				where,
@@ -97,15 +110,24 @@ export const referenceRouter = createTRPCRouter({
 			return tmpReferences;
 		}),
 
-	getCount: protectedProcedure.query(async ({ ctx }) => {
-		const totalCount = await ctx.db.referenceData.count();
-		return totalCount;
-	}),
+	getCount: protectedProcedure
+		.input(z.object({ byCurrentUser: z.boolean().optional() }))
+		.query(async ({ ctx, input }) => {
+			const { byCurrentUser } = input;
+
+			const count = await ctx.db.reference.count({
+				where: byCurrentUser
+					? { userId: Number.parseInt(ctx.session.user.id) }
+					: undefined,
+			});
+
+			return count;
+		}),
 
 	getById: protectedProcedure
 		.input(z.number())
 		.query(async ({ ctx, input: id }) => {
-			const reference = await ctx.db.referenceData.findUnique({
+			const reference = await ctx.db.reference.findUnique({
 				where: {
 					id,
 				},
@@ -127,6 +149,21 @@ export const referenceRouter = createTRPCRouter({
 			return reference;
 		}),
 
+	getByUserId: protectedProcedure
+		.input(ZGetListParams)
+		.query(async ({ ctx, input }) => {
+			const { page, numberPerPage } = input || {};
+
+			const requests = await ctx.db.reference.findMany({
+				where: { userId: Number.parseInt(ctx.session.user.id) },
+				include: ReferenceAugmentedInclude,
+				take: numberPerPage,
+				skip: (page - 1) * numberPerPage,
+			});
+
+			return requests;
+		}),
+
 	upsert: protectedProcedure
 		.input(referenceSchema.omit({ needPersonalData: true }))
 		.mutation(async ({ ctx, input }) => {
@@ -135,15 +172,15 @@ export const referenceRouter = createTRPCRouter({
 
 			if (id) {
 				// Update existing reference
-				await ctx.db.referenceData.update({
+				await ctx.db.reference.update({
 					where: { id },
 					data,
 				});
 			} else {
 				// Create new reference
-				await ctx.db.referenceData.create({
-					data,
-				});
+				// await ctx.db.reference.create({
+				// 	data,
+				// });
 			}
 		}),
 });

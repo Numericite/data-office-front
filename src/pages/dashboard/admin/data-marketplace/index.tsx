@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import Button from "@codegouvfr/react-dsfr/Button";
-import type { ReferenceData } from "@prisma/client";
+import type { Reference } from "@prisma/client";
 import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import { useState } from "react";
@@ -8,9 +8,9 @@ import { tss } from "tss-react";
 import DsfrTable from "~/components/DsfrTable";
 import { api } from "~/utils/api";
 
-type ReferenceDataForTable = ReferenceData & { requestCount: number };
+type ReferenceForTable = Reference & { requestCount: number };
 
-const columnHelper = createColumnHelper<ReferenceDataForTable>();
+const columnHelper = createColumnHelper<ReferenceForTable>();
 
 const columns = [
 	columnHelper.accessor("id", {
@@ -71,7 +71,7 @@ export default function AdminDataMarketplace() {
 					Nouvelle référence
 				</Button>
 			</div>
-			<DsfrTable<ReferenceDataForTable>
+			<DsfrTable<ReferenceForTable>
 				data={data ?? []}
 				columns={columns}
 				totalCount={totalCount}

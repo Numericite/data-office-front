@@ -12,3 +12,24 @@ export type RequestAugmented = Prisma.RequestGetPayload<
 >;
 
 export const RequestAugmentedInclude = RequestAugmented.include;
+
+const ReferenceAugmented = Prisma.validator<Prisma.ReferenceDefaultArgs>()({
+	include: {
+		request: {
+			select: {
+				id: true,
+			},
+		},
+		supplier: {
+			select: {
+				name: true,
+			},
+		},
+	},
+});
+
+export type ReferenceAugmented = Prisma.ReferenceGetPayload<
+	typeof ReferenceAugmented
+>;
+
+export const ReferenceAugmentedInclude = ReferenceAugmented.include;

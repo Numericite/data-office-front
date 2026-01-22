@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: d */
 import { fr } from "@codegouvfr/react-dsfr";
 import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
@@ -10,14 +9,14 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next/pagesDir";
 import { api } from "~/utils/api";
-
 import "~/styles/globals.css";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { authClient } from "~/utils/auth-client";
 import Head from "next/head";
 import { Toaster } from "sonner";
 import type { UserRole } from "@prisma/client";
-import { getUserRoleLabel } from "~/utils/tools";
+import { tss } from "tss-react";
+import type { Url } from "next/dist/shared/lib/router/router";
 
 // Only in TypeScript projects
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -49,10 +48,18 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 export { augmentDocumentWithEmotionCache, dsfrDocumentApi };
 
 const userNavigationItems: MainNavigationProps.Item[] = [
-	{ text: "Produits", linkProps: { href: "/dashboard/requests" } },
 	{
-		text: "Data-marketplace",
+		text: "Data Marketplace",
 		linkProps: { href: "/dashboard/data-marketplace" },
+	},
+	{
+		text: "Créer une demande",
+		linkProps: { href: "/dashboard/requests/new/v1" },
+	},
+	{ text: "Mes demandes", linkProps: { href: "/dashboard/requests" } },
+	{
+		text: "Mes DataContracts",
+		linkProps: { href: "/dashboard/data-contracts" },
 	},
 ];
 
@@ -74,6 +81,7 @@ const superAdminNavigationItems: MainNavigationProps.Item[] = [
 
 function App({ Component, pageProps }: AppProps) {
 	const router = useRouter();
+	const { classes, cx } = useStyles();
 
 	const session = authClient.useSession();
 
@@ -82,6 +90,14 @@ function App({ Component, pageProps }: AppProps) {
 	const logout = async () => {
 		await authClient.signOut();
 		router.push("/");
+	};
+
+	const isActive = (currentPath: string, itemLink: Url | undefined) => {
+		if (currentPath.includes("data-marketplace")) {
+			return currentPath.startsWith(itemLink?.toString() ?? "");
+		}
+
+		return currentPath === itemLink;
 	};
 
 	const navigationItems = useMemo(() => {
@@ -106,13 +122,7 @@ function App({ Component, pageProps }: AppProps) {
 
 		return items.map((item) => ({
 			...item,
-			isActive:
-				router.asPath === item?.linkProps?.href ||
-				router.asPath.startsWith(
-					typeof item?.linkProps?.href === "string"
-						? item?.linkProps?.href
-						: "",
-				),
+			isActive: isActive(router.asPath, item?.linkProps?.href),
 		}));
 	}, [session.isPending, session.data?.user, router.asPath, isAuthenticated]);
 
@@ -120,17 +130,15 @@ function App({ Component, pageProps }: AppProps) {
 		const items = [] as HeaderProps.QuickAccessItem[];
 		if (session.isPending) return [];
 
-		const userRole = session.data?.user?.role as UserRole;
-
 		if (isAuthenticated) {
 			items.push(
 				{
 					iconId: "ri-user-fill",
-					text: getUserRoleLabel(userRole),
+					text: session.data?.user?.name,
 					linkProps: { href: "" },
 				},
 				{
-					iconId: "ri-logout-box-line",
+					iconId: "ri-lock-fill",
 					text: "Se déconnecter",
 					linkProps: {
 						href: "/",
@@ -150,14 +158,9 @@ function App({ Component, pageProps }: AppProps) {
 				<title>EDS - Espace de Données Sociales</title>
 			</Head>
 			<Toaster position="top-center" richColors />
-			<div
-				style={{
-					minHeight: "100vh",
-					display: "flex",
-					flexDirection: "column",
-				}}
-			>
+			<div className={classes.wrapper}>
 				<Header
+					className={classes.quickAccesItemsWrapper}
 					brandTop={
 						<>
 							RÉPUBLIQUE
@@ -168,8 +171,8 @@ function App({ Component, pageProps }: AppProps) {
 					homeLinkProps={{
 						href: !isAuthenticated
 							? "/"
-							: session?.data?.user.role === "USER"
-								? "/dashboard/requests"
+							: session?.data?.user.role === "instructor"
+								? "/dashboard/data-marketplace"
 								: "/dashboard/admin/requests",
 						title: "Accueil EDS - Espace de Données Sociales",
 					}}
@@ -177,7 +180,8 @@ function App({ Component, pageProps }: AppProps) {
 					quickAccessItems={quickAccessItems}
 					serviceTitle="Espace de Données Sociales"
 				/>
-				<main className={fr.cx("fr-container")} style={{ flex: 1 }}>
+
+				<main className={cx(fr.cx("fr-container"), classes.container)}>
 					<Component {...pageProps} />
 				</main>
 				<Footer
@@ -188,5 +192,28 @@ function App({ Component, pageProps }: AppProps) {
 		</>
 	);
 }
+
+const useStyles = tss.withName(App.name).create(() => ({
+	wrapper: {
+		minHeight: "100vh",
+		display: "flex",
+		flexDirection: "column",
+	},
+	quickAccesItemsWrapper: {
+		filter: "none",
+		"& > .fr-header__menu": {
+			boxShadow: "inset 0 -1px 0 0 var(--border-default-grey)",
+		},
+		".fr-header__body-row": {
+			paddingBottom: "1rem",
+		},
+	},
+	container: {
+		flex: 1,
+		"& > div": {
+			marginTop: `${fr.spacing("4w")}!important`,
+		},
+	},
+}));
 
 export default withDsfr(api.withTRPC(withAppEmotionCache(App)));

@@ -1,6 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { ProConnectButton } from "@codegouvfr/react-dsfr/ProConnectButton";
-import Image from "next/image";
 import { tss } from "tss-react";
 import { authClient } from "~/utils/auth-client";
 import Cookies from "js-cookie";
@@ -21,20 +20,13 @@ export default function Home() {
 
 	return (
 		<div className={classes.main}>
-			<div className={classes.imageHome}>
-				<Image
-					src="/home-welcome.png"
-					alt="Image d'accueil"
-					width={500}
-					height={200}
-					layout="responsive"
-				/>
-			</div>
 			<div className={classes.heroSection}>
-				<h1>Connectez-vous pour accéder à l'interface</h1>
+				<h1 className={fr.cx("fr-mb-5v")}>Bienvenue sur EDS</h1>
 				<p>
-					L'Espace de Données Sociales a pour mission de faciliter l'accès et
-					l'utilisation des données au sein des ministères sociaux.
+					Postpol mytotes emedan ablogi antropototal, polypod, i etnoism
+					kvasikemi, tetism. Andrologi tempomodern teragyn till semisocial
+					megadiktisk. Filomatisk heterofoni fonoitet mikrototal teraitet, är
+					logotes bition radiodiktisk konfoni.
 				</p>
 				<ProConnectButton onClick={signIn} />
 			</div>
@@ -46,14 +38,9 @@ const useStyles = tss.withName(Home.name).create({
 	main: {
 		display: "grid",
 		gridTemplateColumns: "repeat(12, 1fr)",
-		alignItems: "initial",
-	},
-	imageHome: {
-		gridColumn: "span 4",
 	},
 	heroSection: {
-		gridColumn: "span 8",
-		marginLeft: fr.spacing("4w"),
-		marginTop: fr.spacing("10w"),
+		gridColumn: "3 / span 8",
+		marginTop: fr.spacing("12w"),
 	},
 });
