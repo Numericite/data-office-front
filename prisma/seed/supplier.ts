@@ -12,6 +12,10 @@ const defaultSuppliers = [
 ];
 
 export async function seedSupplier(prisma: PrismaClient) {
+	const supplierCount = await prisma.supplier.count();
+
+	if (supplierCount > 0) return;
+
 	await prisma.supplier.createMany({
 		data: defaultSuppliers,
 	});

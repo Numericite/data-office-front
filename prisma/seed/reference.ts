@@ -1,13 +1,13 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+/** biome-ignore-all lint/style/noNonNullAssertion: default supplier */
+import { ProductKind, type PrismaClient } from "@prisma/client";
 
-const defaultReference: Prisma.ReferenceCreateManyInput[] = [
+const defaultReference = [
 	{
 		name: "Abkrati",
 		description:
 			"Description texte body small regular consectetur adipisicing  elit, sed do eiusmod tempor incididunt ut labore et dolore…",
 		domain: "Lorem ipsum",
-		kindProduct: "IA",
-		supplierId: 1,
+		kindProduct: ProductKind.IA,
 		userId: 1,
 	},
 	{
@@ -15,8 +15,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		description:
 			"A French job classification system that categorizes jobs and professions.",
 		domain: "Lorem ipsum",
-		kindProduct: "Dashboard",
-		supplierId: 2,
+		kindProduct: ProductKind.Dashboard,
 		userId: 1,
 	},
 	{
@@ -24,16 +23,14 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		description:
 			"A database providing performance indicators for various sectors in France.",
 		domain: "Performance",
-		kindProduct: "API",
-		supplierId: 3,
+		kindProduct: ProductKind.API,
 		userId: 1,
 	},
 	{
 		name: "Filodiktisk",
 		description: "Statistical data on employment and unemployment in France.",
 		domain: "Labor Market",
-		kindProduct: "Cartographie",
-		supplierId: 6,
+		kindProduct: ProductKind.Cartographie,
 		userId: 1,
 	},
 	{
@@ -41,8 +38,7 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		description:
 			"A resource center offering information and support for small and medium-sized enterprises (SMEs) in France.",
 		domain: "Business Support",
-		kindProduct: "Dashboard",
-		supplierId: 5,
+		kindProduct: ProductKind.Dashboard,
 		userId: 1,
 	},
 	{
@@ -50,14 +46,22 @@ const defaultReference: Prisma.ReferenceCreateManyInput[] = [
 		description:
 			"A platform providing access to various public datasets in France.",
 		domain: "Public Data",
-		kindProduct: "API",
-		supplierId: 8,
+		kindProduct: ProductKind.API,
 		userId: 1,
 	},
 ];
 
 export async function seedReference(prisma: PrismaClient) {
+	const referenceCount = await prisma.reference.count();
+
+	if (referenceCount > 0) return;
+
+	const suppliers = await prisma.supplier.findMany();
+
 	await prisma.reference.createMany({
-		data: defaultReference,
+		data: defaultReference.map((reference) => ({
+			...reference,
+			supplierId: suppliers[Math.floor(Math.random() * suppliers.length)]!.id,
+		})),
 	});
 }
