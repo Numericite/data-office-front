@@ -23,7 +23,14 @@ export default function AdminUpsertReference() {
 
 	const form = useAppForm({
 		defaultValues: data
-			? { ...data, needPersonalData: false }
+			? {
+					...data,
+					needPersonalData: false,
+					owner: "",
+					processingDone: "",
+					peopleAccess: "",
+					storageLocation: "",
+				}
 			: referenceFormDefaultValues,
 		validators: {
 			onSubmit: referenceSchema,
@@ -33,6 +40,10 @@ export default function AdminUpsertReference() {
 			await upsertReference({
 				...values.value,
 				id: referenceId,
+				owner: "",
+				processingDone: "",
+				peopleAccess: "",
+				storageLocation: "",
 			});
 			toast.success(
 				`La référence a bien été ${isNew ? "créée" : "mise à jour"}.`,
