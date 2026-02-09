@@ -4,6 +4,7 @@ import { requestSchema } from "~/utils/forms/request/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
 import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
+import { gristAddRequest } from "../grist";
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -14,6 +15,8 @@ export const requestRouter = createTRPCRouter({
 			const newRequestForm = await ctx.db.requestForm.create({
 				data: { ...data.dataProduct, ...data.personInfo },
 			});
+
+			await gristAddRequest(data);
 
 			const newRequest = await ctx.db.request.create({
 				data: {

@@ -52,8 +52,16 @@ export default function RequestForm() {
 	const router = useRouter();
 	const { id: request_id } = router.query as { id: string | "new" };
 
-	const { mutateAsync: createRequest } = api.request.create.useMutation();
-	const { mutateAsync: updateRequest } = api.request.update.useMutation();
+	const { mutateAsync: createRequest } = api.request.create.useMutation({
+		onError: (error) => {
+			console.error("Error creating request:", error);
+		},
+	});
+	const { mutateAsync: updateRequest } = api.request.update.useMutation({
+		onError: (error) => {
+			console.error("Error updating request:", error);
+		},
+	});
 
 	const { data: request, isLoading: isLoadingRequest } =
 		api.request.getById.useQuery(Number(request_id), {

@@ -2213,6 +2213,11 @@ globals@^11.1.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
+grist-js@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/grist-js/-/grist-js-0.0.1.tgz#6b78a18eb83da4466ae8c3650fe832d6685cedfd"
+  integrity sha512-h+CakPh5kq7RKS6nCtWKQQxqTZZMcOwopCHx/hrQmUG3cJdZFKh7sVtSBoHnSv7E28pgY1fnnaQQaj76cWb7Tg==
+
 hasown@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/hasown/-/hasown-2.0.2.tgz#003eaf91be7adc372e84ec59dc37252cedb80003"
