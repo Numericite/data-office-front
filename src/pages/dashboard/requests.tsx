@@ -30,7 +30,7 @@ export default function DashboardRequests() {
 	const columns = [
 		columnHelper.accessor("id", {
 			header: "ID",
-			cell: (info) => <span>#{info.getValue()}</span>,
+			cell: (info) => `#${info.getValue()}`,
 		}),
 		columnHelper.accessor("requestForm.subject", {
 			id: "subject",
@@ -40,7 +40,7 @@ export default function DashboardRequests() {
 		columnHelper.accessor("gristId", {
 			id: "productName",
 			header: "Nom du produit",
-			cell: () => <span>N/A</span>,
+			cell: () => "N/A",
 		}),
 		columnHelper.accessor("requestForm.kind", {
 			id: "kindProduct",
@@ -49,15 +49,12 @@ export default function DashboardRequests() {
 		}),
 		columnHelper.accessor("createdAt", {
 			header: "Date de la demande",
-			cell: (info) => (
-				<span>
-					{new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue()))}
-				</span>
-			),
+			cell: (info) =>
+				new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue())),
 		}),
 		columnHelper.accessor("gristId", {
 			header: "Statuts",
-			cell: () => <span>N/A</span>,
+			cell: () => "N/A",
 		}),
 		columnHelper.accessor("id", {
 			id: "actions",
