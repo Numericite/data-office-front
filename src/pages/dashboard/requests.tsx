@@ -1,12 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import { createColumnHelper } from "@tanstack/react-table";
-import Link from "next/link";
 import DsfrTable from "~/components/DsfrTable";
 import type { RequestAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
 import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
+import Button from "@codegouvfr/react-dsfr/Button";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
 
@@ -64,9 +64,15 @@ export default function DashboardRequests() {
 			header: "Actions",
 			cell: (info) => (
 				<div className={classes.buttonsWrapper}>
-					<Link href={`/dashboard/requests/${info.getValue()}/v1/post`}>
-						Voir
-					</Link>
+					<Button
+						size="small"
+						priority="secondary"
+						linkProps={{
+							href: `/dashboard/requests/${info.getValue()}/v1/post`,
+						}}
+					>
+						Voir la demande
+					</Button>
 				</div>
 			),
 		}),
