@@ -1,21 +1,15 @@
 import { useFieldContext } from "~/utils/form";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface UploadFieldProps extends FieldDefaultProps {}
 
 export function UploadField({ label, disabled, readOnly }: UploadFieldProps) {
-	const field = useFieldContext<string>();
+	const field = useFieldContext<string[]>();
 
-	if (readOnly) {
-		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>{field.state.value}</span>
-			</div>
-		);
-	}
+	if (readOnly)
+		return <ReadOnly label={label} value={field.state.value.join(", ")} />;
 
 	return (
 		<Upload

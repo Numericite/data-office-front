@@ -2,6 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { useFieldContext } from "~/utils/form";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface CheckboxFieldProps extends FieldDefaultProps {
 	options: Array<{
@@ -15,14 +16,13 @@ export function RadioField({ label, options, readOnly }: CheckboxFieldProps) {
 
 	if (readOnly) {
 		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>
-					{options.find((option) => option.value === field.state.value)
-						?.label || "-"}
-				</span>
-			</div>
+			<ReadOnly
+				label={label}
+				value={
+					options.find((option) => option.value === field.state.value)?.label ||
+					""
+				}
+			/>
 		);
 	}
 

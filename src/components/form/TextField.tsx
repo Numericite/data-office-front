@@ -2,6 +2,7 @@ import { useFieldContext } from "~/utils/form";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { PasswordInput } from "@codegouvfr/react-dsfr/blocks/PasswordInput";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface TextFieldProps extends FieldDefaultProps {
 	kind?: "tel" | "email" | "password";
@@ -10,15 +11,7 @@ interface TextFieldProps extends FieldDefaultProps {
 export function TextField({ kind, label, disabled, readOnly }: TextFieldProps) {
 	const field = useFieldContext<string>();
 
-	if (readOnly) {
-		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>{field.state.value}</span>
-			</div>
-		);
-	}
+	if (readOnly) return <ReadOnly label={label} value={field.state.value} />;
 
 	if (kind === "password") {
 		<PasswordInput

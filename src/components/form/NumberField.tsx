@@ -1,21 +1,15 @@
 import { useFieldContext } from "~/utils/form";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface NumberFieldProps extends FieldDefaultProps {}
 
 export function NumberField({ label, readOnly }: NumberFieldProps) {
 	const field = useFieldContext<number>();
 
-	if (readOnly) {
-		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>{field.state.value}</span>
-			</div>
-		);
-	}
+	if (readOnly)
+		return <ReadOnly label={label} value={field.state.value.toString()} />;
 
 	return (
 		<Input
