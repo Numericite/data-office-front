@@ -1,79 +1,25 @@
-import type { s3Client } from "~/server/s3";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import yaml from "yaml";
 import { z } from "zod";
-
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
+import { requestSchema } from "~/utils/forms/request/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
-import { RequestReviewStatus, RequestStatus } from "@prisma/client";
 import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
-
-type UploadRequestYamlToS3Props = {
-	yamlString: string;
-	s3Client: typeof s3Client;
-	fileName: string;
-};
-
-const uploadRequestYamlToS3 = async ({
-	yamlString,
-	s3Client,
-	fileName,
-}: UploadRequestYamlToS3Props) => {
-	const tmpDir = os.tmpdir();
-	const tmpFilePath = path.join(tmpDir, fileName);
-
-	fs.writeFileSync(tmpFilePath, yamlString, "utf8");
-
-	const uploadParams = new PutObjectCommand({
-		Bucket: process.env.S3_BUCKET,
-		Key: `requests/${fileName}`,
-		Body: fs.createReadStream(tmpFilePath),
-		ACL: "public-read",
-		ContentType: "application/yaml",
-	});
-
-	await s3Client.send(uploadParams);
-
-	const fileUrl = `${process.env.S3_ENDPOINT}/requests/${fileName}`;
-
-	return fileUrl;
-};
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
-		.input(z.object({ data: dataContractSchema.omit({ section: true }) }))
+		.input(z.object({ data: requestSchema.omit({ section: true }) }))
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
 
-			const yamlString = yaml.stringify(data, {
-				indent: 2,
+			const newRequestForm = await ctx.db.requestForm.create({
+				data: { ...data.dataProduct, ...data.personInfo },
 			});
 
 			const newRequest = await ctx.db.request.create({
 				data: {
 					userId: Number.parseInt(ctx.session.user.id),
-					formData: data,
-					yamlFile: "",
-				},
-			});
-
-			const fileName = `request_${newRequest.id}_${Date.now()}.yaml`;
-
-			const yamlFileUrl = await uploadRequestYamlToS3({
-				yamlString,
-				s3Client: ctx.s3Client,
-				fileName,
-			});
-
-			await ctx.db.request.update({
-				where: { id: newRequest.id },
-				data: {
-					yamlFile: yamlFileUrl,
+					gristId: `grist_${Date.now()}`,
+					requestFormId: newRequestForm.id,
 				},
 			});
 
@@ -84,52 +30,34 @@ export const requestRouter = createTRPCRouter({
 		.input(
 			z.object({
 				id: z.number(),
-				data: dataContractSchema.omit({ section: true }),
+				data: requestSchema.omit({ section: true }),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { data } = input;
 
-			data.version += 1; // Increment version for updates
-
-			const currentRequest = await ctx.db.request.findUnique({
+			const request = await ctx.db.request.findUnique({
 				where: { id: input.id },
-				select: {
-					id: true,
-					yamlFile: true,
-				},
+				include: { requestForm: true },
 			});
 
-			if (!currentRequest)
+			if (!request)
 				throw new TRPCError({
 					code: "NOT_FOUND",
 					message: `Request with id ${input.id} not found`,
 				});
 
-			const yamlString = yaml.stringify(data, { indent: 2 });
-
-			const fileName = currentRequest?.yamlFile.split("/").pop();
-
-			if (!fileName)
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Could not determine file name for YAML upload",
-				});
-
-			await uploadRequestYamlToS3({
-				yamlString,
-				s3Client: ctx.s3Client,
-				fileName,
+			await ctx.db.requestForm.update({
+				where: { id: request.requestFormId },
+				data: { ...data.dataProduct, ...data.personInfo },
 			});
 
-			const newRequest = await ctx.db.request.update({
+			const updatedRequest = await ctx.db.request.findUnique({
 				where: { id: input.id },
-				data: {
-					formData: data,
-				},
+				include: RequestAugmentedInclude,
 			});
 
-			return newRequest;
+			return updatedRequest;
 		}),
 
 	getById: protectedProcedure
@@ -149,42 +77,23 @@ export const requestRouter = createTRPCRouter({
 			return request;
 		}),
 
-	getByUserId: protectedProcedure
-		.input(
-			ZGetListParams.extend({
-				status: z.enum(RequestStatus).optional(),
-			}),
-		)
-		.query(async ({ ctx, input: { status } }) => {
-			const requests = await ctx.db.request.findMany({
-				where: { userId: Number.parseInt(ctx.session.user.id), status },
-				include: RequestAugmentedInclude,
-			});
+	getByUserId: protectedProcedure.query(async ({ ctx }) => {
+		const requests = await ctx.db.request.findMany({
+			where: { userId: Number.parseInt(ctx.session.user.id) },
+			include: RequestAugmentedInclude,
+		});
 
-			return requests;
-		}),
+		return requests;
+	}),
 
 	getList: protectedProcedure
-		.input(
-			ZGetListParams.extend({
-				status: z.enum(RequestStatus).optional(),
-				reviewStatus: z.enum(RequestReviewStatus).optional(),
-			}),
-		)
+		.input(ZGetListParams)
 		.query(async ({ ctx, input }) => {
-			const { page, numberPerPage, status, reviewStatus } = input || {};
+			const { page, numberPerPage } = input || {};
 
 			const requests = await ctx.db.request.findMany({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
-				where: {
-					status: status ? { equals: status } : undefined,
-					reviews: reviewStatus
-						? {
-								some: { status: { equals: reviewStatus }, state: "open" },
-							}
-						: undefined,
-				},
 				include: RequestAugmentedInclude,
 			});
 
@@ -203,67 +112,5 @@ export const requestRouter = createTRPCRouter({
 			});
 
 			return count;
-		}),
-
-	updateStatus: protectedProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				status: z.enum(RequestStatus).optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { id, status } = input;
-
-			const original = await ctx.db.request.findUnique({
-				where: { id },
-				select: { status: true },
-			});
-
-			if (!original) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: `Request with id ${id} not found`,
-				});
-			}
-
-			const updatedRequest = await ctx.db.request.update({
-				where: { id },
-				data: {
-					status,
-				},
-			});
-
-			return { original, updated: updatedRequest };
-		}),
-
-	createReview: protectedProcedure
-		.input(
-			z.object({
-				request_id: z.number(),
-				status: z.enum(RequestReviewStatus),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { request_id, status } = input;
-
-			const review = await ctx.db.requestReview.create({
-				data: { status, requestId: request_id },
-			});
-
-			return review;
-		}),
-
-	updateReview: protectedProcedure
-		.input(z.number())
-		.mutation(async ({ ctx, input: id }) => {
-			const currentUserId = Number.parseInt(ctx.session.user.id);
-
-			const review = await ctx.db.requestReview.update({
-				where: { id },
-				data: { reviewerId: currentUserId, state: "closed" },
-			});
-
-			return review;
 		}),
 });

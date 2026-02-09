@@ -9,7 +9,7 @@ import { tss } from "tss-react";
 import { authClient } from "~/utils/auth-client";
 import { getRequestStatus } from "~/utils/tools";
 import z from "zod";
-import { dataContractSchema } from "~/utils/forms/data-contract/v1/schema";
+import { requestSchema } from "~/utils/forms/request/v1/schema";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { toast } from "sonner";
 import { RequestReviewStatus, RequestStatus } from "@prisma/client";
@@ -82,7 +82,7 @@ const DashboardRequestsAdmin = ({
 			header: "Nom du projet",
 			cell: (info) => {
 				const formData = info.getValue();
-				const { data } = dataContractSchema.safeParse(formData);
+				const { data } = requestSchema.safeParse(formData);
 
 				const projectName = data?.dataProduct.subject;
 
@@ -256,7 +256,7 @@ const DashboardRequestsReviewer = ({
 			header: "Nom du projet",
 			cell: (info) => {
 				const formData = info.getValue();
-				const { data } = dataContractSchema.safeParse(formData);
+				const { data } = requestSchema.safeParse(formData);
 
 				const projectName = data?.dataProduct.subject;
 

@@ -2,7 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { withForm } from "~/utils/forms";
 import {
-	dataContractFormOptions,
+	requestFormOptions,
 	dataUpdateFrequencyOptions,
 	kindProductOptions,
 	personalDataOptions,
@@ -10,15 +10,15 @@ import {
 import Button from "@codegouvfr/react-dsfr/Button";
 
 export const PersonInfoStep = withForm({
-	...dataContractFormOptions,
+	...requestFormOptions,
 	props: {
 		readOnly: false,
 	},
 	render: function Render({ form, readOnly }) {
-		const { classes } = useStyles();
+		const { classes } = useStyles({ readOnly });
 
 		return (
-			<div>
+			<div className={classes.formWrapper}>
 				<div className={classes.personInfoGrid}>
 					<form.AppField name="personInfo.firstName">
 						{(field) => <field.TextField label="Prénom" readOnly={readOnly} />}
@@ -57,30 +57,32 @@ export const PersonInfoStep = withForm({
 						)}
 					</form.AppField>
 				</div>
-				<form.AppForm>
-					<div>
-						<form.SubscribeButton
-							label="Suivant"
-							iconId="fr-icon-arrow-right-line"
-							iconPosition="right"
-						/>
-					</div>
-				</form.AppForm>
+				{!readOnly && (
+					<form.AppForm>
+						<div>
+							<form.SubscribeButton
+								label="Suivant"
+								iconId="fr-icon-arrow-right-line"
+								iconPosition="right"
+							/>
+						</div>
+					</form.AppForm>
+				)}
 			</div>
 		);
 	},
 });
 
 export const DataProductStep = withForm({
-	...dataContractFormOptions,
+	...requestFormOptions,
 	props: {
 		readOnly: false,
 	},
 	render: function Render({ form, readOnly }) {
-		const { classes } = useStyles();
+		const { classes } = useStyles({ readOnly });
 
 		return (
-			<div>
+			<div className={classes.formWrapper}>
 				<form.AppField name="dataProduct.subject">
 					{(field) => (
 						<field.TextField label="Sujet du besoin" readOnly={readOnly} />
@@ -105,7 +107,7 @@ export const DataProductStep = withForm({
 					)}
 				</form.AppField>
 				<div className={classes.personInfoGrid}>
-					<form.AppField name="dataProduct.productDevelopmentManagement">
+					<form.AppField name="dataProduct.developmentManagement">
 						{(field) => (
 							<field.TextField
 								label="Direction responsable du dév. du produit"
@@ -145,42 +147,53 @@ export const DataProductStep = withForm({
 						<field.UploadField label="Ajouter un fichier" readOnly={readOnly} />
 					)}
 				</form.AppField>
-				<form.AppForm>
-					<div className={classes.buttonsWrapper}>
-						<Button
-							priority="tertiary"
-							iconId="fr-icon-arrow-left-line"
-							onClick={() => form.setFieldValue("section", "personInfo")}
-						>
-							Précedent
-						</Button>
-						<form.SubscribeButton
-							label="Envoyer ma demande"
-							iconId="fr-icon-arrow-right-line"
-							iconPosition="right"
-						/>
-					</div>
-				</form.AppForm>
+				{!readOnly && (
+					<form.AppForm>
+						<div className={classes.buttonsWrapper}>
+							<Button
+								priority="tertiary"
+								iconId="fr-icon-arrow-left-line"
+								onClick={() => form.setFieldValue("section", "personInfo")}
+							>
+								Précedent
+							</Button>
+							<form.SubscribeButton
+								label="Envoyer ma demande"
+								iconId="fr-icon-arrow-right-line"
+								iconPosition="right"
+							/>
+						</div>
+					</form.AppForm>
+				)}
 			</div>
 		);
 	},
 });
 
-const useStyles = tss.withName("DataContractForms").create({
-	personInfoGrid: {
-		display: "grid",
-		gridTemplateColumns: "repeat(3, 1fr)",
-		gap: fr.spacing("3w"),
-		"& > *": { gridColumn: "span 1" },
-	},
-	section: {
-		padding: fr.spacing("3w"),
-		border: "1px solid #ccc",
-		borderRadius: fr.spacing("3v"),
-	},
-	buttonsWrapper: {
-		display: "flex",
-		gap: fr.spacing("2w"),
-		justifyContent: "right",
-	},
-});
+const useStyles = tss
+	.withName("requestForms")
+	.withParams<{ readOnly: boolean }>()
+	.create(({ readOnly }) => ({
+		formWrapper: {
+			display: "flex",
+			flexDirection: "column",
+			gap: readOnly ? fr.spacing("4w") : 0,
+			marginTop: readOnly ? fr.spacing("2w") : 0,
+		},
+		personInfoGrid: {
+			display: "grid",
+			gridTemplateColumns: "repeat(3, 1fr)",
+			gap: fr.spacing("3w"),
+			"& > *": { gridColumn: "span 1" },
+		},
+		section: {
+			padding: fr.spacing("3w"),
+			border: "1px solid #ccc",
+			borderRadius: fr.spacing("3v"),
+		},
+		buttonsWrapper: {
+			display: "flex",
+			gap: fr.spacing("2w"),
+			justifyContent: "right",
+		},
+	}));

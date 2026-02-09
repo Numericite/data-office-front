@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
-import { kindProductOptions } from "~/utils/forms/data-contract/v1/schema";
+import { kindProductOptions } from "~/utils/forms/request/v1/schema";
 import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
 import type {
 	GetServerSideProps,

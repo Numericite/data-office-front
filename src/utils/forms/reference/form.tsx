@@ -2,14 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { withForm } from "..";
 import { referenceFormDefaultValues } from "./schema";
 import { tss } from "tss-react";
-import { LegalWorkProcessing } from "@prisma/client";
 import Button from "@codegouvfr/react-dsfr/Button";
-
-const legalWorkOptions =
-	Object.keys(LegalWorkProcessing).map((option) => ({
-		label: option,
-		value: option,
-	})) ?? [];
 
 export const BaseReferenceForm = withForm({
 	defaultValues: referenceFormDefaultValues,
@@ -165,17 +158,6 @@ export const BaseReferenceForm = withForm({
 												)}
 											/>
 										</div>
-									</div>
-									<div className={fr.cx("fr-mt-2w")}>
-										<form.AppField
-											name="personalData.legalWork"
-											children={(field) => (
-												<field.SelectField
-													label="Cadre juridique"
-													options={legalWorkOptions}
-												/>
-											)}
-										/>
 									</div>
 								</>
 							)

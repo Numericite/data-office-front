@@ -7,64 +7,54 @@ datasource db {
   url      = env("POSTGRESQL_ADDON_URI")
 }
 
-enum RequestStatus {
-  pending
-  under_instruction
-  instructed
-  validated
-  closed
-}
-
-enum RequestReviewStatus {
-  rssi
-  dpo
-  daj
-}
-
-enum RequestReviewState {
-  open
-  closed
-}
-
-model Request {
-  id         Int             @id @default(autoincrement())
-  status     RequestStatus   @default(pending)
-  formData   Json
-  yamlFile   String
-  references Reference[]     @relation("RequestReference")
-  userId     Int
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews    RequestReview[]
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-
-  @@index([status])
-}
-
-model RequestReview {
-  id         Int                 @id @default(autoincrement())
-  status     RequestReviewStatus
-  state      RequestReviewState  @default(open)
-  content    String?
-  reviewedAt DateTime            @default(now())
-  requestId  Int
-  request    Request             @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  reviewerId Int?
-  reviewer   User?               @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
-
-  @@index([status])
-  @@index([requestId])
-  @@index([reviewerId])
-}
-
 enum ProductKind {
   IA
   Dashboard
   Fichier
   API
   Cartographie
+}
+
+enum UserRole {
+  superadmin
+  admin
+  dpo
+  rssi
+  daj
+  instructor
+}
+
+model Request {
+  id            Int         @id @default(autoincrement())
+  references    Reference[] @relation("RequestReference")
+  gristId       String
+  requestFormId Int         @unique
+  requestForm   RequestForm @relation(fields: [requestFormId], references: [id])
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model RequestForm {
+  id Int @id @default(autoincrement())
+  firstName              String
+  lastName               String
+  emailPro               String
+  role                   String
+  ministry               String
+  department             String
+  subject                String
+  description            String
+  kind                   ProductKind @default(API)
+  developmentManagement  String
+  dataUpdateFrequency    String      @default("1 semaine")
+  expectedProductionDate String
+  personalData           String      @default("Oui")
+  additionalFiles        String[]
+  request                Request?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
 }
 
 model Reference {
@@ -90,19 +80,10 @@ model Supplier {
   updatedAt  DateTime    @updatedAt
 }
 
-enum LegalWorkProcessing {
-  general_legal_framework  @map("Cadre légal général")
-  specific_legal_framework @map("Cadre légal spécifique")
-  deliberation             @map("Délibération")
-  none                     @map("Aucun - demande décret DNUM")
-  sufficient_decree        @map("Décret suffisant")
-  insufficient_decree      @map("Décret insuffisant - révision nécessaire")
-}
-
 model User {
-  id            Int             @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   name          String
-  role          UserRole        @default(instructor)
+  role          UserRole    @default(instructor)
   email         String
   emailVerified Boolean
   image         String?
@@ -111,20 +92,10 @@ model User {
   sessions      Session[]
   accounts      Account[]
   requests      Request[]
-  reviews       RequestReview[]
   references    Reference[]
 
   @@unique([email])
   @@map("user")
-}
-
-enum UserRole {
-  superadmin
-  admin
-  dpo
-  rssi
-  daj
-  instructor
 }
 
 model Session {

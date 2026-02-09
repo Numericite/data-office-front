@@ -29,7 +29,7 @@ export const dataProductSchema = z.object({
 		kind: z.enum(["IA", "Dashboard", "Fichier", "API", "Cartographie"], {
 			message: "Type de produit requis",
 		}),
-		productDevelopmentManagement: z.string().min(1, {
+		developmentManagement: z.string().min(1, {
 			message: "Responsable du développement du produit data requis",
 		}),
 		dataUpdateFrequency: z.enum(["1 semaine", "1 mois", "3 mois", "12 mois"], {
@@ -47,7 +47,7 @@ export const dataProductSchema = z.object({
 
 export type DataProductSchema = z.infer<typeof dataProductSchema>;
 
-export const dataContractSchema = z.object({
+export const requestSchema = z.object({
 	id: z.string().min(1, {
 		message: "ID requis",
 	}),
@@ -58,7 +58,7 @@ export const dataContractSchema = z.object({
 	...dataProductSchema.shape,
 });
 
-export type DataContractSchema = z.input<typeof dataContractSchema>;
+export type RequestSchema = z.input<typeof requestSchema>;
 
 const personInfoDefaultValues: PersonInfoSchema = {
 	personInfo: {
@@ -76,7 +76,7 @@ const dataProductDefaultValues: DataProductSchema = {
 		subject: "",
 		description: "",
 		kind: "API",
-		productDevelopmentManagement: "",
+		developmentManagement: "",
 		dataUpdateFrequency: "1 semaine",
 		expectedProductionDate: "",
 		personalData: "Oui",
@@ -84,7 +84,7 @@ const dataProductDefaultValues: DataProductSchema = {
 	},
 };
 
-const dataContractFormDefaultValues: DataContractSchema = {
+const requestFormDefaultValues: RequestSchema = {
 	id: "data-contract:request",
 	version: 1,
 	templateVersion: 1,
@@ -93,18 +93,18 @@ const dataContractFormDefaultValues: DataContractSchema = {
 	...dataProductDefaultValues,
 };
 
-export const dataContractFormOptions = formOptions({
-	defaultValues: dataContractFormDefaultValues,
+export const requestFormOptions = formOptions({
+	defaultValues: requestFormDefaultValues,
 	validators: {
 		onSubmit: ({ value, formApi }) => {
 			if (value.section === "personInfo") {
 				return formApi.parseValuesWithSchema(
-					personInfoSchema as typeof dataContractSchema,
+					personInfoSchema as typeof requestSchema,
 				);
 			}
 			if (value.section === "dataProduct") {
 				return formApi.parseValuesWithSchema(
-					dataProductSchema as typeof dataContractSchema,
+					dataProductSchema as typeof requestSchema,
 				);
 			}
 		},

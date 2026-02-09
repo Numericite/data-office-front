@@ -10,8 +10,21 @@ interface CheckboxFieldProps extends FieldDefaultProps {
 	}>;
 }
 
-export function RadioField({ label, options }: CheckboxFieldProps) {
+export function RadioField({ label, options, readOnly }: CheckboxFieldProps) {
 	const field = useFieldContext<string>();
+
+	if (readOnly) {
+		return (
+			<div>
+				<span style={{ fontWeight: "bold" }}>{label}</span>
+				<br />
+				<span>
+					{options.find((option) => option.value === field.state.value)
+						?.label || "-"}
+				</span>
+			</div>
+		);
+	}
 
 	return (
 		<RadioButtons

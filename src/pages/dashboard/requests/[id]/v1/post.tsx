@@ -3,66 +3,49 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import {
-	dataContractFormOptions,
-	type DataContractSchema,
-	dataContractSchema,
-} from "~/utils/forms/data-contract/v1/schema";
+	requestFormOptions,
+	type RequestSchema,
+	dataProductSchema,
+	personInfoSchema,
+} from "~/utils/forms/request/v1/schema";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
-import { useMemo } from "react";
 import { tss } from "tss-react";
-import { toast } from "sonner";
-import { RequestReviewStatus } from "@prisma/client";
-import z from "zod";
 import { useAppForm } from "~/utils/forms";
 import {
 	DataProductStep,
 	PersonInfoStep,
-} from "~/utils/forms/data-contract/v1/forms";
+} from "~/utils/forms/request/v1/forms";
+import Loader from "~/components/Loader";
 
 export default function RequestPost() {
 	const { classes } = useStyles();
 	const { data: session } = authClient.useSession();
 
 	const router = useRouter();
-	const { id: request_id, request_review_id } = router.query as {
+	const { id: request_id } = router.query as {
 		id: string | "new";
-		request_review_id?: string;
 	};
 
-	const { mutateAsync: updateRequestReview } =
-		api.request.updateReview.useMutation({
-			onSuccess: () => {
-				toast.success("Statut de revue mis à jour avec succès");
-				router.push("/dashboard/admin/requests");
-			},
+	const { data: request, isLoading: isLoadingRequest } =
+		api.request.getById.useQuery(Number(request_id), {
+			enabled: !!request_id && request_id !== "new",
 		});
 
-	const { data: requestData } = api.request.getById.useQuery(
-		Number(request_id),
-		{ enabled: !!request_id && request_id !== "new" },
-	);
-
-	const requestFormData = useMemo(() => {
-		const { data } = dataContractSchema.safeParse(requestData?.formData);
-		return data;
-	}, [requestData]);
-
-	const handleUpdateRequestStatus = async () => {
-		if (!request_review_id) return;
-		await updateRequestReview(Number.parseInt(request_review_id));
-	};
-
 	const form = useAppForm({
-		...dataContractFormOptions,
+		...requestFormOptions,
 		defaultValues:
-			request_id !== "new" && requestData
+			request_id !== "new" && request
 				? ({
-						...(requestData.formData as Record<string, unknown>),
+						version: 1,
 						section: "personInfo",
-					} as DataContractSchema)
-				: dataContractFormOptions.defaultValues,
+						...personInfoSchema.parse({ personInfo: request.requestForm }),
+						...dataProductSchema.parse({ dataProduct: request.requestForm }),
+					} as RequestSchema)
+				: requestFormOptions.defaultValues,
 	});
+
+	if (isLoadingRequest || !request) return <Loader />;
 
 	return (
 		<div className={fr.cx("fr-mb-8w")}>
@@ -87,22 +70,9 @@ export default function RequestPost() {
 			/>
 			<div className={classes.headerWrapper}>
 				<h1 style={{ marginBottom: 0 }}>
-					Informations sur le produit "{requestFormData?.dataProduct.subject}"
+					Informations sur le produit "{request?.requestForm.subject}"
 				</h1>
 				<div className={classes.buttonsWrapper}>
-					{request_review_id &&
-						z
-							.enum(RequestReviewStatus)
-							.options.includes(session?.user.role as RequestReviewStatus) && (
-							<Button
-								className={classes.buttonEdit}
-								iconId="fr-icon-check-line"
-								iconPosition="right"
-								onClick={handleUpdateRequestStatus}
-							>
-								Marquer comme traité
-							</Button>
-						)}
 					<Button
 						className={classes.buttonEdit}
 						iconId="fr-icon-edit-line"

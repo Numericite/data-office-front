@@ -7,10 +7,10 @@ import { tss } from "tss-react";
 import yaml from "yaml";
 import { type ZodError, z } from "zod";
 import {
-	type DataContractSchema,
-	dataContractSchema,
-} from "~/utils/forms/data-contract/v1/schema";
-import { dataContractFormOptions } from "~/utils/forms/data-contract/v1/schema";
+	type RequestSchema,
+	requestSchema,
+} from "~/utils/forms/request/v1/schema";
+import { requestFormOptions } from "~/utils/forms/request/v1/schema";
 
 export default function Visualizer() {
 	const { classes, cx } = useStyles();
@@ -18,9 +18,7 @@ export default function Visualizer() {
 	const [yamlFile, setYamlFile] = useState<File | null>(null);
 	const [validYamlFile, setValidYamlFile] = useState<boolean>(false);
 	const [errors, setErrors] = useState<ZodError>();
-	const [formData, setFormData] = useState(
-		dataContractFormOptions.defaultValues,
-	);
+	const [formData, setFormData] = useState(requestFormOptions.defaultValues);
 
 	const onChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -32,10 +30,10 @@ export default function Visualizer() {
 				if (fileContent) {
 					try {
 						const parsedData = yaml.parse(fileContent as string);
-						const { success, error } = dataContractSchema.safeParse(parsedData);
+						const { success, error } = requestSchema.safeParse(parsedData);
 						setValidYamlFile(success);
 						setErrors(error);
-						setFormData(parsedData as DataContractSchema);
+						setFormData(parsedData as RequestSchema);
 					} catch (error) {
 						console.error("Error parsing YAML file:", error);
 					}

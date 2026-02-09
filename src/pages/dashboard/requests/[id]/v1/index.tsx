@@ -9,7 +9,7 @@ import {
 	dataContractFormOptions,
 	dataContractSchema,
 	type DataContractSchema,
-} from "~/utils/forms/data-contract/v1/schema";
+} from "~/utils/forms/request/v1/schema";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
@@ -18,7 +18,7 @@ import { useStore } from "@tanstack/react-form";
 import {
 	DataProductStep,
 	PersonInfoStep,
-} from "~/utils/forms/data-contract/v1/forms";
+} from "~/utils/forms/request/v1/forms";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 

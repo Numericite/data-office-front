@@ -1,4 +1,3 @@
-import { LegalWorkProcessing } from "@prisma/client";
 import { z } from "zod";
 
 export const referenceSchema = z.object({
@@ -44,7 +43,6 @@ export const referenceSchema = z.object({
 			securityMeasures: z.string().min(1, {
 				message: "Mesures de sécurité requises",
 			}),
-			legalWork: z.enum(LegalWorkProcessing),
 		})
 		.optional(),
 });
