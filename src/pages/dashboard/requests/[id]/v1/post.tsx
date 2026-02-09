@@ -17,6 +17,7 @@ import {
 	PersonInfoStep,
 } from "~/utils/forms/request/v1/forms";
 import Loader from "~/components/Loader";
+import { useMemo } from "react";
 
 export default function RequestPost() {
 	const { classes } = useStyles();
@@ -32,20 +33,26 @@ export default function RequestPost() {
 			enabled: !!request_id && request_id !== "new",
 		});
 
+	const defaultValues: RequestSchema = useMemo(() => {
+		if (request_id !== "new" && request) {
+			return {
+				id: request.requestFormId.toString(),
+				version: 1,
+				templateVersion: 1,
+				section: "personInfo",
+				...personInfoSchema.parse({ personInfo: request.requestForm }),
+				...dataProductSchema.parse({ dataProduct: request.requestForm }),
+			};
+		}
+		return requestFormOptions.defaultValues;
+	}, [request_id, request]);
+
 	const form = useAppForm({
 		...requestFormOptions,
-		defaultValues:
-			request_id !== "new" && request
-				? ({
-						version: 1,
-						section: "personInfo",
-						...personInfoSchema.parse({ personInfo: request.requestForm }),
-						...dataProductSchema.parse({ dataProduct: request.requestForm }),
-					} as RequestSchema)
-				: requestFormOptions.defaultValues,
+		defaultValues,
 	});
 
-	if (isLoadingRequest || !request) return <Loader />;
+	if (isLoadingRequest || !request || !session) return <Loader />;
 
 	return (
 		<div className={fr.cx("fr-mb-8w")}>
@@ -57,7 +64,7 @@ export default function RequestPost() {
 						label: "Produits",
 						linkProps: {
 							href:
-								session?.user.role === "superadmin"
+								session.user.role === "superadmin"
 									? "/dashboard/admin/requests"
 									: "/dashboard/requests",
 						},
@@ -70,7 +77,7 @@ export default function RequestPost() {
 			/>
 			<div className={classes.headerWrapper}>
 				<h1 style={{ marginBottom: 0 }}>
-					Informations sur le produit "{request?.requestForm.subject}"
+					Informations sur le produit "{request.requestForm.subject}"
 				</h1>
 				<div className={classes.buttonsWrapper}>
 					<Button
@@ -84,15 +91,8 @@ export default function RequestPost() {
 				</div>
 			</div>
 			<form.AppForm>
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-					}}
-				>
-					<PersonInfoStep form={form} readOnly />
-					<DataProductStep form={form} readOnly />
-				</form>
+				<PersonInfoStep form={form} readOnly />
+				<DataProductStep form={form} readOnly isNew={false} />
 			</form.AppForm>
 		</div>
 	);
@@ -101,10 +101,10 @@ export default function RequestPost() {
 const useStyles = tss.withName(RequestPost.name).create({
 	headerWrapper: {
 		display: "flex",
-		alignItems: "center",
+		alignItems: "start",
 		justifyContent: "space-between",
 		gap: fr.spacing("10w"),
-		paddingBottom: fr.spacing("2w"),
+		paddingBottom: fr.spacing("3w"),
 	},
 	buttonsWrapper: {
 		display: "flex",

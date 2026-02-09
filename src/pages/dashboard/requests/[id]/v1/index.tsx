@@ -6,9 +6,11 @@ import { useRouter } from "next/router";
 import { fake, setFaker } from "zod-schema-faker";
 import { api } from "~/utils/api";
 import {
-	dataContractFormOptions,
-	dataContractSchema,
-	type DataContractSchema,
+	dataProductSchema,
+	personInfoSchema,
+	requestFormOptions,
+	requestSchema,
+	type RequestSchema,
 } from "~/utils/forms/request/v1/schema";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { authClient } from "~/utils/auth-client";
@@ -21,6 +23,8 @@ import {
 } from "~/utils/forms/request/v1/forms";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
+import { useMemo } from "react";
+import Loader from "~/components/Loader";
 
 if (process.env.NODE_ENV === "development") {
 	setFaker(faker);
@@ -50,22 +54,31 @@ export default function RequestForm() {
 
 	const { mutateAsync: createRequest } = api.request.create.useMutation();
 	const { mutateAsync: updateRequest } = api.request.update.useMutation();
-	const { data: requestData } = api.request.getById.useQuery(
-		Number(request_id),
-		{ enabled: !!request_id && request_id !== "new" },
-	);
 
-	const steps = dataContractSchema.shape.section.options;
+	const { data: request, isLoading: isLoadingRequest } =
+		api.request.getById.useQuery(Number(request_id), {
+			enabled: !!request_id && request_id !== "new",
+		});
+
+	const steps = requestSchema.shape.section.options;
+
+	const defaultValues: RequestSchema = useMemo(() => {
+		if (request_id !== "new" && request) {
+			return {
+				id: request.requestFormId.toString(),
+				version: 1,
+				templateVersion: 1,
+				section: "personInfo",
+				...personInfoSchema.parse({ personInfo: request.requestForm }),
+				...dataProductSchema.parse({ dataProduct: request.requestForm }),
+			};
+		}
+		return requestFormOptions.defaultValues;
+	}, [request_id, request]);
 
 	const form = useAppForm({
-		...dataContractFormOptions,
-		defaultValues:
-			request_id !== "new" && requestData
-				? ({
-						...(requestData.formData as Record<string, unknown>),
-						section: "personInfo",
-					} as DataContractSchema)
-				: dataContractFormOptions.defaultValues,
+		...requestFormOptions,
+		defaultValues,
 		onSubmit: async ({ value, formApi }) => {
 			if (value.section === "personInfo") {
 				formApi.setFieldValue("section", "dataProduct");
@@ -90,13 +103,15 @@ export default function RequestForm() {
 	const section = useStore(form.store, (state) => state.values.section);
 
 	const generateFakeData = () => {
-		const { personInfo, dataProduct } = fake(dataContractSchema);
+		const { personInfo, dataProduct } = fake(requestSchema);
 		if (section === "personInfo") {
 			form.setFieldValue("personInfo", personInfo);
 		} else if (section === "dataProduct") {
 			form.setFieldValue("dataProduct", dataProduct);
 		}
 	};
+
+	if (isLoadingRequest) return <Loader />;
 
 	return (
 		<div className={fr.cx("fr-mb-8w")}>
@@ -134,16 +149,6 @@ export default function RequestForm() {
 						</Button>
 					</div>
 				)}
-				{/* {request_id !== "new" && (
-					<Button
-						className={classes.buttonEdit}
-						iconId="fr-icon-save-fill"
-						iconPosition="right"
-						onClick={stepForm.form.handleSubmit}
-					>
-						Enregistrer
-					</Button>
-				)} */}
 			</div>
 			<Stepper
 				currentStep={steps.indexOf(section) + 1}
@@ -169,7 +174,11 @@ export default function RequestForm() {
 					<PersonInfoStep form={form} readOnly={false} />
 				)}
 				{section === "dataProduct" && (
-					<DataProductStep form={form} readOnly={false} />
+					<DataProductStep
+						form={form}
+						readOnly={false}
+						isNew={request_id === "new"}
+					/>
 				)}
 			</form>
 			<requestSubmittedModal.Component

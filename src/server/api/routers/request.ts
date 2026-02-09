@@ -38,7 +38,6 @@ export const requestRouter = createTRPCRouter({
 
 			const request = await ctx.db.request.findUnique({
 				where: { id: input.id },
-				include: { requestForm: true },
 			});
 
 			if (!request)
@@ -54,7 +53,6 @@ export const requestRouter = createTRPCRouter({
 
 			const updatedRequest = await ctx.db.request.findUnique({
 				where: { id: input.id },
-				include: RequestAugmentedInclude,
 			});
 
 			return updatedRequest;

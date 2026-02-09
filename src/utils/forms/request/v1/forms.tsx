@@ -76,9 +76,10 @@ export const PersonInfoStep = withForm({
 export const DataProductStep = withForm({
 	...requestFormOptions,
 	props: {
+		isNew: false,
 		readOnly: false,
 	},
-	render: function Render({ form, readOnly }) {
+	render: function Render({ form, readOnly, isNew }) {
 		const { classes } = useStyles({ readOnly });
 
 		return (
@@ -158,7 +159,9 @@ export const DataProductStep = withForm({
 								Précedent
 							</Button>
 							<form.SubscribeButton
-								label="Envoyer ma demande"
+								label={
+									isNew ? "Envoyer ma demande" : "Enregistrer les modifications"
+								}
 								iconId="fr-icon-arrow-right-line"
 								iconPosition="right"
 							/>
