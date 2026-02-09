@@ -27,7 +27,7 @@ enum UserRole {
 model Request {
   id            Int         @id @default(autoincrement())
   references    Reference[] @relation("RequestReference")
-  gristId       String
+  gristId       Int
   requestFormId Int         @unique
   requestForm   RequestForm @relation(fields: [requestFormId], references: [id])
   userId        Int

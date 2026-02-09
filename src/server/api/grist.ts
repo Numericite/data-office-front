@@ -41,5 +41,5 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 
 	const gristRequestId = gristRequest.records[0]!.id;
 
-	return { records: gristRequest.records[0]!, id: gristRequestId };
+	return { id: gristRequestId };
 }

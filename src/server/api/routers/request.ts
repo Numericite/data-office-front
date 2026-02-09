@@ -16,12 +16,12 @@ export const requestRouter = createTRPCRouter({
 				data: { ...data.dataProduct, ...data.personInfo },
 			});
 
-			await gristAddRequest(data);
+			const gristRequest = await gristAddRequest(data);
 
 			const newRequest = await ctx.db.request.create({
 				data: {
 					userId: Number.parseInt(ctx.session.user.id),
-					gristId: `grist_${Date.now()}`,
+					gristId: gristRequest.id,
 					requestFormId: newRequestForm.id,
 				},
 			});
