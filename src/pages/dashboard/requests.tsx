@@ -4,19 +4,24 @@ import { createColumnHelper } from "@tanstack/react-table";
 import DsfrTable from "~/components/DsfrTable";
 import type { RequestAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
-import { authClient } from "~/utils/auth-client";
+import type { Session } from "~/utils/auth-client";
 import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
-import Loader from "~/components/Loader";
+import type {
+	GetServerSideProps,
+	InferGetServerSidePropsType,
+	Redirect,
+} from "next";
+import { auth } from "~/utils/auth";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
 
 const numberPerPage = 10;
 
-export default function DashboardRequests() {
+export default function DashboardRequests({
+	session,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	const { classes } = useStyles();
-	const { data: session, isPending: isLoadingSession } =
-		authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
 
@@ -92,8 +97,6 @@ export default function DashboardRequests() {
 		}),
 	];
 
-	if (isLoadingSession) return <Loader />;
-
 	return (
 		<div>
 			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
@@ -112,6 +115,26 @@ export default function DashboardRequests() {
 		</div>
 	);
 }
+
+export const getServerSideProps = (async (context) => {
+	const redirect: Redirect = {
+		destination: "/",
+		permanent: false,
+	};
+
+	try {
+		const session = await auth.api.getSession({
+			headers: context.req.headers as unknown as Headers,
+		});
+
+		if (!session) return { redirect };
+
+		return { props: { session } };
+	} catch (error) {
+		console.error("Error fetching suppliers:", error);
+		return { redirect };
+	}
+}) satisfies GetServerSideProps<{ session: Session }>;
 
 const useStyles = tss.withName(DashboardRequests.name).create(() => ({
 	headerWrapper: {
