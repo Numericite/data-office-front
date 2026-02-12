@@ -34,13 +34,7 @@ export default function ListRequests() {
 
 			if (error) console.error("Error signing in:", error);
 
-			const { data } = await authClient.getSession();
-
-			if (data?.user.role.endsWith("admin")) {
-				router.push("/dashboard/admin/requests");
-			} else {
-				router.push("/dashboard/requests");
-			}
+			router.push("/dashboard/requests");
 		},
 	});
 

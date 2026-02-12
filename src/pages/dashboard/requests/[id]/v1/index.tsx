@@ -13,7 +13,6 @@ import {
 	type RequestSchema,
 } from "~/utils/forms/request/v1/schema";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
 import { useAppForm } from "~/utils/forms";
 import { useStore } from "@tanstack/react-form";
@@ -39,15 +38,8 @@ export default function RequestForm() {
 	const { classes } = useStyles();
 
 	useIsModalOpen(requestSubmittedModal, {
-		onConceal: () =>
-			void router.push(
-				session?.user.role === "superadmin"
-					? "/dashboard/admin/requests"
-					: "/dashboard/requests",
-			),
+		onConceal: () => void router.push("/dashboard/requests"),
 	});
-
-	const { data: session } = authClient.useSession();
 
 	const router = useRouter();
 	const { id: request_id } = router.query as { id: string | "new" };
@@ -129,12 +121,9 @@ export default function RequestForm() {
 					className="fr-mb-0"
 					segments={[
 						{
-							label: "Produits",
+							label: "Demandes",
 							linkProps: {
-								href:
-									session?.user.role === "superadmin"
-										? "/dashboard/admin/requests"
-										: "/dashboard/requests",
+								href: "/dashboard/requests",
 							},
 						},
 					]}

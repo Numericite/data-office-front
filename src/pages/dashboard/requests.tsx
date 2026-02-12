@@ -7,6 +7,7 @@ import { useState } from "react";
 import { authClient } from "~/utils/auth-client";
 import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
+import Loader from "~/components/Loader";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
 
@@ -14,18 +15,34 @@ const numberPerPage = 10;
 
 export default function DashboardRequests() {
 	const { classes } = useStyles();
-	const { data: session } = authClient.useSession();
+	const { data: session, isPending: isLoadingSession } =
+		authClient.useSession();
 
 	const [currentPage, setCurrentPage] = useState(1);
+
+	const userRole = session?.user.role;
+	const isAdmin = userRole?.endsWith("admin");
 
 	const { data: totalCount } = api.request.getCount.useQuery(
 		{ byCurrentUser: true },
 		{ initialData: 0 },
 	);
 
-	const { data } = api.request.getByUserId.useQuery(undefined, {
-		enabled: !!session?.user.role,
+	const { data: userRequests } = api.request.getByUserId.useQuery(undefined, {
+		enabled: !!userRole && !isAdmin,
 	});
+
+	const { data: allRequests } = api.request.getList.useQuery(
+		{
+			page: 1,
+			numberPerPage: 15,
+		},
+		{
+			enabled: !!userRole && isAdmin,
+		},
+	);
+
+	const data = userRequests ? userRequests : allRequests;
 
 	const columns = [
 		columnHelper.accessor("id", {
@@ -75,10 +92,12 @@ export default function DashboardRequests() {
 		}),
 	];
 
+	if (isLoadingSession) return <Loader />;
+
 	return (
 		<div>
 			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
-				Mes demandes de produits de données
+				{isAdmin ? "Demandes" : "Mes demandes de produits de données"}
 			</h1>
 			<DsfrTable
 				data={data ?? []}

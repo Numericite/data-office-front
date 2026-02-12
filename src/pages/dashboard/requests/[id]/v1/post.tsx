@@ -61,12 +61,9 @@ export default function RequestPost() {
 				className="fr-mb-0"
 				segments={[
 					{
-						label: "Produits",
+						label: "Demandes",
 						linkProps: {
-							href:
-								session.user.role === "superadmin"
-									? "/dashboard/admin/requests"
-									: "/dashboard/requests",
+							href: "/dashboard/requests",
 						},
 					},
 					{
