@@ -24,6 +24,8 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 		gristRequestUserRecordId = userAlreadyExists.records[0]!.id;
 	}
 
+	const { additionalFiles: _, ...dataProduct } = data.dataProduct;
+
 	const gristRequest = await gristClient.addRecords({
 		docId: process.env.GRIST_DOC_ID as string,
 		tableId: "Demandes",
@@ -31,7 +33,7 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 			records: [
 				{
 					fields: {
-						...data.dataProduct,
+						...dataProduct,
 						Demandeur: gristRequestUserRecordId,
 						Status: "Pre-instruction",
 					},

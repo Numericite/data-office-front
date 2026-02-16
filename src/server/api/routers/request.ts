@@ -9,6 +9,7 @@ import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
 import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
 import { gristAddRequest } from "../grist";
+import { ApiError } from "grist-js/dist/src/client";
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -26,7 +27,9 @@ export const requestRouter = createTRPCRouter({
 				const gristRequest = await gristAddRequest(data);
 				gristRequestId = gristRequest.id;
 			} catch (error) {
-				console.error("Error adding request to Grist:", error);
+				if (error instanceof ApiError) {
+					console.error("Error adding request to Grist:", error.body);
+				}
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "Failed to add request to Grist",
