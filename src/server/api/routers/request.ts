@@ -143,23 +143,31 @@ export const requestRouter = createTRPCRouter({
 	updateGristStatus: publicProcedure
 		.meta({ openapi: { method: "POST", path: "/update-grist-status" } })
 		.input(
-			z.array(
+			z.preprocess(
+				(val) => {
+					if (val && typeof val === "object")
+						return { events: Object.values(val) };
+					return val;
+				},
 				z.object({
-					id: z.number(),
-					Status: z.string(),
+					events: z.array(
+						z.object({
+							id: z.number(),
+							Status: z.string(),
+						}),
+					),
 				}),
 			),
 		)
 		.output(z.object({ message: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			console.log("Input:", input);
-			if (!input || input.length === 0)
+			if (!input || !input.events || input.events.length === 0)
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Input array is empty or undefined",
 				});
 
-			const webhookPayload = input[0] as { id: number; Status: string };
+			const webhookPayload = input.events[0] as { id: number; Status: string };
 
 			const { id: gristId, Status } = webhookPayload;
 
