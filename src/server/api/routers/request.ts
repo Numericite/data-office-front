@@ -129,14 +129,25 @@ export const requestRouter = createTRPCRouter({
 	updateGristStatus: publicProcedure
 		.meta({ openapi: { method: "GET", path: "/update-grist-status" } })
 		.input(
-			z.object({
-				id: z.number(),
-				Status: z.array(z.string()),
-			}),
+			z.array(
+				z.object({
+					id: z.number(),
+					Status: z.string(),
+				}),
+			),
 		)
 		.output(z.object({ message: z.string() }))
 		.query(async ({ ctx, input }) => {
-			const { id: gristId, Status } = input;
+			console.log("Input:", input);
+			if (!input || input.length === 0)
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Input array is empty or undefined",
+				});
+
+			const webhookPayload = input[0] as { id: number; Status: string };
+
+			const { id: gristId, Status } = webhookPayload;
 
 			const request = await ctx.db.request.findFirst({
 				where: { gristId },
@@ -150,11 +161,11 @@ export const requestRouter = createTRPCRouter({
 
 			await ctx.db.request.update({
 				where: { id: request.id },
-				data: { remoteGristStatus: Status[Status.length - 1] },
+				data: { remoteGristStatus: Status },
 			});
 
 			return {
-				message: `Request with gristId ${gristId} updated with status ${Status[Status.length - 1]}`,
+				message: `Request with gristId ${gristId} updated with status ${Status}`,
 			};
 		}),
 });
