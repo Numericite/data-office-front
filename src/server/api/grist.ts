@@ -33,7 +33,7 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 					fields: {
 						...data.dataProduct,
 						Demandeur: gristRequestUserRecordId,
-						Statut: "Pre-instruction",
+						Status: "Pre-instruction",
 					},
 				},
 			],
