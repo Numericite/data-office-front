@@ -8,11 +8,5 @@ export function getUserRoleLabel(role: UserRole) {
 			return "Instructeur";
 		case "superadmin":
 			return "Super administrateur";
-		case "daj":
-			return "DAJ";
-		case "dpo":
-			return "DPO";
-		case "rssi":
-			return "RSSI";
 	}
 }

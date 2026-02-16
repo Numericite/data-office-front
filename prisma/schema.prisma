@@ -18,9 +18,6 @@ enum ProductKind {
 enum UserRole {
   superadmin
   admin
-  dpo
-  rssi
-  daj
   instructor
 }
 
