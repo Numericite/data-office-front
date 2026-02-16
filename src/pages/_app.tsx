@@ -58,25 +58,22 @@ const userNavigationItems: MainNavigationProps.Item[] = [
 	},
 	{ text: "Mes demandes", linkProps: { href: "/dashboard/requests" } },
 	{
-		text: "Mes DataContracts",
+		text: "Mes contrats",
 		linkProps: { href: "/dashboard/data-contracts" },
 	},
 ];
 
 const adminNavigationItems: MainNavigationProps.Item[] = [
 	{
-		text: "Gestion des produits en cours",
-		linkProps: { href: "/dashboard/admin/requests" },
+		text: "Data Marketplace",
+		linkProps: { href: "/dashboard/data-marketplace" },
 	},
+	{ text: "Demandes", linkProps: { href: "/dashboard/requests" } },
 ];
 
 const superAdminNavigationItems: MainNavigationProps.Item[] = [
 	...adminNavigationItems,
-	{ text: "Utilisateurs", linkProps: { href: "/dashboard/admin/users" } },
-	{
-		text: "Data-marketplace",
-		linkProps: { href: "/dashboard/admin/data-marketplace" },
-	},
+	{ text: "Utilisateurs", linkProps: { href: "/dashboard/users" } },
 ];
 
 function App({ Component, pageProps }: AppProps) {
@@ -93,7 +90,10 @@ function App({ Component, pageProps }: AppProps) {
 	};
 
 	const isActive = (currentPath: string, itemLink: Url | undefined) => {
-		if (currentPath.includes("data-marketplace")) {
+		if (
+			currentPath.includes("data-marketplace") ||
+			currentPath.includes("requests")
+		) {
 			return currentPath.startsWith(itemLink?.toString() ?? "");
 		}
 
@@ -113,11 +113,14 @@ function App({ Component, pageProps }: AppProps) {
 			case "superadmin":
 				items = superAdminNavigationItems;
 				break;
+			case "admin":
+				items = adminNavigationItems;
+				break;
 			case "instructor":
 				items = userNavigationItems;
 				break;
 			default:
-				items = adminNavigationItems;
+				items = userNavigationItems;
 		}
 
 		return items.map((item) => ({
@@ -169,11 +172,7 @@ function App({ Component, pageProps }: AppProps) {
 						</>
 					}
 					homeLinkProps={{
-						href: !isAuthenticated
-							? "/"
-							: session?.data?.user.role === "instructor"
-								? "/dashboard/data-marketplace"
-								: "/dashboard/admin/requests",
+						href: !isAuthenticated ? "/" : "/dashboard/data-marketplace",
 						title: "Accueil EDS - Espace de Données Sociales",
 					}}
 					navigation={navigationItems}

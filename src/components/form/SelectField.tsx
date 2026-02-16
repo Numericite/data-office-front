@@ -1,6 +1,7 @@
 import { useFieldContext } from "~/utils/form";
 import { Select } from "@codegouvfr/react-dsfr/SelectNext";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface SelectFieldProps extends FieldDefaultProps {
 	options: Array<{
@@ -12,18 +13,16 @@ interface SelectFieldProps extends FieldDefaultProps {
 export function SelectField({ label, options, readOnly }: SelectFieldProps) {
 	const field = useFieldContext<string>();
 
-	if (readOnly) {
+	if (readOnly)
 		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>
-					{options.find((option) => option.value === field.state.value)
-						?.label || "-"}
-				</span>
-			</div>
+			<ReadOnly
+				label={label}
+				value={
+					options.find((option) => option.value === field.state.value)?.label ||
+					"-"
+				}
+			/>
 		);
-	}
 
 	return (
 		<Select

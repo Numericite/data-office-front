@@ -2,21 +2,15 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 import { useFieldContext } from "~/utils/form";
 import type { FieldDefaultProps } from "~/utils/forms";
+import ReadOnly from "./ReadOnly";
 
 interface CheckboxFieldProps extends FieldDefaultProps {}
 
 export function CheckboxField({ label, readOnly }: CheckboxFieldProps) {
 	const field = useFieldContext<boolean>();
 
-	if (readOnly) {
-		return (
-			<div>
-				<span style={{ fontWeight: "bold" }}>{label}</span>
-				<br />
-				<span>{field.state.value ? "Oui" : "Non"}</span>
-			</div>
-		);
-	}
+	if (readOnly)
+		return <ReadOnly label={label} value={field.state.value ? "Oui" : "Non"} />;
 
 	return (
 		<Checkbox

@@ -6,10 +6,16 @@ import DsfrTable from "~/components/DsfrTable";
 import { useState } from "react";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
-import { authClient } from "~/utils/auth-client";
+import type { Session } from "~/utils/auth-client";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import z from "zod";
 import { getUserRoleLabel } from "~/utils/tools";
+import type {
+	GetServerSideProps,
+	InferGetServerSidePropsType,
+	Redirect,
+} from "next";
+import { auth } from "~/utils/auth";
 
 type UserForTable = Pick<User, "id" | "email" | "name" | "role">;
 
@@ -21,11 +27,12 @@ const modal = createModal({
 	isOpenedByDefault: false,
 });
 
-export default function AdminHome() {
+export default function Users({
+	session,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [userToDelete, setUserToDelete] = useState<UserForTable | null>(null);
 
-	const { data: session } = authClient.useSession();
 	const sessionUserId = Number.parseInt(session?.user?.id ?? "");
 
 	const { mutateAsync: updateUsers } = api.user.update.useMutation();
@@ -143,3 +150,25 @@ export default function AdminHome() {
 		</>
 	);
 }
+
+export const getServerSideProps = (async (context) => {
+	const redirect: Redirect = {
+		destination: "/",
+		permanent: false,
+	};
+
+	try {
+		const session = await auth.api.getSession({
+			headers: context.req.headers as unknown as Headers,
+		});
+
+		if (!session || session.user.role !== "superadmin") {
+			return { redirect };
+		}
+
+		return { props: { session } };
+	} catch (error) {
+		console.error("Error fetching suppliers:", error);
+		return { redirect };
+	}
+}) satisfies GetServerSideProps<{ session: Session }>;

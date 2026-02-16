@@ -11,6 +11,7 @@ import {
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Fragment, type Dispatch } from "react";
 import { tss } from "tss-react";
+import { EmptyScreenZone } from "./EmptyScreenZone";
 
 export interface DsfrTableProps<TData> {
 	/** Row data */
@@ -37,34 +38,6 @@ export interface DsfrTableProps<TData> {
 	totalCount: number;
 }
 
-const useStyles = tss.withName("DsfrTable").create(() => ({
-	tableWrapper: {
-		overflowX: "auto",
-		boxShadow: "none",
-	},
-	table: {
-		display: "inline-table!important",
-		minWidth: "100%",
-		borderCollapse: "collapse",
-		thead: {
-			borderBottom: `2px solid ${fr.colors.decisions.border.plain.grey.default}`,
-		},
-		"thead::after, tbody::after": {
-			backgroundImage: "none!important",
-		},
-		"tr, th, td": {
-			backgroundColor: fr.colors.decisions.background.alt.grey.default,
-		},
-		tr: {
-			borderBottom: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
-		},
-	},
-	paginationWrapper: {
-		display: "flex",
-		justifyContent: "center",
-	},
-}));
-
 export function DsfrTable<TData>({
 	data,
 	columns,
@@ -86,6 +59,10 @@ export function DsfrTable<TData>({
 		getExpandedRowModel: getExpandedRowModel(),
 		...tableOptions,
 	});
+
+	if (totalCount === 0) {
+		return <EmptyScreenZone>Aucun résultat trouvé.</EmptyScreenZone>;
+	}
 
 	return (
 		<div>
@@ -157,4 +134,33 @@ export function DsfrTable<TData>({
 		</div>
 	);
 }
+
+const useStyles = tss.withName("DsfrTable").create(() => ({
+	tableWrapper: {
+		overflowX: "auto",
+		boxShadow: "none",
+	},
+	table: {
+		display: "inline-table!important",
+		minWidth: "100%",
+		borderCollapse: "collapse",
+		thead: {
+			borderBottom: `2px solid ${fr.colors.decisions.border.plain.grey.default}`,
+		},
+		"thead::after, tbody::after": {
+			backgroundImage: "none!important",
+		},
+		"tr, th, td": {
+			backgroundColor: fr.colors.decisions.background.alt.grey.default,
+		},
+		tr: {
+			borderBottom: `1px solid ${fr.colors.decisions.border.default.grey.default}`,
+		},
+	},
+	paginationWrapper: {
+		display: "flex",
+		justifyContent: "center",
+	},
+}));
+
 export default DsfrTable;
