@@ -141,7 +141,7 @@ export const requestRouter = createTRPCRouter({
 		}),
 
 	updateGristStatus: publicProcedure
-		.meta({ openapi: { method: "GET", path: "/update-grist-status" } })
+		.meta({ openapi: { method: "POST", path: "/update-grist-status" } })
 		.input(
 			z.array(
 				z.object({
@@ -151,7 +151,7 @@ export const requestRouter = createTRPCRouter({
 			),
 		)
 		.output(z.object({ message: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.mutation(async ({ ctx, input }) => {
 			console.log("Input:", input);
 			if (!input || input.length === 0)
 				throw new TRPCError({

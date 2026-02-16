@@ -70,9 +70,9 @@ export default function DashboardRequests({
 			cell: (info) =>
 				new Intl.DateTimeFormat("fr-FR").format(new Date(info.getValue())),
 		}),
-		columnHelper.accessor("gristId", {
+		columnHelper.accessor("remoteGristStatus", {
 			header: "Statuts",
-			cell: () => "N/A",
+			cell: (info) => info.getValue() || "N/A",
 		}),
 		columnHelper.accessor("id", {
 			id: "actions",
