@@ -22,19 +22,20 @@ enum UserRole {
 }
 
 model Request {
-  id            Int         @id @default(autoincrement())
-  references    Reference[] @relation("RequestReference")
-  gristId       Int
-  requestFormId Int         @unique
-  requestForm   RequestForm @relation(fields: [requestFormId], references: [id])
-  userId        Int
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id                Int         @id @default(autoincrement())
+  references        Reference[] @relation("RequestReference")
+  gristId           Int
+  remoteGristStatus String
+  requestFormId     Int         @unique
+  requestForm       RequestForm @relation(fields: [requestFormId], references: [id])
+  userId            Int
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 model RequestForm {
-  id Int @id @default(autoincrement())
+  id                     Int         @id @default(autoincrement())
   firstName              String
   lastName               String
   emailPro               String

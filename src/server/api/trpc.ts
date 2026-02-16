@@ -7,9 +7,10 @@
  * need to use are documented accordingly near the end.
  */
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { OpenApiMeta } from "trpc-to-openapi";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import z, { ZodError } from "zod";
 
 import { db } from "~/server/db";
 import { s3Client } from "~/server/s3";
@@ -49,19 +50,24 @@ export const createTRPCContext = async (_opts: CreateNextContextOptions) => {
  * errors on the backend.
  */
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
-	transformer: superjson,
-	errorFormatter({ shape, error }) {
-		return {
-			...shape,
-			data: {
-				...shape.data,
-				zodError:
-					error.cause instanceof ZodError ? error.cause.flatten() : null,
-			},
-		};
-	},
-});
+const t = initTRPC
+	.meta<OpenApiMeta>()
+	.context<typeof createTRPCContext>()
+	.create({
+		transformer: superjson,
+		errorFormatter({ shape, error }) {
+			return {
+				...shape,
+				data: {
+					...shape.data,
+					zodError:
+						error.cause instanceof ZodError
+							? z.treeifyError(error.cause)
+							: null,
+				},
+			};
+		},
+	});
 
 /**
  * Create a server-side caller.

@@ -16,7 +16,7 @@ import { auth } from "~/utils/auth";
 
 const columnHelper = createColumnHelper<RequestAugmented>();
 
-const numberPerPage = 10;
+const NUMBER_PER_PAGE = 10;
 
 export default function DashboardRequests({
 	session,
@@ -33,18 +33,14 @@ export default function DashboardRequests({
 		{ initialData: 0 },
 	);
 
-	const { data: userRequests } = api.request.getByUserId.useQuery(undefined, {
-		enabled: !!userRole && !isAdmin,
-	});
+	const { data: userRequests } = api.request.getByUserId.useQuery(
+		{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
+		{ enabled: !!userRole && !isAdmin },
+	);
 
 	const { data: allRequests } = api.request.getList.useQuery(
-		{
-			page: 1,
-			numberPerPage: 15,
-		},
-		{
-			enabled: !!userRole && isAdmin,
-		},
+		{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
+		{ enabled: !!userRole && isAdmin },
 	);
 
 	const data = userRequests ? userRequests : allRequests;
@@ -107,7 +103,7 @@ export default function DashboardRequests({
 				columns={columns}
 				totalCount={totalCount}
 				pagination={{
-					numberPerPage,
+					numberPerPage: NUMBER_PER_PAGE,
 					currentPage,
 					setCurrentPage,
 				}}

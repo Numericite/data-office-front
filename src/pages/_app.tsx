@@ -58,7 +58,7 @@ const userNavigationItems: MainNavigationProps.Item[] = [
 	},
 	{ text: "Mes demandes", linkProps: { href: "/dashboard/requests" } },
 	{
-		text: "Mes DataContracts",
+		text: "Mes contrats",
 		linkProps: { href: "/dashboard/data-contracts" },
 	},
 ];

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+	createTRPCRouter,
+	protectedProcedure,
+	publicProcedure,
+} from "~/server/api/trpc";
 import { requestSchema } from "~/utils/forms/request/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
@@ -20,6 +24,7 @@ export const requestRouter = createTRPCRouter({
 
 			const newRequest = await ctx.db.request.create({
 				data: {
+					remoteGristStatus: "Instruite",
 					userId: Number.parseInt(ctx.session.user.id),
 					gristId: gristRequest.id,
 					requestFormId: newRequestForm.id,
@@ -78,14 +83,20 @@ export const requestRouter = createTRPCRouter({
 			return request;
 		}),
 
-	getByUserId: protectedProcedure.query(async ({ ctx }) => {
-		const requests = await ctx.db.request.findMany({
-			where: { userId: Number.parseInt(ctx.session.user.id) },
-			include: RequestAugmentedInclude,
-		});
+	getByUserId: protectedProcedure
+		.input(ZGetListParams)
+		.query(async ({ ctx, input }) => {
+			const { page, numberPerPage } = input || {};
 
-		return requests;
-	}),
+			const requests = await ctx.db.request.findMany({
+				where: { userId: Number.parseInt(ctx.session.user.id) },
+				take: numberPerPage,
+				skip: (page - 1) * numberPerPage,
+				include: RequestAugmentedInclude,
+			});
+
+			return requests;
+		}),
 
 	getList: protectedProcedure
 		.input(ZGetListParams)
@@ -113,5 +124,37 @@ export const requestRouter = createTRPCRouter({
 			});
 
 			return count;
+		}),
+
+	updateGristStatus: publicProcedure
+		.meta({ openapi: { method: "GET", path: "/update-grist-status" } })
+		.input(
+			z.object({
+				id: z.number(),
+				Status: z.array(z.string()),
+			}),
+		)
+		.output(z.object({ message: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const { id: gristId, Status } = input;
+
+			const request = await ctx.db.request.findFirst({
+				where: { gristId },
+			});
+
+			if (!request)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Request with gristId ${gristId} not found`,
+				});
+
+			await ctx.db.request.update({
+				where: { id: request.id },
+				data: { remoteGristStatus: Status[Status.length - 1] },
+			});
+
+			return {
+				message: `Request with gristId ${gristId} updated with status ${Status[Status.length - 1]}`,
+			};
 		}),
 });

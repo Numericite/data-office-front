@@ -68,7 +68,7 @@ export default function DashboardDataContracts() {
 
 	return (
 		<div>
-			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes DataContracts</h1>
+			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
 			<DsfrTable
 				data={data ?? []}
 				columns={columns}
