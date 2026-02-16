@@ -20,13 +20,24 @@ export const requestRouter = createTRPCRouter({
 				data: { ...data.dataProduct, ...data.personInfo },
 			});
 
-			const gristRequest = await gristAddRequest(data);
+			let gristRequestId = -1;
+
+			try {
+				const gristRequest = await gristAddRequest(data);
+				gristRequestId = gristRequest.id;
+			} catch (error) {
+				console.error("Error adding request to Grist:", error);
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to add request to Grist",
+				});
+			}
 
 			const newRequest = await ctx.db.request.create({
 				data: {
 					remoteGristStatus: "Instruite",
 					userId: Number.parseInt(ctx.session.user.id),
-					gristId: gristRequest.id,
+					gristId: gristRequestId,
 					requestFormId: newRequestForm.id,
 				},
 			});
