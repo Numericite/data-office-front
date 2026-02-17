@@ -10,7 +10,7 @@ export default function Home() {
 	const signIn = async () => {
 		const response = await authClient.signIn.oauth2({
 			providerId: "proconnect",
-			callbackURL: "/dashboard/requests",
+			callbackURL: "/dashboard/data-marketplace",
 		});
 
 		const urlParams = new URLSearchParams(response?.data?.url);

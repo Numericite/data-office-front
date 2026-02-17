@@ -4,10 +4,10 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import Card from "@codegouvfr/react-dsfr/Card";
 import TagsGroup from "@codegouvfr/react-dsfr/TagsGroup";
 import { tss } from "tss-react";
-import type { ReferenceAugmented } from "~/utils/prisma-augmented";
+import type { Reference } from "~/server/api/routers/reference";
 
 type DataMarketplaceCardProps = {
-	reference: ReferenceAugmented;
+	reference: Reference;
 };
 
 const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
@@ -31,14 +31,13 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 					<TagsGroup
 						smallTags
 						className={fr.cx("fr-mb-0")}
-						tags={[
-							{ children: reference.kindProduct },
-							{ children: reference.domain },
-						]}
+						tags={[{ children: reference.domain }]}
 					/>
 					<span>
-						{reference.supplier.name} | Mis à jour :{" "}
-						{new Intl.DateTimeFormat("fr-FR").format(reference.updatedAt)}
+						Supplier | Mis à jour :{" "}
+						{new Intl.DateTimeFormat("fr-FR").format(
+							new Date(reference.updatedAt),
+						)}
 					</span>
 				</div>
 			}

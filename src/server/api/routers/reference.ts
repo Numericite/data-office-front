@@ -1,184 +1,51 @@
-import { ProductKind, type Prisma } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { ZGetListParams } from "../defaultZodParams";
-import { referenceSchema } from "~/utils/forms/reference/schema";
-import { ReferenceAugmentedInclude } from "~/utils/prisma-augmented";
+import type { RecordsList } from "grist-js";
+
+export const ReferenceSchema = z.object({
+	id: z.number(),
+	name: z.string(),
+	description: z.string().optional(),
+	domain: z.string(),
+	updatedAt: z.date(),
+});
+
+export type Reference = z.infer<typeof ReferenceSchema>;
+
+export const parseReferences = (references: RecordsList) => {
+	const { data, error } = ReferenceSchema.array().safeParse(
+		references.records.map((record) => ({
+			id: record.id,
+			name: record.fields.Nom_produit_appli,
+			description: record.fields.Description,
+			domain: record.fields.Domaine,
+			updatedAt: new Date((record.fields.Modifie as number) * 1000),
+		})),
+	);
+
+	if (!data || error)
+		throw new Error(
+			`Failed to parse references: ${error?.message}. Raw data: ${JSON.stringify(
+				references.records,
+			)}`,
+		);
+
+	return data;
+};
 
 export const referenceRouter = createTRPCRouter({
-	getByInfiniteQuery: protectedProcedure
-		.input(
-			z.object({
-				search: z.string().optional(),
-				limit: z.number().min(1).max(100).optional(),
-				cursor: z.number().optional(),
-				filters: z
-					.object({
-						kindProducts: z.array(z.enum(ProductKind)).optional(),
-						suppliers: z.array(z.string()).optional(),
-					})
-					.optional(),
-			}),
-		)
-		.query(async ({ ctx, input }) => {
-			const limit = input.limit ?? 10;
-			const { search, cursor, filters } = input || {};
+	getAll: protectedProcedure.query(async ({ ctx }) => {
+		const references = await ctx.gristDataOfficeClient.listRecords({
+			docId: process.env.GRIST_DATA_OFFICE_DOC_REFERENCE_ID as string,
+			tableId: "Catalogue_des_applications",
+		});
 
-			const where: Prisma.ReferenceWhereInput = {};
+		const parsedReferences = parseReferences(references);
 
-			if (search) {
-				where.name = {
-					contains: search,
-					mode: "insensitive",
-				};
-			}
+		const domains = Array.from(
+			new Set(parsedReferences.map((ref) => ref.domain).filter(Boolean)),
+		);
 
-			if (filters?.kindProducts && filters.kindProducts.length > 0) {
-				where.kindProduct = {
-					in: filters.kindProducts,
-				};
-			}
-
-			if (filters?.suppliers && filters.suppliers.length > 0) {
-				where.supplier = {
-					name: {
-						in: filters.suppliers,
-					},
-				};
-			}
-
-			const newLocal = limit + 1;
-			const references = await ctx.db.reference.findMany({
-				take: newLocal,
-				where,
-				cursor: cursor ? { id: cursor } : undefined,
-				orderBy: { id: "asc" },
-				include: ReferenceAugmentedInclude,
-			});
-
-			const tmpReferences = references.map((reference) => ({
-				...reference,
-				requestCount: reference.request.length,
-			}));
-
-			let nextCursor: typeof cursor | undefined;
-
-			if (tmpReferences.length > limit) {
-				const nextItem = tmpReferences.pop();
-				nextCursor = nextItem?.id;
-			}
-
-			return {
-				items: tmpReferences,
-				nextCursor,
-			};
-		}),
-
-	getList: protectedProcedure
-		.input(ZGetListParams.extend({ search: z.string().optional() }))
-		.query(async ({ ctx, input }) => {
-			const { page, numberPerPage, search } = input || {};
-
-			const where: Prisma.ReferenceWhereInput = {};
-
-			if (search) {
-				where.name = {
-					contains: search,
-					mode: "insensitive",
-				};
-			}
-
-			const references = await ctx.db.reference.findMany({
-				take: numberPerPage,
-				skip: (page - 1) * numberPerPage,
-				where,
-				include: {
-					request: {
-						select: {
-							id: true,
-						},
-					},
-				},
-			});
-
-			const tmpReferences = references.map((reference) => ({
-				...reference,
-				requestCount: reference.request.length,
-			}));
-
-			return tmpReferences;
-		}),
-
-	getCount: protectedProcedure
-		.input(z.object({ byCurrentUser: z.boolean().optional() }).optional())
-		.query(async ({ ctx, input }) => {
-			const count = await ctx.db.reference.count({
-				where: input?.byCurrentUser
-					? { userId: Number.parseInt(ctx.session.user.id) }
-					: undefined,
-			});
-
-			return count;
-		}),
-
-	getById: protectedProcedure
-		.input(z.number())
-		.query(async ({ ctx, input: id }) => {
-			const reference = await ctx.db.reference.findUnique({
-				where: {
-					id,
-				},
-				include: {
-					request: {
-						select: {
-							id: true,
-						},
-					},
-				},
-			});
-
-			if (!reference)
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Reference not found",
-				});
-
-			return reference;
-		}),
-
-	getByUserId: protectedProcedure
-		.input(ZGetListParams)
-		.query(async ({ ctx, input }) => {
-			const { page, numberPerPage } = input || {};
-
-			const requests = await ctx.db.reference.findMany({
-				where: { userId: Number.parseInt(ctx.session.user.id) },
-				include: ReferenceAugmentedInclude,
-				take: numberPerPage,
-				skip: (page - 1) * numberPerPage,
-			});
-
-			return requests;
-		}),
-
-	upsert: protectedProcedure
-		.input(referenceSchema.omit({ needPersonalData: true }))
-		.mutation(async ({ ctx, input }) => {
-			// biome-ignore lint/correctness/noUnusedVariables: remove personalData for now
-			const { id, personalData, ...data } = input;
-
-			if (id) {
-				// Update existing reference
-				await ctx.db.reference.update({
-					where: { id },
-					data,
-				});
-			} else {
-				// Create new reference
-				// await ctx.db.reference.create({
-				// 	data,
-				// });
-			}
-		}),
+		return { references: parsedReferences, domains };
+	}),
 });

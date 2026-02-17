@@ -6,14 +6,14 @@ import type {
 	InferGetServerSidePropsType,
 	Redirect,
 } from "next";
-import { db } from "~/server/db";
 import type { ParsedUrlQuery } from "node:querystring";
 import {
-	ReferenceAugmentedInclude,
-	type ReferenceAugmented,
-} from "~/utils/prisma-augmented";
+	parseReferences,
+	type Reference,
+} from "~/server/api/routers/reference";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import Button from "@codegouvfr/react-dsfr/Button";
+import { gristDataOfficeClient } from "~/utils/grist";
 
 const PropertyItem = ({
 	kind,
@@ -53,20 +53,20 @@ export default function DashboardDataMarketplace({
 			<div className={classes.gridWrapper}>
 				<div className={classes.gridItemName}>Description</div>
 				<div className={classes.gridItemValue}>
-					<PropertyItem kind="string" value={reference.description} />
+					<PropertyItem kind="string" value={reference.description || ""} />
 				</div>
-				<div className={classes.gridItemName}>Type de produit</div>
+				{/* <div className={classes.gridItemName}>Type de produit</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="badge" value={reference.kindProduct} />
-				</div>
+				</div> */}
 				<div className={classes.gridItemName}>Domaine</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="badge" value={reference.domain} />
 				</div>
-				<div className={classes.gridItemName}>Producteur</div>
+				{/* <div className={classes.gridItemName}>Producteur</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="string" value={reference.supplier.name} />
-				</div>
+				</div> */}
 				<div className={classes.gridItemName}>Mise à jour</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem
@@ -123,26 +123,30 @@ export const getServerSideProps = (async (context) => {
 	const { id } = context.params as Params;
 
 	const redirect: Redirect = {
-		destination: "/",
+		destination: "/dashboard/data-marketplace",
 		permanent: false,
 	};
 
-	const prisma = db;
-
 	try {
-		const reference = await prisma.reference.findUnique({
-			where: {
-				id: Number.parseInt(id),
-			},
-			include: ReferenceAugmentedInclude,
+		const gristReference = await gristDataOfficeClient.listRecords({
+			docId: process.env.GRIST_DATA_OFFICE_DOC_REFERENCE_ID as string,
+			tableId: "Catalogue_des_applications",
+			filter: JSON.stringify({ id: [Number.parseInt(id)] }),
+			limit: 0,
 		});
 
-		if (!reference) return { redirect };
+		if (gristReference.records.length === 0) return { redirect };
 
-		return { props: { reference } };
+		try {
+			const reference = parseReferences(gristReference)[0] as Reference;
+			return { props: { reference } };
+		} catch (error) {
+			console.error("Error parsing reference:", error);
+			return { redirect };
+		}
 	} catch (error) {
-		console.error("Error fetching suppliers:", error);
+		console.error("Error fetching reference:", error);
 
 		return { redirect };
 	}
-}) satisfies GetServerSideProps<{ reference: ReferenceAugmented }>;
+}) satisfies GetServerSideProps<{ reference: Reference }>;

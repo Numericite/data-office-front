@@ -8,8 +8,9 @@ import { requestSchema } from "~/utils/forms/request/v1/schema";
 import { TRPCError } from "@trpc/server";
 import { ZGetListParams } from "../defaultZodParams";
 import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
-import { gristAddRequest } from "../grist";
+import { gristAddRequest, gristGetList } from "../grist";
 import { ApiError } from "grist-js/dist/src/client";
+import type { Prisma } from "@prisma/client";
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -38,7 +39,7 @@ export const requestRouter = createTRPCRouter({
 
 			const newRequest = await ctx.db.request.create({
 				data: {
-					remoteGristStatus: "Instruite",
+					remoteGristStatus: "Pre-instruction",
 					userId: Number.parseInt(ctx.session.user.id),
 					gristId: gristRequestId,
 					requestFormId: newRequestForm.id,
@@ -103,13 +104,29 @@ export const requestRouter = createTRPCRouter({
 			const { page, numberPerPage } = input || {};
 
 			const requests = await ctx.db.request.findMany({
-				where: { userId: Number.parseInt(ctx.session.user.id) },
+				where: {
+					userId: Number.parseInt(ctx.session.user.id),
+					remoteGristStatus: { not: "Validé" },
+				},
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				include: RequestAugmentedInclude,
 			});
 
 			return requests;
+		}),
+
+	getRemoteList: protectedProcedure
+		.input(
+			z.object({ status: z.string().optional(), email: z.string().optional() }),
+		)
+		.query(async ({ input }) => {
+			const gristRequests = await gristGetList({
+				status: input.status,
+				email: input.email,
+			});
+
+			return gristRequests;
 		}),
 
 	getList: protectedProcedure
@@ -121,6 +138,7 @@ export const requestRouter = createTRPCRouter({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				include: RequestAugmentedInclude,
+				where: { remoteGristStatus: { not: "Validé" } },
 			});
 
 			return requests;
@@ -131,11 +149,13 @@ export const requestRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const { byCurrentUser } = input;
 
-			const count = await ctx.db.request.count({
-				where: byCurrentUser
-					? { userId: Number.parseInt(ctx.session.user.id) }
-					: undefined,
-			});
+			const where: Prisma.RequestWhereInput = {
+				remoteGristStatus: { not: "Validé" },
+			};
+
+			if (byCurrentUser) where.userId = Number.parseInt(ctx.session.user.id);
+
+			const count = await ctx.db.request.count({ where });
 
 			return count;
 		}),
