@@ -11,7 +11,9 @@ export async function middleware(request: NextRequest) {
 
 	if (sessionCookie) {
 		if (!pathname.startsWith("/dashboard")) {
-			return NextResponse.redirect(new URL("/dashboard/requests", request.url));
+			return NextResponse.redirect(
+				new URL("/dashboard/data-marketplace", request.url),
+			);
 		}
 	} else {
 		if (pathname.startsWith("/dashboard")) {
