@@ -15,7 +15,7 @@ import z, { ZodError } from "zod";
 import { db } from "~/server/db";
 import { s3Client } from "~/server/s3";
 import { auth } from "~/utils/auth";
-import { gristLocalClient, gristDataOfficeClient } from "~/utils/grist";
+import { gristDataOfficeClient } from "~/utils/grist";
 
 /**
  * 1. CONTEXT
@@ -40,7 +40,6 @@ export const createTRPCContext = async (_opts: CreateNextContextOptions) => {
 		db,
 		s3Client,
 		session,
-		gristLocalClient,
 		gristDataOfficeClient,
 	};
 };

@@ -38,7 +38,7 @@ export const requestRouter = createTRPCRouter({
 
 			const newRequest = await ctx.db.request.create({
 				data: {
-					remoteGristStatus: "Instruite",
+					remoteGristStatus: "Pre-instruction",
 					userId: Number.parseInt(ctx.session.user.id),
 					gristId: gristRequestId,
 					requestFormId: newRequestForm.id,

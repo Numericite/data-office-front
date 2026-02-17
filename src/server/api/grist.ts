@@ -1,8 +1,13 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: grist */
+import { createClient } from "grist-js";
 import type { RequestSchema } from "~/utils/forms/request/v1/schema";
-import { gristLocalClient } from "~/utils/grist";
 
 export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
+	const gristLocalClient = createClient({
+		BASE: process.env.GRIST_DOC_URL as string,
+		TOKEN: process.env.GRIST_API_KEY as string,
+	});
+
 	const userAlreadyExists = await gristLocalClient.listRecords({
 		docId: process.env.GRIST_DOC_ID as string,
 		tableId: "Demandeurs",
