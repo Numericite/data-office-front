@@ -2,36 +2,56 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { tss } from "tss-react";
 import { api } from "~/utils/api";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
-import Button from "@codegouvfr/react-dsfr/Button";
 import Accordion from "@codegouvfr/react-dsfr/Accordion";
-import { kindProductOptions } from "~/utils/forms/request/v1/schema";
-import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
-import type {
-	GetServerSideProps,
-	InferGetServerSidePropsType,
-	Redirect,
-} from "next";
-import { db } from "~/server/db";
-import type { ProductKind, Supplier } from "@prisma/client";
 import Loader from "~/components/Loader";
 import DataMarketplaceCard from "~/components/data-marketplace/Card";
+import Pagination from "@codegouvfr/react-dsfr/Pagination";
+import Checkbox from "@codegouvfr/react-dsfr/Checkbox";
+import type { Reference } from "~/server/api/routers/reference";
+
+const NUMBER_PER_PAGE = 12;
 
 type Filters = {
-	kindProducts: ProductKind[];
-	suppliers: string[];
+	domain: string[];
 };
 
-export default function DashboardDataMarketplace({
-	suppliers,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+const filterReferences = (
+	refs: Reference[],
+	searchTerm: string,
+	filters: Filters,
+) => {
+	return refs
+		.filter((reference) =>
+			reference.name.toLowerCase().includes(searchTerm.toLowerCase()),
+		)
+		.filter((reference) =>
+			filters.domain.length > 0
+				? filters.domain.includes(reference.domain)
+				: true,
+		);
+};
+
+export default function DashboardDataMarketplace() {
 	const { classes, cx } = useStyles();
 
+	const [page, setPage] = useState(1);
 	const [filters, setFilters] = useState<Filters>({
-		kindProducts: [],
-		suppliers: [],
+		domain: [],
 	});
+	const handleFilterChange = (filterKey: keyof Filters, value: string) => {
+		setFilters((prev) => {
+			const isChecked = prev[filterKey].includes(value);
+			return {
+				...prev,
+				[filterKey]: isChecked
+					? prev[filterKey].filter((item) => item !== value)
+					: [...prev[filterKey], value],
+			};
+		});
+		setPage(1);
+	};
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [debouncedSearchTerm] = useDebounceValue(searchTerm, 300);
@@ -39,17 +59,25 @@ export default function DashboardDataMarketplace({
 		null,
 	);
 
-	const {
-		data,
-		isLoading: isLoadingReferences,
-		fetchNextPage,
-		hasNextPage,
-	} = api.reference.getByInfiniteQuery.useInfiniteQuery(
-		{ search: debouncedSearchTerm, limit: 6, filters },
-		{ getNextPageParam: (lastPage) => lastPage.nextCursor },
+	const { data, isLoading: isLoadingReferences } =
+		api.reference.getAll.useQuery(undefined);
+
+	const { references: tmpReferences, domains } = data ?? {
+		references: [],
+		domains: [],
+	};
+
+	const references = useMemo(
+		() =>
+			filterReferences(tmpReferences, debouncedSearchTerm, filters).slice(
+				(page - 1) * NUMBER_PER_PAGE,
+				page * NUMBER_PER_PAGE,
+			),
+		[page, tmpReferences, debouncedSearchTerm, filters],
 	);
 
-	const flattenedData = data?.pages.flatMap((page) => page.items) || [];
+	const totalCount =
+		filterReferences(tmpReferences, debouncedSearchTerm, filters).length ?? 0;
 
 	const isLoading = isLoadingReferences || searchTerm !== debouncedSearchTerm;
 
@@ -60,66 +88,20 @@ export default function DashboardDataMarketplace({
 				<div className={classes.headerSidebar}>
 					<h2 className={fr.cx("fr-h5")}>Affiner la recherche</h2>
 					<Accordion
-						label="Type de produit"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<Checkbox
-							options={kindProductOptions.map(({ label }) => ({
-								label,
-								nativeInputProps: {
-									checked: filters.kindProducts.includes(label),
-									onChange: () =>
-										setFilters((prevFilters) => ({
-											...prevFilters,
-											kindProducts: filters.kindProducts.includes(label)
-												? prevFilters.kindProducts.filter(
-														(kind) => kind !== label,
-													)
-												: [...prevFilters.kindProducts, label],
-										})),
-								},
-							}))}
-							className={fr.cx("fr-mb-0")}
-						/>
-					</Accordion>
-					<Accordion
 						label="Domaines"
 						className={classes.accordionWrapper}
 						defaultExpanded
 					>
-						<div />
-					</Accordion>
-					<Accordion
-						label="Producteurs"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
 						<Checkbox
-							options={suppliers.map(({ name }) => ({
-								label: name,
+							options={domains.map((domain) => ({
+								label: domain,
 								nativeInputProps: {
-									checked: filters.suppliers.includes(name),
-									onChange: () =>
-										setFilters((prevFilters) => ({
-											...prevFilters,
-											suppliers: filters.suppliers.includes(name)
-												? prevFilters.suppliers.filter(
-														(supplier) => supplier !== name,
-													)
-												: [...prevFilters.suppliers, name],
-										})),
+									checked: filters.domain.includes(domain),
+									onChange: () => handleFilterChange("domain", domain),
 								},
 							}))}
 							className={fr.cx("fr-mb-0")}
 						/>
-					</Accordion>
-					<Accordion
-						label="Type d'accès"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<div />
 					</Accordion>
 				</div>
 				<div className={classes.headerMain}>
@@ -146,35 +128,37 @@ export default function DashboardDataMarketplace({
 					{isLoading ? (
 						<Loader />
 					) : (
-						<>
-							<div
-								className={cx(
-									classes.grid,
-									fr.cx("fr-mt-2w"),
-									fr.cx("fr-mb-4w"),
-								)}
-							>
-								{flattenedData.length === 0 ? (
-									<div>Aucune référence trouvée</div>
-								) : (
-									flattenedData.map((reference) => (
-										<DataMarketplaceCard
-											key={reference.id}
-											reference={reference}
-										/>
-									))
-								)}
-							</div>
-							{hasNextPage && (
-								<div className={cx(classes.loadMoreWrapper)}>
-									<Button priority="secondary" onClick={() => fetchNextPage()}>
-										Charger plus
-									</Button>
-								</div>
+						<div
+							className={cx(classes.grid, fr.cx("fr-mt-2w"), fr.cx("fr-mb-4w"))}
+						>
+							{references?.length === 0 ? (
+								<div>Aucune référence trouvée</div>
+							) : (
+								references?.map((reference) => (
+									<DataMarketplaceCard
+										key={reference.id}
+										reference={reference}
+									/>
+								))
 							)}
-						</>
+						</div>
 					)}
 				</div>
+				{!isLoading && totalCount > NUMBER_PER_PAGE && (
+					<div className={classes.paginationWrapper}>
+						<Pagination
+							count={Math.ceil(totalCount / NUMBER_PER_PAGE)}
+							defaultPage={page}
+							getPageLinkProps={(page) => ({
+								href: "#",
+								onClick: (e) => {
+									e.preventDefault();
+									setPage(page);
+								},
+							})}
+						/>
+					</div>
+				)}
 			</div>
 		</div>
 	);
@@ -194,6 +178,9 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 	},
 	headerSidebar: {
 		gridColumn: "span 3",
+		position: "sticky",
+		top: fr.spacing("3w"),
+		alignSelf: "start",
 	},
 	headerMain: {
 		gridColumn: "span 9",
@@ -204,7 +191,7 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 			borderLeft: "2px solid var( --background-flat-blue-france)",
 		},
 		"> .fr-collapse": {
-			padding: `${fr.spacing("4v")} ${fr.spacing("1v")}`,
+			padding: `${fr.spacing("6v")} ${fr.spacing("1v")}`,
 		},
 		"&::before": {
 			content: "none",
@@ -215,24 +202,11 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		display: "flex",
 		justifyContent: "center",
 	},
+	paginationWrapper: {
+		gridColumn: "span 12",
+		display: "flex",
+		justifyContent: "center",
+		marginTop: fr.spacing("6w"),
+		marginBottom: fr.spacing("6w"),
+	},
 });
-
-export const getServerSideProps = (async (_) => {
-	const redirect: Redirect = {
-		destination: "/",
-		permanent: false,
-	};
-
-	const prisma = db;
-
-	try {
-		const suppliers = await prisma.supplier.findMany({
-			take: 100,
-		});
-		return { props: { suppliers } };
-	} catch (error) {
-		console.error("Error fetching suppliers:", error);
-
-		return { redirect };
-	}
-}) satisfies GetServerSideProps<{ suppliers: Supplier[] }>;
