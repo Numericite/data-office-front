@@ -2,48 +2,37 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { api } from "~/utils/api";
 import { createColumnHelper } from "@tanstack/react-table";
 import DsfrTable from "~/components/DsfrTable";
-import type { ReferenceAugmented } from "~/utils/prisma-augmented";
 import { useState } from "react";
-import { authClient } from "~/utils/auth-client";
 import Button from "@codegouvfr/react-dsfr/Button";
+import type { RequestAugmented } from "~/utils/prisma-augmented";
 
-const columnHelper = createColumnHelper<ReferenceAugmented>();
+const columnHelper = createColumnHelper<RequestAugmented>();
 
 const numberPerPage = 10;
 
 export default function DashboardDataContracts() {
-	const { data: session } = authClient.useSession();
-
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const { data: totalCount } = api.reference.getCount.useQuery(
-		{ byCurrentUser: true },
-		{ initialData: 0 },
-	);
-
-	const { data } = api.reference.getByUserId.useQuery(
-		{
-			page: currentPage,
-			numberPerPage,
-		},
-		{ enabled: !!session?.user.role },
-	);
+	const { data } = api.request.getByUserId.useQuery({
+		page: 1,
+		numberPerPage,
+	});
 
 	const columns = [
 		columnHelper.accessor("id", {
 			header: "ID",
 			cell: (info) => `#${info.getValue()}`,
 		}),
-		columnHelper.accessor("name", {
+		columnHelper.accessor("requestForm.subject", {
 			id: "name",
 			header: "Nom",
 			cell: (info) => info.getValue(),
 		}),
-		columnHelper.accessor("kindProduct", {
-			id: "kindProduct",
-			header: "Type du produit",
-			cell: (info) => info.getValue(),
-		}),
+		// columnHelper.accessor("kindProduct", {
+		// 	id: "kindProduct",
+		// 	header: "Type du produit",
+		// 	cell: (info) => info.getValue(),
+		// }),
 		columnHelper.accessor("createdAt", {
 			header: "Date de création",
 			cell: (info) =>
@@ -72,7 +61,7 @@ export default function DashboardDataContracts() {
 			<DsfrTable
 				data={data ?? []}
 				columns={columns}
-				totalCount={totalCount}
+				totalCount={data?.length ?? 0}
 				pagination={{
 					numberPerPage,
 					currentPage,
