@@ -90,9 +90,13 @@ function App({ Component, pageProps }: AppProps) {
 	};
 
 	const isActive = (currentPath: string, itemLink: Url | undefined) => {
+		if (currentPath.includes("data-marketplace")) {
+			return currentPath.startsWith(itemLink?.toString() ?? "");
+		}
+
 		if (
-			currentPath.includes("data-marketplace") ||
-			currentPath.includes("requests")
+			currentPath.includes("requests") &&
+			currentPath !== "/dashboard/requests/new/v1"
 		) {
 			return currentPath.startsWith(itemLink?.toString() ?? "");
 		}
