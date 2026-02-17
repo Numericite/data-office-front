@@ -13,6 +13,7 @@ import type {
 } from "next";
 import type { Session } from "~/utils/auth-client";
 import { auth } from "~/utils/auth";
+import { tss } from "tss-react";
 
 const columnHelper = createColumnHelper<RequestRemoteAugmented>();
 
@@ -21,11 +22,14 @@ const numberPerPage = 10;
 export default function DashboardDataContracts({
 	session,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+	const { classes } = useStyles();
+
 	const [currentPage, setCurrentPage] = useState(1);
+	const [isEmailFilterActive, setIsEmailFilterActive] = useState(true);
 
 	const { data, isLoading } = api.request.getRemoteList.useQuery({
 		status: "Validé",
-		email: session.user.email,
+		email: isEmailFilterActive ? session.user.email : undefined,
 	});
 
 	const columns = [
@@ -57,7 +61,12 @@ export default function DashboardDataContracts({
 
 	return (
 		<div>
-			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
+			<div className={classes.headerWrapper}>
+				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
+				<Button onClick={() => setIsEmailFilterActive(!isEmailFilterActive)}>
+					{isEmailFilterActive ? "Voir tous les contrats" : "Voir mes contrats"}
+				</Button>
+			</div>
 			{isLoading ? (
 				<Loader />
 			) : (
@@ -95,3 +104,11 @@ export const getServerSideProps = (async (context) => {
 		return { redirect };
 	}
 }) satisfies GetServerSideProps<{ session: Session }>;
+
+const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
+	headerWrapper: {
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+}));
