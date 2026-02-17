@@ -60,7 +60,9 @@ export default function DashboardDataMarketplace() {
 	);
 
 	const { data, isLoading: isLoadingReferences } =
-		api.reference.getAll.useQuery(undefined);
+		api.reference.getAll.useQuery(undefined, {
+			staleTime: 5 * 60 * 1000, // 5 minutes
+		});
 
 	const { references: tmpReferences, domains } = data ?? {
 		references: [],
