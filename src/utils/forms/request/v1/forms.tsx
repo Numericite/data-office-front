@@ -137,7 +137,7 @@ export const DataProductStep = withForm({
 				<form.AppField name="dataProduct.personalData">
 					{(field) => (
 						<field.RadioField
-							label="Date prévisionnelle de mise à disposition"
+							label="Le traitement implique des données personnelles :"
 							readOnly={readOnly}
 							options={personalDataOptions}
 						/>
