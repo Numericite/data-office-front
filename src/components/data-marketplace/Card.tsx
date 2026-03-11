@@ -34,7 +34,7 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 						tags={[{ children: reference.domain }]}
 					/>
 					<span>
-						Supplier | Mis à jour :{" "}
+						Mis à jour :{" "}
 						{new Intl.DateTimeFormat("fr-FR").format(
 							new Date(reference.updatedAt),
 						)}
