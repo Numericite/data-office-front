@@ -106,7 +106,6 @@ export const requestRouter = createTRPCRouter({
 			const requests = await ctx.db.request.findMany({
 				where: {
 					userId: Number.parseInt(ctx.session.user.id),
-					remoteGristStatus: { not: "Validé" },
 				},
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
@@ -138,7 +137,6 @@ export const requestRouter = createTRPCRouter({
 				take: numberPerPage,
 				skip: (page - 1) * numberPerPage,
 				include: RequestAugmentedInclude,
-				where: { remoteGristStatus: { not: "Validé" } },
 			});
 
 			return requests;
@@ -149,9 +147,7 @@ export const requestRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const { byCurrentUser } = input;
 
-			const where: Prisma.RequestWhereInput = {
-				remoteGristStatus: { not: "Validé" },
-			};
+			const where: Prisma.RequestWhereInput = {};
 
 			if (byCurrentUser) where.userId = Number.parseInt(ctx.session.user.id);
 
