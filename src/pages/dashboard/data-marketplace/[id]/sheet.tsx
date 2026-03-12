@@ -55,18 +55,18 @@ export default function DashboardDataMarketplace({
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="string" value={reference.description || ""} />
 				</div>
-				{/* <div className={classes.gridItemName}>Type de produit</div>
+				<div className={classes.gridItemName}>Type de produit</div>
 				<div className={classes.gridItemValue}>
-					<PropertyItem kind="badge" value={reference.kindProduct} />
-				</div> */}
+					<PropertyItem kind="badge" value={reference.kind} />
+				</div>
 				<div className={classes.gridItemName}>Domaine</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="badge" value={reference.domain} />
 				</div>
-				{/* <div className={classes.gridItemName}>Producteur</div>
+				<div className={classes.gridItemName}>Producteur</div>
 				<div className={classes.gridItemValue}>
-					<PropertyItem kind="string" value={reference.supplier.name} />
-				</div> */}
+					<PropertyItem kind="badge" value={reference.supplier} />
+				</div>
 				<div className={classes.gridItemName}>Mise à jour</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem
