@@ -5,4 +5,5 @@ const gristDataOfficeClient = createClient({
 	TOKEN: process.env.GRIST_DATA_OFFICE_API_KEY as string,
 });
 
+export type GristClient = typeof gristDataOfficeClient;
 export { gristDataOfficeClient };

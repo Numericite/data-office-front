@@ -31,10 +31,14 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 					<TagsGroup
 						smallTags
 						className={fr.cx("fr-mb-0")}
-						tags={[{ children: reference.domain }]}
+						tags={[
+							{ children: reference.kind },
+							{ children: reference.domain },
+						]}
 					/>
+
 					<span>
-						Mis à jour :{" "}
+						{reference.supplier} | Mis à jour :{" "}
 						{new Intl.DateTimeFormat("fr-FR").format(
 							new Date(reference.updatedAt),
 						)}

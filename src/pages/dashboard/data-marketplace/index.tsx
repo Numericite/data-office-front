@@ -15,6 +15,8 @@ const NUMBER_PER_PAGE = 12;
 
 type Filters = {
 	domain: string[];
+	supplier: string[];
+	kinds: string[];
 };
 
 const filterReferences = (
@@ -22,15 +24,15 @@ const filterReferences = (
 	searchTerm: string,
 	filters: Filters,
 ) => {
-	return refs
-		.filter((reference) =>
-			reference.name.toLowerCase().includes(searchTerm.toLowerCase()),
-		)
-		.filter((reference) =>
-			filters.domain.length > 0
-				? filters.domain.includes(reference.domain)
-				: true,
-		);
+	return refs.filter(
+		(reference) =>
+			reference.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+			(filters.domain.length === 0 ||
+				filters.domain.includes(reference.domain)) &&
+			(filters.supplier.length === 0 ||
+				filters.supplier.includes(reference.supplier)) &&
+			(filters.kinds.length === 0 || filters.kinds.includes(reference.kind)),
+	);
 };
 
 export default function DashboardDataMarketplace() {
@@ -39,7 +41,10 @@ export default function DashboardDataMarketplace() {
 	const [page, setPage] = useState(1);
 	const [filters, setFilters] = useState<Filters>({
 		domain: [],
+		supplier: [],
+		kinds: [],
 	});
+
 	const handleFilterChange = (filterKey: keyof Filters, value: string) => {
 		setFilters((prev) => {
 			const isChecked = prev[filterKey].includes(value);
@@ -64,9 +69,16 @@ export default function DashboardDataMarketplace() {
 			staleTime: 5 * 60 * 1000, // 5 minutes
 		});
 
-	const { references: tmpReferences, domains } = data ?? {
+	const {
+		references: tmpReferences,
+		domains,
+		suppliers,
+		kinds,
+	} = data ?? {
 		references: [],
 		domains: [],
+		suppliers: [],
+		kinds: [],
 	};
 
 	const references = useMemo(
@@ -90,19 +102,53 @@ export default function DashboardDataMarketplace() {
 				<div className={classes.headerSidebar}>
 					<h2 className={fr.cx("fr-h5")}>Affiner la recherche</h2>
 					<Accordion
+						label="Type de produit"
+						className={classes.accordionWrapper}
+						defaultExpanded
+					>
+						<Checkbox
+							options={kinds.map((kind) => ({
+								label: <span className={classes.checkboxLabel}>{kind}</span>,
+								nativeInputProps: {
+									checked: filters.kinds.includes(kind),
+									onChange: () => handleFilterChange("kinds", kind),
+								},
+							}))}
+							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+						/>
+					</Accordion>
+					<Accordion
 						label="Domaines"
 						className={classes.accordionWrapper}
 						defaultExpanded
 					>
 						<Checkbox
 							options={domains.map((domain) => ({
-								label: domain,
+								label: <span className={classes.checkboxLabel}>{domain}</span>,
 								nativeInputProps: {
 									checked: filters.domain.includes(domain),
 									onChange: () => handleFilterChange("domain", domain),
 								},
 							}))}
-							className={fr.cx("fr-mb-0")}
+							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+						/>
+					</Accordion>
+					<Accordion
+						label="Producteurs"
+						className={classes.accordionWrapper}
+						defaultExpanded
+					>
+						<Checkbox
+							options={suppliers.map((supplier) => ({
+								label: (
+									<span className={classes.checkboxLabel}>{supplier}</span>
+								),
+								nativeInputProps: {
+									checked: filters.supplier.includes(supplier),
+									onChange: () => handleFilterChange("supplier", supplier),
+								},
+							}))}
+							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
 						/>
 					</Accordion>
 				</div>
@@ -146,22 +192,22 @@ export default function DashboardDataMarketplace() {
 						</div>
 					)}
 				</div>
-				{!isLoading && totalCount > NUMBER_PER_PAGE && (
-					<div className={classes.paginationWrapper}>
-						<Pagination
-							count={Math.ceil(totalCount / NUMBER_PER_PAGE)}
-							defaultPage={page}
-							getPageLinkProps={(page) => ({
-								href: "#",
-								onClick: (e) => {
-									e.preventDefault();
-									setPage(page);
-								},
-							})}
-						/>
-					</div>
-				)}
 			</div>
+			{!isLoading && totalCount > NUMBER_PER_PAGE && (
+				<div className={classes.paginationWrapper}>
+					<Pagination
+						count={Math.ceil(totalCount / NUMBER_PER_PAGE)}
+						defaultPage={page}
+						getPageLinkProps={(page) => ({
+							href: "#",
+							onClick: (e) => {
+								e.preventDefault();
+								setPage(page);
+							},
+						})}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -183,6 +229,8 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		position: "sticky",
 		top: fr.spacing("3w"),
 		alignSelf: "start",
+		maxHeight: `calc(100vh - ${fr.spacing("6w")})`,
+		overflowY: "auto",
 	},
 	headerMain: {
 		gridColumn: "span 9",
@@ -193,11 +241,25 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 			borderLeft: "2px solid var( --background-flat-blue-france)",
 		},
 		"> .fr-collapse": {
-			padding: `${fr.spacing("6v")} ${fr.spacing("1v")}`,
+			paddingBottom: fr.spacing("6v"),
+			paddingLeft: fr.spacing("1v"),
+			paddingRight: fr.spacing("1v"),
 		},
 		"&::before": {
 			content: "none",
 		},
+	},
+	checkbox: {
+		"&, fieldset": {
+			maxWidth: "100%",
+			minWidth: 0,
+		},
+	},
+	checkboxLabel: {
+		display: "block",
+		overflow: "hidden",
+		whiteSpace: "nowrap",
+		textOverflow: "ellipsis",
 	},
 	loadMoreWrapper: {
 		marginTop: fr.spacing("4w"),

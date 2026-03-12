@@ -8,7 +8,7 @@ import type {
 } from "next";
 import type { ParsedUrlQuery } from "node:querystring";
 import {
-	parseReferences,
+	fetchReferencesData,
 	type Reference,
 } from "~/server/api/routers/reference";
 import Tag from "@codegouvfr/react-dsfr/Tag";
@@ -128,25 +128,15 @@ export const getServerSideProps = (async (context) => {
 	};
 
 	try {
-		const gristReference = await gristDataOfficeClient.listRecords({
-			docId: process.env.GRIST_DATA_OFFICE_DOC_REFERENCE_ID as string,
-			tableId: "Catalogue_des_applications",
-			filter: JSON.stringify({ id: [Number.parseInt(id)] }),
-			limit: 0,
+		const { references } = await fetchReferencesData(gristDataOfficeClient, {
+			id: Number.parseInt(id),
 		});
 
-		if (gristReference.records.length === 0) return { redirect };
+		if (references.length === 0) return { redirect };
 
-		try {
-			const reference = parseReferences(gristReference)[0] as Reference;
-			return { props: { reference } };
-		} catch (error) {
-			console.error("Error parsing reference:", error);
-			return { redirect };
-		}
+		return { props: { reference: references[0] as Reference } };
 	} catch (error) {
 		console.error("Error fetching reference:", error);
-
 		return { redirect };
 	}
 }) satisfies GetServerSideProps<{ reference: Reference }>;
