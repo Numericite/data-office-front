@@ -17,6 +17,7 @@ type Filters = {
 	domain: string[];
 	supplier: string[];
 	kinds: string[];
+	accessKind: Reference["accessKind"][];
 };
 
 const filterReferences = (
@@ -43,11 +44,12 @@ export default function DashboardDataMarketplace() {
 		domain: [],
 		supplier: [],
 		kinds: [],
+		accessKind: [],
 	});
 
 	const handleFilterChange = (filterKey: keyof Filters, value: string) => {
 		setFilters((prev) => {
-			const isChecked = prev[filterKey].includes(value);
+			const isChecked = prev[filterKey].includes(value as never);
 			return {
 				...prev,
 				[filterKey]: isChecked
@@ -148,6 +150,33 @@ export default function DashboardDataMarketplace() {
 									onChange: () => handleFilterChange("supplier", supplier),
 								},
 							}))}
+							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+						/>
+					</Accordion>
+					<Accordion
+						label="Type d'accès"
+						className={classes.accordionWrapper}
+						defaultExpanded
+					>
+						<Checkbox
+							options={[
+								{
+									label: <span className={classes.checkboxLabel}>Public</span>,
+									nativeInputProps: {
+										checked: filters.accessKind.includes("public"),
+										onChange: () => handleFilterChange("accessKind", "public"),
+									},
+								},
+								{
+									label: (
+										<span className={classes.checkboxLabel}>Restreint</span>
+									),
+									nativeInputProps: {
+										checked: filters.accessKind.includes("private"),
+										onChange: () => handleFilterChange("accessKind", "private"),
+									},
+								},
+							]}
 							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
 						/>
 					</Accordion>

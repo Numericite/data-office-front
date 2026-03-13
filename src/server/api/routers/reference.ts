@@ -10,6 +10,7 @@ export const ReferenceSchema = z.object({
 	domain: z.string(),
 	supplier: z.string(),
 	kind: z.string(),
+	accessKind: z.enum(["public", "private"]),
 	updatedAt: z.date(),
 });
 
@@ -34,6 +35,7 @@ export const parseReferences = (
 			supplier: organisations.records.find(
 				(org) => org.id === reference.fields.Organisation_productrice,
 			)?.fields.Organisation_productrice || { name: "Inconnu" },
+			accessKind: reference.fields.Public ? "public" : "private",
 			updatedAt: new Date(),
 			// updatedAt: new Date((record.fields.Modifie as number) * 1000),
 		})),

@@ -47,13 +47,13 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 			}
 			end={
 				<Badge
-					severity="success"
+					severity={reference.accessKind === "public" ? "success" : "error"}
 					noIcon
 					small
 					className={classes.cardBadgeAccessKind}
 				>
 					<i className={fr.cx("fr-icon-lock-unlock-fill", "fr-icon--xs")} />{" "}
-					Ouvert
+					{reference.accessKind === "public" ? "Ouvert" : "Restreint"}
 				</Badge>
 			}
 			footer={

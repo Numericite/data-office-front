@@ -14,6 +14,7 @@ import {
 import Tag from "@codegouvfr/react-dsfr/Tag";
 import Button from "@codegouvfr/react-dsfr/Button";
 import { gristDataOfficeClient } from "~/utils/grist";
+import Badge from "@codegouvfr/react-dsfr/Badge";
 
 const PropertyItem = ({
 	kind,
@@ -65,7 +66,7 @@ export default function DashboardDataMarketplace({
 				</div>
 				<div className={classes.gridItemName}>Producteur</div>
 				<div className={classes.gridItemValue}>
-					<PropertyItem kind="badge" value={reference.supplier} />
+					<PropertyItem kind="string" value={reference.supplier} />
 				</div>
 				<div className={classes.gridItemName}>Mise à jour</div>
 				<div className={classes.gridItemValue}>
@@ -73,6 +74,18 @@ export default function DashboardDataMarketplace({
 						kind="string"
 						value={new Intl.DateTimeFormat("fr-FR").format(reference.updatedAt)}
 					/>
+				</div>
+				<div className={classes.gridItemName}>Type d'accès</div>
+				<div className={classes.gridItemValue}>
+					<Badge
+						severity={reference.accessKind === "public" ? "success" : "error"}
+						noIcon
+						small
+						className={classes.cardBadgeAccessKind}
+					>
+						<i className={fr.cx("fr-icon-lock-unlock-fill", "fr-icon--xs")} />{" "}
+						{reference.accessKind === "public" ? "Ouvert" : "Restreint"}
+					</Badge>
 				</div>
 			</div>
 			<div
@@ -112,6 +125,12 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 	},
 	gridItemValue: {
 		gridColumn: "span 10",
+	},
+	cardBadgeAccessKind: {
+		display: "flex",
+		alignItems: "center",
+		gap: fr.spacing("1v"),
+		lineHeight: "1.5rem",
 	},
 });
 
