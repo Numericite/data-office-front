@@ -92,7 +92,9 @@ export default function DashboardDataMarketplace({
 				className={fr.cx("fr-mt-3w")}
 				style={{ display: "flex", justifyContent: "center" }}
 			>
-				<Button linkProps={{ target: "_blank", href: "/" }}>
+				<Button
+					linkProps={{ href: "/dashboard/requests/new/v1", target: "_blank" }}
+				>
 					J’accède au produit de données
 				</Button>
 			</div>

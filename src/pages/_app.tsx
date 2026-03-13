@@ -86,7 +86,7 @@ function App({ Component, pageProps }: AppProps) {
 
 	const logout = async () => {
 		await authClient.signOut();
-		router.push("/");
+		router.reload();
 	};
 
 	const isActive = (currentPath: string, itemLink: Url | undefined) => {
