@@ -161,7 +161,7 @@ export default function DashboardDataMarketplace() {
 						<Checkbox
 							options={[
 								{
-									label: <span className={classes.checkboxLabel}>Public</span>,
+									label: <span className={classes.checkboxLabel}>Ouvert</span>,
 									nativeInputProps: {
 										checked: filters.accessKind.includes("public"),
 										onChange: () => handleFilterChange("accessKind", "public"),
