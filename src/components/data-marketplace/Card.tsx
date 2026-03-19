@@ -2,7 +2,6 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import Card from "@codegouvfr/react-dsfr/Card";
-import TagsGroup from "@codegouvfr/react-dsfr/TagsGroup";
 import { tss } from "tss-react";
 import type { Reference } from "~/server/api/routers/reference";
 
@@ -26,19 +25,15 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 			}}
 			size="medium"
 			desc={reference.description}
+			start={
+				<Badge severity="info" noIcon small className={classes.domainBadge}>
+					{reference.domain}
+				</Badge>
+			}
 			detail={
-				<div>
-					<TagsGroup
-						smallTags
-						className={fr.cx("fr-mb-0")}
-						tags={[
-							{ children: reference.kind },
-							{ children: reference.domain },
-						]}
-					/>
-
+				<div className={fr.cx("fr-mt-4v")}>
 					<span>
-						{reference.supplier} | Mis à jour :{" "}
+						{reference.supplier} | {reference.kind} | Mis à jour :{" "}
 						{new Intl.DateTimeFormat("fr-FR").format(
 							new Date(reference.updatedAt),
 						)}
@@ -74,6 +69,9 @@ const DataMarketplaceCard = ({ reference }: DataMarketplaceCardProps) => {
 };
 
 const useStyles = tss.withName(DataMarketplaceCard.name).create(() => ({
+	domainBadge: {
+		display: "inline-flex",
+	},
 	cardDescription: {
 		minHeight: "72px",
 		maxHeight: "72px",
