@@ -64,6 +64,10 @@ export default function DashboardDataMarketplace({
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="badge" value={reference.domain} />
 				</div>
+				<div className={classes.gridItemName}>Sous-domaine</div>
+				<div className={classes.gridItemValue}>
+					<PropertyItem kind="badge" value={reference.subDomain} />
+				</div>
 				<div className={classes.gridItemName}>Producteur</div>
 				<div className={classes.gridItemValue}>
 					<PropertyItem kind="string" value={reference.supplier} />

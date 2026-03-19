@@ -8,6 +8,7 @@ export const ReferenceSchema = z.object({
 	name: z.string(),
 	description: z.string().optional(),
 	domain: z.string(),
+	subDomain: z.string(),
 	supplier: z.string(),
 	kind: z.string(),
 	accessKind: z.enum(["public", "private"]),
@@ -20,8 +21,13 @@ export const parseReferences = (
 	references: RecordsList,
 	{
 		domains,
+		subDomains,
 		organisations,
-	}: { domains: RecordsList; organisations: RecordsList },
+	}: {
+		domains: RecordsList;
+		subDomains: RecordsList;
+		organisations: RecordsList;
+	},
 ) => {
 	const { data, error } = ReferenceSchema.array().safeParse(
 		references.records.map((reference) => ({
@@ -32,6 +38,10 @@ export const parseReferences = (
 			domain:
 				domains.records.find((domain) => domain.id === reference.fields.Domaine)
 					?.fields.Domaine || "Inconnu",
+			subDomain:
+				subDomains.records.find(
+					(subDomain) => subDomain.id === reference.fields.Sous_domaine,
+				)?.fields.Sous_domaine || "Inconnu",
 			supplier: organisations.records.find(
 				(org) => org.id === reference.fields.Organisation_productrice,
 			)?.fields.Organisation_productrice || { name: "Inconnu" },
@@ -57,7 +67,7 @@ export const fetchReferencesData = async (
 ) => {
 	const docId = process.env.GRIST_DATA_OFFICE_DOC_REFERENCE_ID as string;
 
-	const [references, domains, organisations] = await Promise.all([
+	const [references, domains, subDomains, organisations] = await Promise.all([
 		client.listRecords({
 			docId,
 			tableId: "Catalogue_des_metadonnees",
@@ -66,11 +76,13 @@ export const fetchReferencesData = async (
 				: {}),
 		}),
 		client.listRecords({ docId, tableId: "Catalogue_des_domaines" }),
+		client.listRecords({ docId, tableId: "Catalogue_des_sous_domaines" }),
 		client.listRecords({ docId, tableId: "Catalogue_des_organisations" }),
 	]);
 
 	const parsedReferences = parseReferences(references, {
 		domains,
+		subDomains,
 		organisations,
 	});
 
