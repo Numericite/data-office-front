@@ -260,6 +260,7 @@ const useStyles = tss.withName(DashboardDataMarketplace.name).create({
 		alignSelf: "start",
 		maxHeight: `calc(100vh - ${fr.spacing("6w")})`,
 		overflowY: "auto",
+		overflowX: "hidden",
 	},
 	headerMain: {
 		gridColumn: "span 9",
