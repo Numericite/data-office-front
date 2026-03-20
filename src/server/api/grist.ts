@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: grist */
-import { createClient, type RecordsList } from "grist-js";
+import type { RecordsList } from "grist-js";
 import z from "zod";
 import {
 	requestSchema,
@@ -37,28 +37,64 @@ export const parseRemoteRequests = (requests: RecordsList) => {
 	return data;
 };
 
-export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
-	const gristLocalClient = createClient({
-		BASE: process.env.GRIST_DOC_URL as string,
-		TOKEN: process.env.GRIST_API_KEY as string,
+async function gristFetch(
+	path: string,
+	options?: RequestInit,
+): Promise<Response> {
+	const base = process.env.GRIST_DOC_URL as string;
+	const token = process.env.GRIST_API_KEY as string;
+	return fetch(`${base}${path}`, {
+		...options,
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
+			...(options?.headers ?? {}),
+		},
 	});
+}
 
-	const userAlreadyExists = await gristLocalClient.listRecords({
-		docId: process.env.GRIST_DOC_ID as string,
-		tableId: "Demandeurs",
-		filter: JSON.stringify({ emailPro: [data.personInfo.emailPro] }),
+async function gristListRecords(
+	docId: string,
+	tableId: string,
+	params?: { filter?: string; limit?: number },
+): Promise<RecordsList> {
+	const query = new URLSearchParams();
+	if (params?.filter) query.set("filter", params.filter);
+	if (params?.limit !== undefined) query.set("limit", String(params.limit));
+	const qs = query.toString() ? `?${query.toString()}` : "";
+	const res = await gristFetch(`/docs/${docId}/tables/${tableId}/records${qs}`);
+	if (!res.ok) throw new Error(`Grist listRecords failed: ${res.status}`);
+	return res.json() as Promise<RecordsList>;
+}
+
+async function gristAddRecords(
+	docId: string,
+	tableId: string,
+	body: { records: { fields: Record<string, unknown> }[] },
+): Promise<{ records: { id: number }[] }> {
+	const res = await gristFetch(`/docs/${docId}/tables/${tableId}/records`, {
+		method: "POST",
+		body: JSON.stringify(body),
 	});
+	if (!res.ok) throw new Error(`Grist addRecords failed: ${res.status}`);
+	return res.json() as Promise<{ records: { id: number }[] }>;
+}
+
+export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
+	const userAlreadyExists = await gristListRecords(
+		process.env.GRIST_DOC_ID as string,
+		"Demandeurs",
+		{ filter: JSON.stringify({ emailPro: [data.personInfo.emailPro] }) },
+	);
 
 	let gristRequestUserRecordId: number;
 
 	if (userAlreadyExists.records.length === 0) {
-		const gristRequestUser = await gristLocalClient.addRecords({
-			docId: process.env.GRIST_DOC_ID as string,
-			tableId: "Demandeurs",
-			requestBody: {
-				records: [{ fields: data.personInfo }],
-			},
-		});
+		const gristRequestUser = await gristAddRecords(
+			process.env.GRIST_DOC_ID as string,
+			"Demandeurs",
+			{ records: [{ fields: data.personInfo as Record<string, unknown> }] },
+		);
 		gristRequestUserRecordId = gristRequestUser.records[0]!.id;
 	} else {
 		gristRequestUserRecordId = userAlreadyExists.records[0]!.id;
@@ -66,10 +102,10 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 
 	const { additionalFiles: _, ...dataProduct } = data.dataProduct;
 
-	const gristRequest = await gristLocalClient.addRecords({
-		docId: process.env.GRIST_DOC_ID as string,
-		tableId: "Demandes",
-		requestBody: {
+	const gristRequest = await gristAddRecords(
+		process.env.GRIST_DOC_ID as string,
+		"Demandes",
+		{
 			records: [
 				{
 					fields: {
@@ -81,7 +117,7 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 				},
 			],
 		},
-	});
+	);
 
 	const gristRequestId = gristRequest.records[0]!.id;
 
@@ -95,34 +131,30 @@ export async function gristGetList({
 	status?: string;
 	email?: string;
 }) {
-	const gristLocalClient = createClient({
-		BASE: process.env.GRIST_DOC_URL as string,
-		TOKEN: process.env.GRIST_API_KEY as string,
-	});
-
 	let filterUserId: number | undefined;
 
 	if (email) {
-		const userRecords = await gristLocalClient.listRecords({
-			docId: process.env.GRIST_DOC_ID as string,
-			tableId: "Demandeurs",
-			filter: JSON.stringify({ emailPro: [email] }),
-			limit: 1,
-		});
+		const userRecords = await gristListRecords(
+			process.env.GRIST_DOC_ID as string,
+			"Demandeurs",
+			{ filter: JSON.stringify({ emailPro: [email] }), limit: 1 },
+		);
 
 		if (userRecords.records.length === 0) return [];
 
 		filterUserId = userRecords.records[0]!.id;
 	}
 
-	const gristRequests = await gristLocalClient.listRecords({
-		docId: process.env.GRIST_DOC_ID as string,
-		tableId: "Demandes",
-		filter: JSON.stringify({
-			Status: status ? [status] : undefined,
-			Demandeur: filterUserId ? [filterUserId] : undefined,
-		}),
-	});
+	const gristRequests = await gristListRecords(
+		process.env.GRIST_DOC_ID as string,
+		"Demandes",
+		{
+			filter: JSON.stringify({
+				Status: status ? [status] : undefined,
+				Demandeur: filterUserId ? [filterUserId] : undefined,
+			}),
+		},
+	);
 
 	return parseRemoteRequests(gristRequests);
 }
