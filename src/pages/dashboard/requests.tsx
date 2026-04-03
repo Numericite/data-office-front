@@ -7,6 +7,7 @@ import { useState } from "react";
 import type { Session } from "~/utils/auth-client";
 import { tss } from "tss-react";
 import Button from "@codegouvfr/react-dsfr/Button";
+import Loader from "~/components/Loader";
 import type {
 	GetServerSideProps,
 	InferGetServerSidePropsType,
@@ -28,21 +29,23 @@ export default function DashboardRequests({
 	const userRole = session?.user.role;
 	const isAdmin = userRole?.endsWith("admin");
 
-	const { data: totalCount } = api.request.getCount.useQuery(
-		{ byCurrentUser: true },
-		{ initialData: 0 },
-	);
+	const { data: totalCount, isLoading: isLoadingCount } =
+		api.request.getCount.useQuery({ byCurrentUser: true }, { initialData: 0 });
 
-	const { data: userRequests } = api.request.getByUserId.useQuery(
-		{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
-		{ enabled: !!userRole && !isAdmin },
-	);
+	const { data: userRequests, isLoading: isLoadingUserRequests } =
+		api.request.getByUserId.useQuery(
+			{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
+			{ enabled: !!userRole && !isAdmin },
+		);
 
-	const { data: allRequests } = api.request.getList.useQuery(
-		{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
-		{ enabled: !!userRole && isAdmin },
-	);
+	const { data: allRequests, isLoading: isLoadingAllRequests } =
+		api.request.getList.useQuery(
+			{ page: currentPage, numberPerPage: NUMBER_PER_PAGE },
+			{ enabled: !!userRole && isAdmin },
+		);
 
+	const isLoading =
+		isLoadingCount || isLoadingUserRequests || isLoadingAllRequests;
 	const data = userRequests ? userRequests : allRequests;
 
 	const columns = [
@@ -98,16 +101,22 @@ export default function DashboardRequests({
 			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>
 				{isAdmin ? "Demandes" : "Mes demandes de produits de données"}
 			</h1>
-			<DsfrTable
-				data={data ?? []}
-				columns={columns}
-				totalCount={totalCount}
-				pagination={{
-					numberPerPage: NUMBER_PER_PAGE,
-					currentPage,
-					setCurrentPage,
-				}}
-			/>
+			{isLoading ? (
+				<div className={classes.loaderWrapper}>
+					<Loader />
+				</div>
+			) : (
+				<DsfrTable
+					data={data ?? []}
+					columns={columns}
+					totalCount={totalCount}
+					pagination={{
+						numberPerPage: NUMBER_PER_PAGE,
+						currentPage,
+						setCurrentPage,
+					}}
+				/>
+			)}
 		</div>
 	);
 }
@@ -133,6 +142,10 @@ export const getServerSideProps = (async (context) => {
 }) satisfies GetServerSideProps<{ session: Session }>;
 
 const useStyles = tss.withName(DashboardRequests.name).create(() => ({
+	loaderWrapper: {
+		marginTop: fr.spacing("16w"),
+		marginBottom: fr.spacing("16w"),
+	},
 	headerWrapper: {
 		display: "flex",
 		justifyContent: "space-between",

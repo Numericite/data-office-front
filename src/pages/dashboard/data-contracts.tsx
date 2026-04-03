@@ -64,25 +64,33 @@ export default function DashboardDataContracts({
 
 	return (
 		<div>
-			<div className={classes.headerWrapper}>
-				<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
-				<Button onClick={() => setIsEmailFilterActive(!isEmailFilterActive)}>
-					{isEmailFilterActive ? "Voir tous les contrats" : "Voir mes contrats"}
-				</Button>
-			</div>
+			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
 			{isLoading ? (
-				<Loader />
+				<div className={classes.loaderWrapper}>
+					<Loader />
+				</div>
 			) : (
-				<DsfrTable
-					data={data ?? []}
-					columns={columns}
-					totalCount={data?.length ?? 0}
-					pagination={{
-						numberPerPage,
-						currentPage,
-						setCurrentPage,
-					}}
-				/>
+				<>
+					<div className={classes.headerActions}>
+						<Button
+							onClick={() => setIsEmailFilterActive(!isEmailFilterActive)}
+						>
+							{isEmailFilterActive
+								? "Voir tous les contrats"
+								: "Voir mes contrats"}
+						</Button>
+					</div>
+					<DsfrTable
+						data={data ?? []}
+						columns={columns}
+						totalCount={data?.length ?? 0}
+						pagination={{
+							numberPerPage,
+							currentPage,
+							setCurrentPage,
+						}}
+					/>
+				</>
 			)}
 		</div>
 	);
@@ -109,9 +117,14 @@ export const getServerSideProps = (async (context) => {
 }) satisfies GetServerSideProps<{ session: Session }>;
 
 const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
-	headerWrapper: {
+	loaderWrapper: {
+		marginTop: fr.spacing("16w"),
+		marginBottom: fr.spacing("16w"),
+	},
+	headerActions: {
 		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
+		justifyContent: "flex-end",
+		marginTop: fr.spacing("2w"),
+		marginBottom: fr.spacing("2w"),
 	},
 }));

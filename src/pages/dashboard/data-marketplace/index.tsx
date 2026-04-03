@@ -95,153 +95,176 @@ export default function DashboardDataMarketplace() {
 	const totalCount =
 		filterReferences(tmpReferences, debouncedSearchTerm, filters).length ?? 0;
 
-	const isLoading = isLoadingReferences || searchTerm !== debouncedSearchTerm;
-
 	return (
 		<div>
 			<h1 className={fr.cx("fr-h4")}>Data Marketplace</h1>
-			<div className={classes.headerWrapper}>
-				<div className={classes.headerSidebar}>
-					<h2 className={fr.cx("fr-h5")}>Affiner la recherche</h2>
-					<Accordion
-						label="Type de produit"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<Checkbox
-							options={kinds.map((kind) => ({
-								label: <span className={classes.checkboxLabel}>{kind}</span>,
-								nativeInputProps: {
-									checked: filters.kinds.includes(kind),
-									onChange: () => handleFilterChange("kinds", kind),
-								},
-							}))}
-							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
-						/>
-					</Accordion>
-					<Accordion
-						label="Domaines"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<Checkbox
-							options={domains.map((domain) => ({
-								label: <span className={classes.checkboxLabel}>{domain}</span>,
-								nativeInputProps: {
-									checked: filters.domain.includes(domain),
-									onChange: () => handleFilterChange("domain", domain),
-								},
-							}))}
-							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
-						/>
-					</Accordion>
-					<Accordion
-						label="Producteurs"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<Checkbox
-							options={suppliers.map((supplier) => ({
-								label: (
-									<span className={classes.checkboxLabel}>{supplier}</span>
-								),
-								nativeInputProps: {
-									checked: filters.supplier.includes(supplier),
-									onChange: () => handleFilterChange("supplier", supplier),
-								},
-							}))}
-							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
-						/>
-					</Accordion>
-					<Accordion
-						label="Type d'accès"
-						className={classes.accordionWrapper}
-						defaultExpanded
-					>
-						<Checkbox
-							options={[
-								{
-									label: <span className={classes.checkboxLabel}>Ouvert</span>,
-									nativeInputProps: {
-										checked: filters.accessKind.includes("public"),
-										onChange: () => handleFilterChange("accessKind", "public"),
-									},
-								},
-								{
-									label: (
-										<span className={classes.checkboxLabel}>Restreint</span>
-									),
-									nativeInputProps: {
-										checked: filters.accessKind.includes("private"),
-										onChange: () => handleFilterChange("accessKind", "private"),
-									},
-								},
-							]}
-							className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
-						/>
-					</Accordion>
+			{isLoadingReferences ? (
+				<div className={classes.loaderWrapper}>
+					<Loader />
 				</div>
-				<div className={classes.headerMain}>
-					<SearchBar
-						big
-						renderInput={({ className, id, type }) => (
-							<input
-								ref={setInputElement}
-								className={className}
-								id={id}
-								placeholder="Recherche un produit"
-								type={type}
-								value={searchTerm}
-								onChange={(event) => setSearchTerm(event.currentTarget.value)}
-								onKeyDown={(event) => {
-									if (event.key === "Escape") {
-										// assert(inputElement !== null);
-										inputElement?.blur();
-									}
-								}}
-							/>
-						)}
-					/>
-					{isLoading ? (
-						<Loader />
-					) : (
-						<div
-							className={cx(classes.grid, fr.cx("fr-mt-2w"), fr.cx("fr-mb-4w"))}
-						>
-							{references?.length === 0 ? (
-								<div>Aucune référence trouvée</div>
-							) : (
-								references?.map((reference) => (
-									<DataMarketplaceCard
-										key={reference.id}
-										reference={reference}
+			) : (
+				<>
+					<div className={classes.headerWrapper}>
+						<div className={classes.headerSidebar}>
+							<h2 className={fr.cx("fr-h5")}>Affiner la recherche</h2>
+							<Accordion
+								label="Type de produit"
+								className={classes.accordionWrapper}
+								defaultExpanded
+							>
+								<Checkbox
+									options={kinds.map((kind) => ({
+										label: (
+											<span className={classes.checkboxLabel}>{kind}</span>
+										),
+										nativeInputProps: {
+											checked: filters.kinds.includes(kind),
+											onChange: () => handleFilterChange("kinds", kind),
+										},
+									}))}
+									className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+								/>
+							</Accordion>
+							<Accordion
+								label="Domaines"
+								className={classes.accordionWrapper}
+								defaultExpanded
+							>
+								<Checkbox
+									options={domains.map((domain) => ({
+										label: (
+											<span className={classes.checkboxLabel}>{domain}</span>
+										),
+										nativeInputProps: {
+											checked: filters.domain.includes(domain),
+											onChange: () => handleFilterChange("domain", domain),
+										},
+									}))}
+									className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+								/>
+							</Accordion>
+							<Accordion
+								label="Producteurs"
+								className={classes.accordionWrapper}
+								defaultExpanded
+							>
+								<Checkbox
+									options={suppliers.map((supplier) => ({
+										label: (
+											<span className={classes.checkboxLabel}>{supplier}</span>
+										),
+										nativeInputProps: {
+											checked: filters.supplier.includes(supplier),
+											onChange: () => handleFilterChange("supplier", supplier),
+										},
+									}))}
+									className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+								/>
+							</Accordion>
+							<Accordion
+								label="Type d'accès"
+								className={classes.accordionWrapper}
+								defaultExpanded
+							>
+								<Checkbox
+									options={[
+										{
+											label: (
+												<span className={classes.checkboxLabel}>Ouvert</span>
+											),
+											nativeInputProps: {
+												checked: filters.accessKind.includes("public"),
+												onChange: () =>
+													handleFilterChange("accessKind", "public"),
+											},
+										},
+										{
+											label: (
+												<span className={classes.checkboxLabel}>Restreint</span>
+											),
+											nativeInputProps: {
+												checked: filters.accessKind.includes("private"),
+												onChange: () =>
+													handleFilterChange("accessKind", "private"),
+											},
+										},
+									]}
+									className={cx(classes.checkbox, fr.cx("fr-mb-0"))}
+								/>
+							</Accordion>
+						</div>
+						<div className={classes.headerMain}>
+							<SearchBar
+								big
+								renderInput={({ className, id, type }) => (
+									<input
+										ref={setInputElement}
+										className={className}
+										id={id}
+										placeholder="Recherche un produit"
+										type={type}
+										value={searchTerm}
+										onChange={(event) =>
+											setSearchTerm(event.currentTarget.value)
+										}
+										onKeyDown={(event) => {
+											if (event.key === "Escape") {
+												inputElement?.blur();
+											}
+										}}
 									/>
-								))
+								)}
+							/>
+							{searchTerm !== debouncedSearchTerm ? (
+								<Loader />
+							) : (
+								<div
+									className={cx(
+										classes.grid,
+										fr.cx("fr-mt-2w"),
+										fr.cx("fr-mb-4w"),
+									)}
+								>
+									{references?.length === 0 ? (
+										<div>Aucune référence trouvée</div>
+									) : (
+										references?.map((reference) => (
+											<DataMarketplaceCard
+												key={reference.id}
+												reference={reference}
+											/>
+										))
+									)}
+								</div>
 							)}
 						</div>
+					</div>
+					{totalCount > NUMBER_PER_PAGE && (
+						<div className={classes.paginationWrapper}>
+							<Pagination
+								count={Math.ceil(totalCount / NUMBER_PER_PAGE)}
+								defaultPage={page}
+								getPageLinkProps={(page) => ({
+									href: "#",
+									onClick: (e) => {
+										e.preventDefault();
+										setPage(page);
+									},
+								})}
+							/>
+						</div>
 					)}
-				</div>
-			</div>
-			{!isLoading && totalCount > NUMBER_PER_PAGE && (
-				<div className={classes.paginationWrapper}>
-					<Pagination
-						count={Math.ceil(totalCount / NUMBER_PER_PAGE)}
-						defaultPage={page}
-						getPageLinkProps={(page) => ({
-							href: "#",
-							onClick: (e) => {
-								e.preventDefault();
-								setPage(page);
-							},
-						})}
-					/>
-				</div>
+				</>
 			)}
 		</div>
 	);
 }
 
 const useStyles = tss.withName(DashboardDataMarketplace.name).create({
+	loaderWrapper: {
+		marginTop: fr.spacing("16w"),
+		marginBottom: fr.spacing("16w"),
+	},
 	grid: {
 		paddingTop: fr.spacing("2w"),
 		display: "grid",
