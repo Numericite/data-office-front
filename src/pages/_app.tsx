@@ -95,13 +95,13 @@ function App({ Component, pageProps }: AppProps) {
 		}
 
 		if (
-			currentPath.includes("requests") &&
-			currentPath !== "/dashboard/requests/new/v1"
+			currentPath.startsWith("/dashboard/requests/new") &&
+			itemLink?.toString() === "/dashboard/requests"
 		) {
-			return currentPath.startsWith(itemLink?.toString() ?? "");
+			return false;
 		}
 
-		return currentPath === itemLink;
+		return currentPath.startsWith(itemLink?.toString() ?? "");
 	};
 
 	const navigationItems = useMemo(() => {
