@@ -117,7 +117,7 @@ export default function RequestForm() {
 		<div className={fr.cx("fr-mb-8w")}>
 			{request_id !== "new" && (
 				<Breadcrumb
-					currentPageLabel={`#${request_id}`}
+					currentPageLabel={`#${request?.requestForm.subject}`}
 					className="fr-mb-0"
 					segments={[
 						{
