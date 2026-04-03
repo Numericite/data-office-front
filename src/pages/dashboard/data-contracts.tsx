@@ -32,6 +32,29 @@ export default function DashboardDataContracts({
 		email: isEmailFilterActive ? session.user.email : undefined,
 	});
 
+	const handleDownloadPdf = async (id: number) => {
+		const pdfUrl = process.env.NEXT_PUBLIC_PDF_URL;
+
+		if (pdfUrl) {
+			try {
+				const response = await fetch(pdfUrl);
+				const blob = await response.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `datacontract-${id}.pdf`;
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			} catch (error) {
+				console.error("Erreur lors du téléchargement:", error);
+			}
+		} else {
+			window.location.href = `/dashboard/data-marketplace/${id}/sheet`;
+		}
+	};
+
 	const columns = [
 		columnHelper.accessor("id", {
 			header: "ID",
@@ -49,9 +72,7 @@ export default function DashboardDataContracts({
 				<Button
 					size="small"
 					priority="secondary"
-					linkProps={{
-						href: `/dashboard/data-marketplace/${info.getValue()}/sheet`,
-					}}
+					onClick={() => handleDownloadPdf(info.getValue())}
 				>
 					Voir le DataContract
 				</Button>
