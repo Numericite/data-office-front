@@ -97,7 +97,10 @@ export default function DashboardDataMarketplace({
 				style={{ display: "flex", justifyContent: "center" }}
 			>
 				<Button
-					linkProps={{ href: "/dashboard/requests/new/v1", target: "_blank" }}
+					linkProps={{
+						href: `/dashboard/requests/new/v1?subject=${encodeURIComponent(`Demande d'accès au produit "${reference.name}"`)}`,
+						target: "_blank",
+					}}
 				>
 					J’accède au produit de données
 				</Button>

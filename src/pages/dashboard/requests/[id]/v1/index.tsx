@@ -42,7 +42,10 @@ export default function RequestForm() {
 	});
 
 	const router = useRouter();
-	const { id: request_id } = router.query as { id: string | "new" };
+	const { id: request_id, subject } = router.query as {
+		id: string | "new";
+		subject?: string;
+	};
 
 	const { mutateAsync: createRequest } = api.request.create.useMutation({
 		onError: (error) => {
@@ -73,8 +76,18 @@ export default function RequestForm() {
 				...dataProductSchema.parse({ dataProduct: request.requestForm }),
 			};
 		}
-		return requestFormOptions.defaultValues;
-	}, [request_id, request]);
+		return {
+			...requestFormOptions.defaultValues,
+			...(subject
+				? {
+						dataProduct: {
+							...requestFormOptions.defaultValues.dataProduct,
+							subject,
+						},
+					}
+				: {}),
+		};
+	}, [request_id, request, subject]);
 
 	const form = useAppForm({
 		...requestFormOptions,
