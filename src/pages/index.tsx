@@ -19,35 +19,39 @@ export default function Home() {
 	};
 
 	return (
-		<div className={classes.main}>
-			<div className={classes.heroSection}>
-				<h1 className={fr.cx("fr-mb-5v")}>
-					Bienvenue sur l'Espace de Données Sociales
-				</h1>
-				<p>
-					Accédez au guichet unique des demandes de produits data au sein des
-					ministères sociaux. Soumettez vos demandes, suivez leur instruction et
-					bénéficiez d'un cadre de confiance juridique et technique pour vos
-					projets data.
-				</p>
-				<ProConnectButton onClick={signIn} />
+		<div className={classes.root}>
+			<div className={fr.cx("fr-container")}>
+				<div className={classes.card}>
+					<h2 className={fr.cx("fr-mb-5w")}>
+						Connexion à l'Espace de Données Sociales
+					</h2>
+					<h5 className={fr.cx("fr-mb-2w")}>Se connecter avec ProConnect</h5>
+					<p className={fr.cx("fr-text--sm", "fr-mb-4w")}>
+						ProConnect est la solution proposée par l'État pour sécuriser et
+						simplifier la connexion aux services en ligne professionnels.
+					</p>
+					<ProConnectButton onClick={signIn} />
+				</div>
 			</div>
 		</div>
 	);
 }
 
 const useStyles = tss.withName(Home.name).create({
-	main: {
-		display: "grid",
-		gridTemplateColumns: "repeat(12, 1fr)",
+	root: {
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		flex: 1,
+		padding: `${fr.spacing("8w")} 0`,
 	},
-	heroSection: {
-		gridColumn: "3 / span 8",
-		marginTop: fr.spacing("14w"),
+	card: {
+		maxWidth: 600,
+		margin: "0 auto",
+		backgroundColor: fr.colors.decisions.background.alt.grey.default,
+		padding: `${fr.spacing("8w")} ${fr.spacing("6w")}`,
 		[fr.breakpoints.down("md")]: {
-			gridColumn: "1 / span 12",
-			padding: `${fr.spacing("4v")} ${fr.spacing("4w")}`,
-			marginTop: 0,
+			padding: `${fr.spacing("5w")} ${fr.spacing("4w")}`,
 		},
 	},
 });
