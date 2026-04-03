@@ -98,7 +98,7 @@ export default function DashboardDataMarketplace() {
 	const isLoading = isLoadingReferences || searchTerm !== debouncedSearchTerm;
 
 	return (
-		<div className={fr.cx("fr-mt-4w")}>
+		<div>
 			<h1 className={fr.cx("fr-h4")}>Data Marketplace</h1>
 			<div className={classes.headerWrapper}>
 				<div className={classes.headerSidebar}>

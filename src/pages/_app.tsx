@@ -184,7 +184,11 @@ function App({ Component, pageProps }: AppProps) {
 					serviceTitle="Espace de Données Sociales"
 				/>
 
-				<main className={cx(fr.cx("fr-container"), classes.container)}>
+				<main
+					className={cx(
+						fr.cx("fr-container", isAuthenticated ? "fr-mt-4w" : "fr-mt-0"),
+					)}
+				>
 					<Component {...pageProps} />
 				</main>
 				<Footer
@@ -209,12 +213,6 @@ const useStyles = tss.withName(App.name).create(() => ({
 		},
 		".fr-header__body-row": {
 			paddingBottom: "1rem",
-		},
-	},
-	container: {
-		flex: 1,
-		"& > div": {
-			marginTop: `${fr.spacing("4w")}!important`,
 		},
 	},
 }));
