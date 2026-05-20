@@ -5,9 +5,11 @@
 	"type": "module",
 	"scripts": {
 		"build": "next build",
-		"check": "biome check .",
-		"check:unsafe": "biome check --write --unsafe .",
-		"check:write": "biome check --write .",
+		"check": "oxlint && oxfmt --check",
+		"check:unsafe": "oxlint --fix --fix-suggestions --fix-dangerously && oxfmt",
+		"check:write": "oxlint --fix && oxfmt",
+		"format": "oxfmt",
+		"lint": "oxlint",
 		"db:generate": "prisma migrate dev",
 		"db:migrate": "prisma migrate deploy",
 		"db:push": "prisma db push",
@@ -19,9 +21,6 @@
 		"typecheck": "tsc --noEmit",
 		"predev": "react-dsfr update-icons",
 		"prebuild": "react-dsfr update-icons"
-	},
-	"prisma": {
-		"seed": "npx tsx prisma/seed/main.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.779.0",
@@ -57,18 +56,22 @@
 		"zod-openapi": "^5.4.6"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.0.6",
 		"@types/js-cookie": "^3.0.6",
 		"@types/node": "^20.14.10",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"lefthook": "^1.11.13",
+		"oxfmt": "^0.51.0",
+		"oxlint": "^1.66.0",
 		"prisma": "^6.16.2",
 		"typescript": "^5.8.2",
 		"zod-schema-faker": "^2.0.0-beta.2"
 	},
+	"packageManager": "yarn@1.22.18",
 	"ct3aMetadata": {
 		"initVersion": "7.39.0"
 	},
-	"packageManager": "yarn@1.22.18"
+	"prisma": {
+		"seed": "npx tsx prisma/seed/main.ts"
+	}
 }

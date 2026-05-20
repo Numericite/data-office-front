@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "react", "unicorn", "oxc"],
+	"categories": {
+		"correctness": "error"
+	},
+	"rules": {
+		"react/no-children-prop": "off",
+		"react-hooks/exhaustive-deps": "off",
+		"react/no-array-index-key": "off",
+		"no-param-reassign": "error",
+		"default-param-last": "error",
+		"react/self-closing-comp": "error",
+		"typescript/consistent-type-assertions": "error",
+		"typescript/prefer-enum-initializers": "error",
+		"typescript/no-inferrable-types": "error",
+		"no-useless-return": "error",
+		"no-else-return": "error"
+	},
+	"ignorePatterns": []
+}
