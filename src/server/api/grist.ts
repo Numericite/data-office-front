@@ -13,6 +13,21 @@ export const RequestRemoteAugmented = z.object({
 
 export type RequestRemoteAugmented = z.infer<typeof RequestRemoteAugmented>;
 
+export type GristRawRecord = {
+	id: number;
+	fields: Record<string, unknown>;
+};
+
+export type GristDemandeurRecord = {
+	id: number;
+	firstName?: string;
+	lastName?: string;
+	emailPro?: string;
+	role?: string;
+	ministry?: string;
+	department?: string;
+};
+
 export const parseRemoteRequests = (requests: RecordsList) => {
 	const { data, error } = RequestRemoteAugmented.array().safeParse(
 		requests.records.map((record) => ({
@@ -48,7 +63,7 @@ async function gristFetch(
 		headers: {
 			Authorization: `Bearer ${token}`,
 			"Content-Type": "application/json",
-			...(options?.headers ?? {}),
+			...options?.headers,
 		},
 	});
 }
@@ -122,6 +137,45 @@ export async function gristAddRequest(data: Omit<RequestSchema, "section">) {
 	const gristRequestId = gristRequest.records[0]!.id;
 
 	return { id: gristRequestId };
+}
+
+export async function gristGetRawById(
+	gristId: number,
+): Promise<GristRawRecord | null> {
+	const res = await gristListRecords(
+		process.env.GRIST_DOC_ID as string,
+		"Demandes",
+		{ filter: JSON.stringify({ id: [gristId] }), limit: 1 },
+	);
+
+	const record = res.records[0];
+	if (!record) return null;
+
+	return { id: record.id, fields: record.fields };
+}
+
+export async function gristGetDemandeurById(
+	demandeurId: number,
+): Promise<GristDemandeurRecord | null> {
+	const res = await gristListRecords(
+		process.env.GRIST_DOC_ID as string,
+		"Demandeurs",
+		{ filter: JSON.stringify({ id: [demandeurId] }), limit: 1 },
+	);
+
+	const record = res.records[0];
+	if (!record) return null;
+
+	const f = record.fields as Record<string, unknown>;
+	return {
+		id: record.id,
+		firstName: typeof f.firstName === "string" ? f.firstName : undefined,
+		lastName: typeof f.lastName === "string" ? f.lastName : undefined,
+		emailPro: typeof f.emailPro === "string" ? f.emailPro : undefined,
+		role: typeof f.role === "string" ? f.role : undefined,
+		ministry: typeof f.ministry === "string" ? f.ministry : undefined,
+		department: typeof f.department === "string" ? f.department : undefined,
+	};
 }
 
 export async function gristGetList({

@@ -1,4 +1,5 @@
-import { S3 } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const createS3Client = () =>
 	new S3({
@@ -10,5 +11,38 @@ const createS3Client = () =>
 	});
 
 const s3Client = createS3Client();
+
+const DATA_CONTRACT_DOCX_CONTENT_TYPE =
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+export const dataContractS3Key = (requestId: number): string =>
+	`data-contracts/${requestId}.docx`;
+
+export async function uploadDataContract(
+	key: string,
+	body: Buffer,
+): Promise<void> {
+	await s3Client.send(
+		new PutObjectCommand({
+			Bucket: process.env.S3_BUCKET as string,
+			Key: key,
+			Body: body,
+			ContentType: DATA_CONTRACT_DOCX_CONTENT_TYPE,
+		}),
+	);
+}
+
+export async function getPresignedDataContractUrl(
+	key: string,
+): Promise<string> {
+	return getSignedUrl(
+		s3Client,
+		new GetObjectCommand({
+			Bucket: process.env.S3_BUCKET as string,
+			Key: key,
+		}),
+		{ expiresIn: 300 },
+	);
+}
 
 export { s3Client };

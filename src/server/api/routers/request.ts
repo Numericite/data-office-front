@@ -11,6 +11,8 @@ import { RequestAugmentedInclude } from "~/utils/prisma-augmented";
 import { gristAddRequest, gristGetList } from "../grist";
 import { ApiError } from "grist-js/dist/src/client";
 import type { Prisma } from "@prisma/client";
+import { generateDataContract } from "~/server/dataContract/generator";
+import { getPresignedDataContractUrl } from "~/server/s3";
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -197,13 +199,58 @@ export const requestRouter = createTRPCRouter({
 					message: `Request with gristId ${gristId} not found`,
 				});
 
+			const now = new Date();
+			const becomingValidated =
+				Status === "Validé" && request.remoteGristStatus !== "Validé";
+
 			await ctx.db.request.update({
 				where: { id: request.id },
-				data: { remoteGristStatus: Status },
+				data: {
+					remoteGristStatus: Status,
+					...(becomingValidated && !request.validatedAt
+						? { validatedAt: now }
+						: {}),
+				},
 			});
+
+			if (Status === "Validé" && !request.dataContractS3Key) {
+				try {
+					await generateDataContract(request.id);
+				} catch (err) {
+					console.error(
+						`Data contract generation failed for request ${request.id}`,
+						err,
+					);
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Data contract generation failed",
+					});
+				}
+			}
 
 			return {
 				message: `Request with gristId ${gristId} updated with status ${Status}`,
 			};
+		}),
+
+	getDataContractUrl: protectedProcedure
+		.input(z.object({ gristId: z.number() }))
+		.mutation(async ({ ctx, input }) => {
+			const request = await ctx.db.request.findFirst({
+				where: { gristId: input.gristId },
+			});
+
+			if (!request)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Request with gristId ${input.gristId} not found`,
+				});
+
+			const key =
+				request.dataContractS3Key ?? (await generateDataContract(request.id));
+
+			const url = await getPresignedDataContractUrl(key);
+
+			return { url };
 		}),
 });

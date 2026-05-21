@@ -1,19 +1,20 @@
 import { fr } from "@codegouvfr/react-dsfr";
-import { api } from "~/utils/api";
-import { createColumnHelper } from "@tanstack/react-table";
-import DsfrTable from "~/components/DsfrTable";
-import { useState } from "react";
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
-import type { RequestRemoteAugmented } from "~/server/api/grist";
-import Loader from "~/components/Loader";
+import { createColumnHelper } from "@tanstack/react-table";
 import type {
 	GetServerSideProps,
 	InferGetServerSidePropsType,
 	Redirect,
 } from "next";
+import { useState } from "react";
+import { tss } from "tss-react";
+import DsfrTable from "~/components/DsfrTable";
+import Loader from "~/components/Loader";
+import type { RequestRemoteAugmented } from "~/server/api/grist";
+import { api } from "~/utils/api";
 import type { Session } from "~/utils/auth-client";
 import { auth } from "~/utils/auth";
-import { tss } from "tss-react";
 
 const columnHelper = createColumnHelper<RequestRemoteAugmented>();
 
@@ -26,15 +27,32 @@ export default function DashboardDataContracts({
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isEmailFilterActive, setIsEmailFilterActive] = useState(true);
+	const [pendingGristId, setPendingGristId] = useState<number | null>(null);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const { data, isLoading } = api.request.getRemoteList.useQuery({
 		status: "Validé",
 		email: isEmailFilterActive ? session.user.email : undefined,
 	});
 
-	const handleViewPdf = (id: number) => {
-		const pdfUrl = process.env.NEXT_PUBLIC_PDF_URL;
-		window.open(pdfUrl ?? `/dashboard/data-marketplace/${id}/sheet`, "_blank");
+	const getDataContractUrl = api.request.getDataContractUrl.useMutation({
+		onSuccess: ({ url }) => {
+			window.open(url, "_blank");
+			setPendingGristId(null);
+		},
+		onError: (err) => {
+			console.error(err);
+			setErrorMessage(
+				"Impossible de générer le contrat de données. Veuillez réessayer plus tard.",
+			);
+			setPendingGristId(null);
+		},
+	});
+
+	const handleViewDataContract = (gristId: number) => {
+		setErrorMessage(null);
+		setPendingGristId(gristId);
+		getDataContractUrl.mutate({ gristId });
 	};
 
 	const columns = [
@@ -50,21 +68,36 @@ export default function DashboardDataContracts({
 		columnHelper.accessor("id", {
 			id: "actions",
 			header: "Actions",
-			cell: (info) => (
-				<Button
-					size="small"
-					priority="secondary"
-					onClick={() => handleViewPdf(info.getValue())}
-				>
-					Voir le DataContract
-				</Button>
-			),
+			cell: (info) => {
+				const gristId = info.getValue();
+				return (
+					<Button
+						size="small"
+						priority="secondary"
+						disabled={pendingGristId === gristId}
+						onClick={() => handleViewDataContract(gristId)}
+					>
+						Voir le DataContract
+					</Button>
+				);
+			},
 		}),
 	];
 
 	return (
 		<div>
 			<h1 className={fr.cx("fr-h4", "fr-mb-0")}>Mes Contrats</h1>
+			{errorMessage && (
+				<div className={fr.cx("fr-mt-2w")}>
+					<Alert
+						severity="error"
+						title="Erreur"
+						description={errorMessage}
+						closable
+						onClose={() => setErrorMessage(null)}
+					/>
+				</div>
+			)}
 			{isLoading ? (
 				<div className={classes.loaderWrapper}>
 					<Loader />
