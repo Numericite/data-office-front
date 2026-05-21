@@ -23,28 +23,21 @@ const formatFrenchDate = (date: Date): string =>
 		date.getMonth() + 1,
 	).padStart(2, "0")}/${date.getFullYear()}`;
 
-const readField = (
-	fields: Record<string, unknown>,
-	candidates: string[],
-): string => {
-	for (const key of candidates) {
-		const v = fields[key];
-		if (typeof v === "string" && v.trim().length > 0) return v;
-		if (typeof v === "number") return String(v);
-	}
+const readField = (fields: Record<string, unknown>, key: string): string => {
+	const v = fields[key];
+	if (typeof v === "string" && v.trim().length > 0) return v;
+	if (typeof v === "number") return String(v);
 	return "";
 };
 
 const isTruthyField = (
 	fields: Record<string, unknown>,
-	candidates: string[],
+	key: string,
 ): boolean => {
-	for (const key of candidates) {
-		const v = fields[key];
-		if (typeof v === "boolean") return v;
-		if (typeof v === "string" && v.trim().length > 0) return true;
-		if (typeof v === "number" && v !== 0) return true;
-	}
+	const v = fields[key];
+	if (typeof v === "boolean") return v;
+	if (typeof v === "string" && v.trim().length > 0) return true;
+	if (typeof v === "number" && v !== 0) return true;
 	return false;
 };
 
@@ -71,14 +64,10 @@ const buildPayload = (
 	signingDate: Date,
 ) => {
 	const f = gristRecord.fields;
-	const personalData = readField(f, ["personalData"]);
+	const personalData = readField(f, "personalData");
 	const hasPersonalData =
 		personalData === "Oui" || personalData === "Je ne sais pas";
-	const hasProtectedInfo = isTruthyField(f, [
-		"Informations_protegees",
-		"informationsProtegees",
-		"Informations_protégées",
-	]);
+	const hasProtectedInfo = isTruthyField(f, "Informations_protegees");
 
 	return {
 		requestId,
@@ -90,36 +79,25 @@ const buildPayload = (
 		firstName: demandeur?.firstName ?? "",
 		lastName: demandeur?.lastName ?? "",
 
-		subject: readField(f, ["subject"]),
-		description: readField(f, ["description"]),
-		frequency: readField(f, ["dataUpdateFrequency"]),
+		subject: readField(f, "subject"),
+		description: readField(f, "description"),
+		frequency: readField(f, "dataUpdateFrequency"),
 
-		purposes: readField(f, ["Finalites", "Finalit_s", "finalites"]),
-		dataCategories: readField(f, [
-			"Detail_des_categories_de_donnees_demandees",
-			"detailCategories",
-			"dataCategories",
-		]),
-		originFiles: readField(f, ["Fichiers_d_origine", "originFiles"]),
-		quality: readField(f, ["Qualite", "quality"]),
-		format: readField(f, [
-			"Format_de_restitution",
-			"formatDeRestitution",
-			"format",
-		]),
-		storageSecuritySources: readField(f, [
+		purposes: readField(f, "Finalites"),
+		dataCategories: readField(f, "Detail_des_categories_de_donnees_demandees"),
+		originFiles: readField(f, "Fichiers_d_origine"),
+		quality: readField(f, "Qualite"),
+		format: readField(f, "Format_de_restitution"),
+		storageSecuritySources: readField(
+			f,
 			"Securite_du_stockage_des_donnees_sources",
-			"storageSecuritySources",
-		]),
-		productSecurity: readField(f, [
-			"Securite_du_produit_de_donnees",
-			"productSecurity",
-		]),
-		specificStorageRules: readField(f, [
+		),
+		productSecurity: readField(f, "Securite_du_produit_de_donnees"),
+		specificStorageRules: readField(
+			f,
 			"Description_des_regles_de_stockages_specifiques",
-			"specificStorageRules",
-		]),
-
+		),
+		storageLife: readField(f, "Duree_de_conversation"),
 		hasPersonalData,
 		hasProtectedInfo,
 	};
