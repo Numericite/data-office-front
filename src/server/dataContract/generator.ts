@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
-import { stringify as yamlStringify } from "yaml";
+import { parse as yamlParse, stringify as yamlStringify } from "yaml";
 import { db } from "~/server/db";
 import {
 	gristGetDemandeurById,
@@ -12,13 +12,25 @@ import {
 import {
 	dataContractS3Key,
 	dataContractYamlS3Key,
+	getDataContractYamlText,
 	uploadDataContract,
 	uploadDataContractYaml,
 } from "~/server/s3";
 
-// Bump this when the data contract template/structure changes. The version is
-// tracked in the generated YAML and stamped at the top-left of the DOCX.
-const DATA_CONTRACT_VERSION = "1.0";
+// The version is tracked in the generated YAML itself and stamped at the
+// top-left of the DOCX. Each (re)generation reads the current YAML version and
+// bumps it, so there is no separate version store to keep in sync.
+const nextContractVersion = async (yamlKey: string): Promise<number> => {
+	const existing = await getDataContractYamlText(yamlKey);
+	if (!existing) return 1;
+	try {
+		const parsed = yamlParse(existing) as { version?: unknown };
+		const current = Number.parseInt(String(parsed?.version ?? ""), 10);
+		return Number.isFinite(current) && current > 0 ? current + 1 : 1;
+	} catch {
+		return 1;
+	}
+};
 
 const TEMPLATE_PATH = path.join(
 	process.cwd(),
@@ -75,6 +87,7 @@ const buildContractModel = (
 	} | null,
 	demandeDate: Date,
 	signingDate: Date,
+	version: number,
 ) => {
 	const f = gristRecord.fields;
 	const personalData = readField(f, "personalData");
@@ -83,7 +96,7 @@ const buildContractModel = (
 	const hasProtectedInfo = isTruthyField(f, "Informations_protegees");
 
 	return {
-		version: DATA_CONTRACT_VERSION,
+		version,
 		contract: {
 			requestId,
 			demandeDate: formatFrenchDate(demandeDate),
@@ -145,9 +158,14 @@ const toDocxPayload = (model: ContractModel) => ({
 	...model.compliance,
 });
 
-export async function generateDataContract(
-	localRequestId: number,
-): Promise<string> {
+// (Re)generates the YAML + DOCX on the fly from the latest Grist data, bumping
+// the version each time. Both files overwrite the same deterministic S3 keys,
+// so only the latest version is ever stored/downloadable.
+export async function generateDataContract(localRequestId: number): Promise<{
+	docxKey: string;
+	yamlKey: string;
+	version: number;
+}> {
 	const request = await db.request.findUniqueOrThrow({
 		where: { id: localRequestId },
 	});
@@ -161,6 +179,9 @@ export async function generateDataContract(
 		? await gristGetDemandeurById(demandeurId)
 		: null;
 
+	const yamlKey = dataContractYamlS3Key(request.id);
+	const version = await nextContractVersion(yamlKey);
+
 	const signingDate = request.validatedAt ?? new Date();
 	const model = buildContractModel(
 		request.id,
@@ -168,10 +189,10 @@ export async function generateDataContract(
 		demandeur,
 		request.createdAt,
 		signingDate,
+		version,
 	);
 
 	// Generate the structured YAML first, then the DOCX.
-	const yamlKey = dataContractYamlS3Key(request.id);
 	await uploadDataContractYaml(yamlKey, yamlStringify(model));
 
 	const templateBuffer = await readFile(TEMPLATE_PATH);
@@ -190,16 +211,16 @@ export async function generateDataContract(
 		compression: "DEFLATE",
 	}) as Buffer;
 
-	const key = dataContractS3Key(request.id);
-	await uploadDataContract(key, rendered);
+	const docxKey = dataContractS3Key(request.id);
+	await uploadDataContract(docxKey, rendered);
 
 	await db.request.update({
 		where: { id: request.id },
 		data: {
-			dataContractS3Key: key,
+			dataContractS3Key: docxKey,
 			validatedAt: request.validatedAt ?? signingDate,
 		},
 	});
 
-	return key;
+	return { docxKey, yamlKey, version };
 }

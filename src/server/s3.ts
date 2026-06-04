@@ -51,6 +51,22 @@ export async function uploadDataContractYaml(
 	);
 }
 
+export async function getDataContractYamlText(
+	key: string,
+): Promise<string | null> {
+	try {
+		const res = await s3Client.send(
+			new GetObjectCommand({
+				Bucket: process.env.S3_BUCKET as string,
+				Key: key,
+			}),
+		);
+		return (await res.Body?.transformToString()) ?? null;
+	} catch {
+		return null;
+	}
+}
+
 export async function getPresignedDataContractUrl(
 	key: string,
 ): Promise<string> {

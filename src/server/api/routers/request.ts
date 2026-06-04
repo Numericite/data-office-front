@@ -216,20 +216,8 @@ export const requestRouter = createTRPCRouter({
 				},
 			});
 
-			if (Status === "Validé" && !request.dataContractS3Key) {
-				try {
-					await generateDataContract(request.id);
-				} catch (err) {
-					console.error(
-						`Data contract generation failed for request ${request.id}`,
-						err,
-					);
-					throw new TRPCError({
-						code: "INTERNAL_SERVER_ERROR",
-						message: "Data contract generation failed",
-					});
-				}
-			}
+			// The data contract (DOCX + YAML) is generated on demand from the
+			// frontend, not as a side effect of a Grist status change.
 
 			return {
 				message: `Request with gristId ${gristId} updated with status ${Status}`,
@@ -250,11 +238,31 @@ export const requestRouter = createTRPCRouter({
 				});
 
 			const key =
-				request.dataContractS3Key ?? (await generateDataContract(request.id));
+				request.dataContractS3Key ??
+				(await generateDataContract(request.id)).docxKey;
 
 			const url = await getPresignedDataContractUrl(key);
 
 			return { url };
+		}),
+
+	regenerateDataContract: protectedProcedure
+		.input(z.object({ gristId: z.number() }))
+		.mutation(async ({ ctx, input }) => {
+			const request = await ctx.db.request.findFirst({
+				where: { gristId: input.gristId },
+			});
+
+			if (!request)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Request with gristId ${input.gristId} not found`,
+				});
+
+			// Always regenerate from the latest Grist data and bump the version.
+			const { version } = await generateDataContract(request.id);
+
+			return { version };
 		}),
 
 	getDataContractYamlUrl: protectedProcedure

@@ -31,7 +31,11 @@ export default function DashboardDataContracts({
 	const [pendingYamlGristId, setPendingYamlGristId] = useState<number | null>(
 		null,
 	);
+	const [pendingRegenGristId, setPendingRegenGristId] = useState<number | null>(
+		null,
+	);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 	const { data, isLoading } = api.request.getRemoteList.useQuery({
 		status: "Validé",
@@ -68,6 +72,24 @@ export default function DashboardDataContracts({
 		},
 	);
 
+	const regenerateDataContract = api.request.regenerateDataContract.useMutation(
+		{
+			onSuccess: ({ version }) => {
+				setSuccessMessage(
+					`Contrat regénéré à partir des dernières données Grist (version ${version}).`,
+				);
+				setPendingRegenGristId(null);
+			},
+			onError: (err) => {
+				console.error(err);
+				setErrorMessage(
+					"Impossible de regénérer le contrat de données. Veuillez réessayer plus tard.",
+				);
+				setPendingRegenGristId(null);
+			},
+		},
+	);
+
 	const handleViewDataContract = (gristId: number) => {
 		setErrorMessage(null);
 		setPendingGristId(gristId);
@@ -78,6 +100,13 @@ export default function DashboardDataContracts({
 		setErrorMessage(null);
 		setPendingYamlGristId(gristId);
 		getDataContractYamlUrl.mutate({ gristId });
+	};
+
+	const handleRegenerate = (gristId: number) => {
+		setErrorMessage(null);
+		setSuccessMessage(null);
+		setPendingRegenGristId(gristId);
+		regenerateDataContract.mutate({ gristId });
 	};
 
 	const columns = [
@@ -97,6 +126,15 @@ export default function DashboardDataContracts({
 				const gristId = info.getValue();
 				return (
 					<div className={classes.actionsCell}>
+						<Button
+							size="small"
+							priority="primary"
+							iconId="fr-icon-refresh-line"
+							disabled={pendingRegenGristId === gristId}
+							onClick={() => handleRegenerate(gristId)}
+						>
+							Regénérer
+						</Button>
 						<Button
 							size="small"
 							priority="secondary"
@@ -130,6 +168,17 @@ export default function DashboardDataContracts({
 						description={errorMessage}
 						closable
 						onClose={() => setErrorMessage(null)}
+					/>
+				</div>
+			)}
+			{successMessage && (
+				<div className={fr.cx("fr-mt-2w")}>
+					<Alert
+						severity="success"
+						title="Contrat regénéré"
+						description={successMessage}
+						closable
+						onClose={() => setSuccessMessage(null)}
 					/>
 				</div>
 			)}
