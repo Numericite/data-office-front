@@ -2,13 +2,23 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import Docxtemplater from "docxtemplater";
 import PizZip from "pizzip";
+import { stringify as yamlStringify } from "yaml";
 import { db } from "~/server/db";
 import {
 	gristGetDemandeurById,
 	gristGetRawById,
 	type GristRawRecord,
 } from "~/server/api/grist";
-import { dataContractS3Key, uploadDataContract } from "~/server/s3";
+import {
+	dataContractS3Key,
+	dataContractYamlS3Key,
+	uploadDataContract,
+	uploadDataContractYaml,
+} from "~/server/s3";
+
+// Bump this when the data contract template/structure changes. The version is
+// tracked in the generated YAML and stamped at the top-left of the DOCX.
+const DATA_CONTRACT_VERSION = "1.0";
 
 const TEMPLATE_PATH = path.join(
 	process.cwd(),
@@ -51,7 +61,10 @@ const extractDemandeurId = (fields: Record<string, unknown>): number | null => {
 	return null;
 };
 
-const buildPayload = (
+// Grouped structured representation of the data contract. The same mapping
+// drives both the YAML file and the (flat) DOCX placeholders, so fields only
+// live in one place. Grouping keeps the YAML readable instead of one big root.
+const buildContractModel = (
 	requestId: number,
 	gristRecord: GristRawRecord,
 	demandeur: {
@@ -70,38 +83,67 @@ const buildPayload = (
 	const hasProtectedInfo = isTruthyField(f, "Informations_protegees");
 
 	return {
-		requestId,
-		demandeDate: formatFrenchDate(demandeDate),
-		signingDate: formatFrenchDate(signingDate),
-
-		ministry: demandeur?.ministry ?? "",
-		role: demandeur?.role ?? "",
-		firstName: demandeur?.firstName ?? "",
-		lastName: demandeur?.lastName ?? "",
-
-		subject: readField(f, "subject"),
-		description: readField(f, "description"),
-		frequency: readField(f, "dataUpdateFrequency"),
-
-		purposes: readField(f, "Finalites"),
-		dataCategories: readField(f, "Detail_des_categories_de_donnees_demandees"),
-		originFiles: readField(f, "Fichiers_d_origine"),
-		quality: readField(f, "Qualite"),
-		format: readField(f, "Format_de_restitution"),
-		storageSecuritySources: readField(
-			f,
-			"Securite_du_stockage_des_donnees_sources",
-		),
-		productSecurity: readField(f, "Securite_du_produit_de_donnees"),
-		specificStorageRules: readField(
-			f,
-			"Description_des_regles_de_stockages_specifiques",
-		),
-		storageLife: readField(f, "Duree_de_conversation"),
-		hasPersonalData,
-		hasProtectedInfo,
+		version: DATA_CONTRACT_VERSION,
+		contract: {
+			requestId,
+			demandeDate: formatFrenchDate(demandeDate),
+			signingDate: formatFrenchDate(signingDate),
+		},
+		requester: {
+			firstName: demandeur?.firstName ?? "",
+			lastName: demandeur?.lastName ?? "",
+			role: demandeur?.role ?? "",
+			ministry: demandeur?.ministry ?? "",
+		},
+		product: {
+			subject: readField(f, "subject"),
+			description: readField(f, "description"),
+			frequency: readField(f, "dataUpdateFrequency"),
+			purposes: readField(f, "Finalites"),
+		},
+		data: {
+			dataCategories: readField(
+				f,
+				"Detail_des_categories_de_donnees_demandees",
+			),
+			originFiles: readField(f, "Fichiers_d_origine"),
+			quality: readField(f, "Qualite"),
+			format: readField(f, "Format_de_restitution"),
+		},
+		security: {
+			storageSecuritySources: readField(
+				f,
+				"Securite_du_stockage_des_donnees_sources",
+			),
+			productSecurity: readField(f, "Securite_du_produit_de_donnees"),
+			specificStorageRules: readField(
+				f,
+				"Description_des_regles_de_stockages_specifiques",
+			),
+			storageLife: readField(f, "Duree_de_conversation"),
+		},
+		compliance: {
+			hasPersonalData,
+			hasProtectedInfo,
+		},
 	};
 };
+
+type ContractModel = ReturnType<typeof buildContractModel>;
+
+// The DOCX template uses flat `{placeholders}`, so flatten the grouped model.
+const toDocxPayload = (model: ContractModel) => ({
+	version: model.version,
+	requestId: model.contract.requestId,
+	demandeDate: model.contract.demandeDate,
+	signingDate: model.contract.signingDate,
+
+	...model.requester,
+	...model.product,
+	...model.data,
+	...model.security,
+	...model.compliance,
+});
 
 export async function generateDataContract(
 	localRequestId: number,
@@ -119,6 +161,19 @@ export async function generateDataContract(
 		? await gristGetDemandeurById(demandeurId)
 		: null;
 
+	const signingDate = request.validatedAt ?? new Date();
+	const model = buildContractModel(
+		request.id,
+		gristRecord,
+		demandeur,
+		request.createdAt,
+		signingDate,
+	);
+
+	// Generate the structured YAML first, then the DOCX.
+	const yamlKey = dataContractYamlS3Key(request.id);
+	await uploadDataContractYaml(yamlKey, yamlStringify(model));
+
 	const templateBuffer = await readFile(TEMPLATE_PATH);
 	const zip = new PizZip(templateBuffer);
 	const doc = new Docxtemplater(zip, {
@@ -128,16 +183,7 @@ export async function generateDataContract(
 		nullGetter: () => "",
 	});
 
-	const signingDate = request.validatedAt ?? new Date();
-	const payload = buildPayload(
-		request.id,
-		gristRecord,
-		demandeur,
-		request.createdAt,
-		signingDate,
-	);
-
-	doc.render(payload);
+	doc.render(toDocxPayload(model));
 
 	const rendered = doc.getZip().generate({
 		type: "nodebuffer",

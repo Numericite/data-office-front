@@ -12,7 +12,10 @@ import { gristAddRequest, gristGetList } from "../grist";
 import { ApiError } from "grist-js/dist/src/client";
 import type { Prisma } from "@prisma/client";
 import { generateDataContract } from "~/server/dataContract/generator";
-import { getPresignedDataContractUrl } from "~/server/s3";
+import {
+	dataContractYamlS3Key,
+	getPresignedDataContractUrl,
+} from "~/server/s3";
 
 export const requestRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -250,6 +253,30 @@ export const requestRouter = createTRPCRouter({
 				request.dataContractS3Key ?? (await generateDataContract(request.id));
 
 			const url = await getPresignedDataContractUrl(key);
+
+			return { url };
+		}),
+
+	getDataContractYamlUrl: protectedProcedure
+		.input(z.object({ gristId: z.number() }))
+		.mutation(async ({ ctx, input }) => {
+			const request = await ctx.db.request.findFirst({
+				where: { gristId: input.gristId },
+			});
+
+			if (!request)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Request with gristId ${input.gristId} not found`,
+				});
+
+			// The YAML is produced alongside the DOCX; generate the contract first
+			// if it doesn't exist yet, then sign the deterministic YAML key.
+			if (!request.dataContractS3Key) await generateDataContract(request.id);
+
+			const url = await getPresignedDataContractUrl(
+				dataContractYamlS3Key(request.id),
+			);
 
 			return { url };
 		}),

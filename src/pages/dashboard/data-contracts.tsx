@@ -28,6 +28,9 @@ export default function DashboardDataContracts({
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isEmailFilterActive, setIsEmailFilterActive] = useState(true);
 	const [pendingGristId, setPendingGristId] = useState<number | null>(null);
+	const [pendingYamlGristId, setPendingYamlGristId] = useState<number | null>(
+		null,
+	);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const { data, isLoading } = api.request.getRemoteList.useQuery({
@@ -49,10 +52,32 @@ export default function DashboardDataContracts({
 		},
 	});
 
+	const getDataContractYamlUrl = api.request.getDataContractYamlUrl.useMutation(
+		{
+			onSuccess: ({ url }) => {
+				window.open(url, "_blank");
+				setPendingYamlGristId(null);
+			},
+			onError: (err) => {
+				console.error(err);
+				setErrorMessage(
+					"Impossible de générer le YAML du contrat de données. Veuillez réessayer plus tard.",
+				);
+				setPendingYamlGristId(null);
+			},
+		},
+	);
+
 	const handleViewDataContract = (gristId: number) => {
 		setErrorMessage(null);
 		setPendingGristId(gristId);
 		getDataContractUrl.mutate({ gristId });
+	};
+
+	const handleViewYaml = (gristId: number) => {
+		setErrorMessage(null);
+		setPendingYamlGristId(gristId);
+		getDataContractYamlUrl.mutate({ gristId });
 	};
 
 	const columns = [
@@ -71,14 +96,24 @@ export default function DashboardDataContracts({
 			cell: (info) => {
 				const gristId = info.getValue();
 				return (
-					<Button
-						size="small"
-						priority="secondary"
-						disabled={pendingGristId === gristId}
-						onClick={() => handleViewDataContract(gristId)}
-					>
-						Voir le DataContract
-					</Button>
+					<div className={classes.actionsCell}>
+						<Button
+							size="small"
+							priority="secondary"
+							disabled={pendingGristId === gristId}
+							onClick={() => handleViewDataContract(gristId)}
+						>
+							Voir le DataContract
+						</Button>
+						<Button
+							size="small"
+							priority="secondary"
+							disabled={pendingYamlGristId === gristId}
+							onClick={() => handleViewYaml(gristId)}
+						>
+							Voir le yaml
+						</Button>
+					</div>
 				);
 			},
 		}),
@@ -159,5 +194,9 @@ const useStyles = tss.withName(DashboardDataContracts.name).create(() => ({
 		justifyContent: "flex-end",
 		marginTop: fr.spacing("2w"),
 		marginBottom: fr.spacing("2w"),
+	},
+	actionsCell: {
+		display: "flex",
+		gap: fr.spacing("2w"),
 	},
 }));
