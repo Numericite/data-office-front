@@ -8,6 +8,7 @@ import { db } from "~/server/db";
 import {
 	gristGetDemandeurById,
 	gristGetRawById,
+	type GristDemandeurRecord,
 	type GristRawRecord,
 } from "~/server/api/grist";
 import {
@@ -84,12 +85,7 @@ const extractDemandeurId = (fields: Record<string, unknown>): number | null => {
 const buildContractModel = (
 	requestId: number,
 	gristRecord: GristRawRecord,
-	demandeur: {
-		firstName?: string;
-		lastName?: string;
-		role?: string;
-		ministry?: string;
-	} | null,
+	demandeur: GristDemandeurRecord | null,
 	demandeDate: Date,
 	signingDate: Date,
 	version: number,
@@ -111,6 +107,7 @@ const buildContractModel = (
 			lastName: demandeur?.lastName ?? "",
 			role: demandeur?.role ?? "",
 			ministry: demandeur?.ministry ?? "",
+			department: demandeur?.department ?? "",
 		},
 		product: {
 			subject: readField(f, "subject"),
