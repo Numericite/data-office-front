@@ -2103,6 +2103,11 @@
   resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.9.10.tgz#a0ad5a26fe8aa996310870726e1704977f769dee"
   integrity sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==
 
+angular-expressions@^1.5.5:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/angular-expressions/-/angular-expressions-1.5.5.tgz#26de781221bfe2ad69111e95202b2955bd63f4ee"
+  integrity sha512-MZqPMw7FYq6XkqE/v4udnanaIRrhJ22hmn3SeJkqDYEtZsoewafa+QgZqR9HrCXP114jaChzOjCjrM6LqvnflA==
+
 asn1js@^3.0.5:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/asn1js/-/asn1js-3.0.6.tgz#53e002ebe00c5f7fd77c1c047c3557d7c04dce25"

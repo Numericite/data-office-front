@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import Docxtemplater from "docxtemplater";
+import expressionParser from "docxtemplater/expressions.js";
 import PizZip from "pizzip";
 import { parse as yamlParse, stringify as yamlStringify } from "yaml";
 import { db } from "~/server/db";
@@ -16,6 +17,10 @@ import {
 	uploadDataContract,
 	uploadDataContractYaml,
 } from "~/server/s3";
+
+const parser = expressionParser.configure({
+	filters: {}, // optional: define your custom filters here
+});
 
 // The version is tracked in the generated YAML itself and stamped at the
 // top-left of the DOCX. Each (re)generation reads the current YAML version and
@@ -101,6 +106,7 @@ const buildContractModel = (
 			requestId,
 			demandeDate: formatFrenchDate(demandeDate),
 			signingDate: formatFrenchDate(signingDate),
+			communicationStyle: readField(f, "Style_de_communication"),
 		},
 		requester: {
 			firstName: demandeur?.firstName ?? "",
@@ -147,10 +153,7 @@ type ContractModel = ReturnType<typeof buildContractModel>;
 // The DOCX template uses flat `{placeholders}`, so flatten the grouped model.
 const toDocxPayload = (model: ContractModel) => ({
 	version: model.version,
-	requestId: model.contract.requestId,
-	demandeDate: model.contract.demandeDate,
-	signingDate: model.contract.signingDate,
-
+	...model.contract,
 	...model.requester,
 	...model.product,
 	...model.data,
@@ -202,6 +205,7 @@ export async function generateDataContract(localRequestId: number): Promise<{
 		linebreaks: true,
 		delimiters: { start: "{", end: "}" },
 		nullGetter: () => "",
+		parser,
 	});
 
 	doc.render(toDocxPayload(model));
