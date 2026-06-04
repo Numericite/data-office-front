@@ -95,9 +95,7 @@ const buildContractModel = (
 	version: number,
 ) => {
 	const f = gristRecord.fields;
-	const personalData = readField(f, "personalData");
-	const hasPersonalData =
-		personalData === "Oui" || personalData === "Je ne sais pas";
+	const hasPersonalData = isTruthyField(f, "personalData");
 	const hasProtectedInfo = isTruthyField(f, "Informations_protegees");
 
 	return {
